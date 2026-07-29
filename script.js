@@ -1,16 +1,16 @@
-// ================= ЗАГРУЗКА АССЕТОВ (ПУТИ ОБНОВЛЕНЫ ПО ЗАПРОСУ) =================
+// ================= ЗАГРУЗКА АССЕТОВ (PIXIJS) =================
+// Включаем идеальную резкость для пиксельной графики
+PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
+
 const sprites = {
-    player: new Image(), ai: new Image(), werewolf: new Image(),
-    highVampire: new Image(), inquisitor: new Image(),
-    aiGeneral: new Image(), wolfGeneral: new Image()
+    player: PIXI.Sprite.from('./assets/Vampire Army.png'),
+    ai: PIXI.Sprite.from('./assets/Knight Vatican.jpg'),
+    werewolf: PIXI.Sprite.from('./assets/Werewolf Army.webp'),
+    highVampire: PIXI.Sprite.from('./assets/Lord Vampire.jpg'),
+    inquisitor: PIXI.Sprite.from('./assets/Vatican Inquisitor.png'),
+    aiGeneral: PIXI.Sprite.from('./assets/Knigt Vatican General.gif'),
+    wolfGeneral: PIXI.Sprite.from('./assets/Werewolf general.jpg')
 };
-sprites.player.src = './assets/Vampire Army.png';
-sprites.ai.src = './assets/Knight Vatican.jpg';
-sprites.aiGeneral.src = './assets/Knigt Vatican General.gif'; 
-sprites.inquisitor.src = './assets/Vatican Inquisitor.png';
-sprites.highVampire.src = './assets/Lord Vampire.jpg';
-sprites.werewolf.src = './assets/Werewolf Army.webp';
-sprites.wolfGeneral.src = './assets/Werewolf general.jpg';
 
 // ================= ЛОР И ЭНЦИКЛОПЕДИЯ =================
 const BUILD_LORE = {
@@ -89,8 +89,8 @@ function getDefaultGame() {
             { id: 24, name: 'Бавария', owner: 'ai', x: 370, y: 220, aiGarrison: { infantry: 12 }, siegeBy: null, neighbors: [2, 9, 16, 8], buildings: [], income: 2, support: { player: 20, ai: 70, werewolf: 10 }, population: 2500, slaveIncome: 0, fortification: 1, terrain: 'plains', terrainBonus: 0, loyalty: 70 },
             { id: 25, name: 'Греция', owner: 'ai', x: 540, y: 440, aiGarrison: { infantry: 10, archer: 5 }, siegeBy: null, neighbors: [10, 11, 4, 18], buildings: [], income: 2, support: { player: 30, ai: 50, werewolf: 20 }, population: 2000, slaveIncome: 0, fortification: 0, terrain: 'mountains', terrainBonus: 5, loyalty: 50 },
             { id: 26, name: 'Балканы', owner: 'ai', x: 600, y: 380, aiGarrison: { infantry: 8 }, siegeBy: null, neighbors: [5, 11, 25], buildings: [], income: 2, support: { player: 40, ai: 40, werewolf: 20 }, population: 1500, slaveIncome: 0, fortification: 0, terrain: 'plains', terrainBonus: 0, loyalty: 60 },
-            { id: 27, name: 'Трансильвания-Восток', owner: 'ai', x: 490, y: 230, aiGarrison: { infantry: 8 }, siegeBy: null, neighbors: [3, 18, 21, 8], buildings: [], income: 1, support: { player: 30, ai: 60, werewolf: 10 }, population: 1500, slaveIncome: 0, fortification: 0, terrain: 'plains', terrainBonus: 0, loyalty: 60 },
-            { id: 28, name: 'Словакия', owner: 'ai', x: 450, y: 150, aiGarrison: { infantry: 8 }, siegeBy: null, neighbors: [3, 14, 20, 27], buildings: [], income: 1, support: { player: 20, ai: 70, werewolf: 10 }, population: 1500, slaveIncome: 0, fortification: 0, terrain: 'plains', terrainBonus: 0, loyalty: 70 },
+            { id: 27, name: 'Словакия', owner: 'ai', x: 490, y: 230, aiGarrison: { infantry: 8 }, siegeBy: null, neighbors: [3, 18, 21, 8], buildings: [], income: 1, support: { player: 30, ai: 60, werewolf: 10 }, population: 1500, slaveIncome: 0, fortification: 0, terrain: 'plains', terrainBonus: 0, loyalty: 60 },
+            { id: 28, name: 'Моравия', owner: 'ai', x: 450, y: 150, aiGarrison: { infantry: 8 }, siegeBy: null, neighbors: [3, 14, 20, 27], buildings: [], income: 1, support: { player: 20, ai: 70, werewolf: 10 }, population: 1500, slaveIncome: 0, fortification: 0, terrain: 'plains', terrainBonus: 0, loyalty: 70 },
             { id: 30, name: 'Франция', owner: 'ai', x: 170, y: 180, aiGarrison: { infantry: 20 }, siegeBy: null, neighbors: [31, 32, 1, 33, 34], buildings: [{type:'church', lvl:1}], income: 4, support: { player: 10, ai: 80, werewolf: 10 }, population: 3000, slaveIncome: 0, fortification: 2, terrain: 'plains', terrainBonus: 0, loyalty: 80 },
             { id: 31, name: 'Бретань', owner: 'ai', x: 110, y: 160, aiGarrison: { infantry: 10 }, siegeBy: null, neighbors: [30, 33, 36], buildings: [], income: 2, support: { player: 15, ai: 75, werewolf: 10 }, population: 2000, slaveIncome: 0, fortification: 0, terrain: 'plains', terrainBonus: 0, loyalty: 60 },
             { id: 32, name: 'Бургундия', owner: 'ai', x: 220, y: 210, aiGarrison: { infantry: 12 }, siegeBy: null, neighbors: [30, 16, 1], buildings: [], income: 2, support: { player: 20, ai: 70, werewolf: 10 }, population: 2000, slaveIncome: 0, fortification: 1, terrain: 'plains', terrainBonus: 0, loyalty: 70 },
@@ -114,6 +114,18 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const fogCanvas = document.getElementById('fog-canvas');
 const fogCtx = fogCanvas.getContext('2d');
+
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
+const app = new PIXI.Application({
+    width: 730,
+    height: 550,
+    backgroundColor: 0x000000,
+    transparent: true,
+    resolution: window.devicePixelRatio || 1,
+});
+// Вставляем Pixi холст поверх старого canvas
+const gameCanvasContainer = document.getElementById('game-canvas');
+gameCanvasContainer.appendChild(app.view);
 
 // ================= ТУМАН ВОЙНЫ =================
 let fogParticles = [];
@@ -618,6 +630,8 @@ function aiTurn() {
 // ================= ОТРИСОВКА КАРТЫ =================
 function drawMap() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    app.stage.removeChildren(); // Очищаем сцену Pixi от старых спрайтов
+
     let isNight = isNightTime();
     
     const playerVisible = []; game.provinces.forEach(p => { if (p.owner === 'player') { playerVisible.push(p.id); p.neighbors.forEach(n => playerVisible.push(n)); } });
@@ -657,27 +671,74 @@ function drawMap() {
     if (pProv && wProv && pProv.id === wProv.id) { pOff = -20; wOff = 20; }
     if (aProv && wProv && aProv.id === wProv.id) { aOff = -20; wOff = 20; }
     
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)'; ctx.shadowBlur = 10;
+    // ---------------- Отрисовка армий через PixiJS ----------------
     if (pProv && getTotalTroops(game.player.mobileArmy) > 0) {
-        if (sprites.player.complete && sprites.player.naturalWidth > 0) { ctx.save(); ctx.beginPath(); ctx.arc(pProv.x + pOff, pProv.y - 15, 20, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(sprites.player, pProv.x + pOff - 20, pProv.y - 45, 40, 60); ctx.restore(); } else { ctx.fillStyle='#1a2440'; ctx.beginPath(); ctx.arc(pProv.x + pOff, pProv.y, 15, 0, Math.PI*2); ctx.fill(); }
+        const sprite = sprites.player;
+        if (sprite) {
+            sprite.x = pProv.x + pOff;
+            sprite.y = pProv.y - 15;
+            sprite.width = 40;
+            sprite.height = 60;
+            sprite.anchor.set(0.5, 1);
+            sprite.alpha = 1;
+            app.stage.addChild(sprite);
+        }
+        // Добавляем текст с количеством войск на Canvas 2D
         ctx.fillStyle='#b8c0d0'; ctx.font='bold 10px Cinzel'; ctx.fillText(`🧛 ${getTotalTroops(game.player.mobileArmy)}`, pProv.x + pOff, pProv.y-48);
         if (game.player.lords.length > 0) {
-            if (sprites.highVampire.complete && sprites.highVampire.naturalWidth > 0) { ctx.save(); ctx.beginPath(); ctx.arc(pProv.x + pOff, pProv.y - 55, 10, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(sprites.highVampire, pProv.x + pOff - 15, pProv.y - 65, 30, 30); ctx.restore(); } else ctx.fillText(`🧛🌟 ${game.player.lords.length}`, pProv.x + pOff - 30, pProv.y - 60);
+            const lordSprite = sprites.highVampire;
+            if (lordSprite) {
+                lordSprite.x = pProv.x + pOff;
+                lordSprite.y = pProv.y - 55;
+                lordSprite.width = 30;
+                lordSprite.height = 30;
+                lordSprite.anchor.set(0.5, 1);
+                app.stage.addChild(lordSprite);
+            } else {
+                ctx.fillText(`🧛🌟 ${game.player.lords.length}`, pProv.x + pOff - 30, pProv.y - 60);
+            }
         }
     }
     if (aProv && getTotalTroops(game.ai.mobileArmy) > 0) {
-        if (sprites.ai.complete && sprites.ai.naturalWidth > 0) { ctx.save(); ctx.beginPath(); ctx.arc(aProv.x + aOff, aProv.y - 15, 20, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(sprites.ai, aProv.x + aOff - 20, aProv.y - 45, 40, 60); ctx.restore(); } else { ctx.fillStyle='#808ca0'; ctx.beginPath(); ctx.arc(aProv.x + aOff, aProv.y, 15, 0, Math.PI*2); ctx.fill(); }
+        const sprite = sprites.ai;
+        if (sprite) {
+            sprite.x = aProv.x + aOff;
+            sprite.y = aProv.y - 15;
+            sprite.width = 40;
+            sprite.height = 60;
+            sprite.anchor.set(0.5, 1);
+            app.stage.addChild(sprite);
+        }
         ctx.fillStyle='#d0d5e0'; ctx.font='bold 10px Cinzel'; ctx.fillText(`⛪ ${getTotalTroops(game.ai.mobileArmy)}`, aProv.x + aOff, aProv.y-48);
         if (game.ai.generals.inquisitor > 0) {
-            if (sprites.inquisitor.complete && sprites.inquisitor.naturalWidth > 0) { ctx.save(); ctx.beginPath(); ctx.arc(aProv.x + aOff, aProv.y - 55, 10, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(sprites.inquisitor, aProv.x + aOff - 15, aProv.y - 65, 30, 30); ctx.restore(); } else ctx.fillText(`⚜️ ${game.ai.generals.inquisitor}`, aProv.x + aOff - 30, aProv.y - 60);
+            const inquisitorSprite = sprites.inquisitor;
+            if (inquisitorSprite) {
+                inquisitorSprite.x = aProv.x + aOff;
+                inquisitorSprite.y = aProv.y - 55;
+                inquisitorSprite.width = 30;
+                inquisitorSprite.height = 30;
+                inquisitorSprite.anchor.set(0.5, 1);
+                app.stage.addChild(inquisitorSprite);
+            } else {
+                ctx.fillText(`⚜️ ${game.ai.generals.inquisitor}`, aProv.x + aOff - 30, aProv.y - 60);
+            }
         }
     }
     if (wProv && getTotalTroops(game.werewolf.mobileArmy) > 0) {
-        if (sprites.werewolf.complete && sprites.werewolf.naturalWidth > 0) { ctx.save(); ctx.beginPath(); ctx.arc(wProv.x + wOff, wProv.y - 15, 20, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(sprites.werewolf, wProv.x + wOff - 20, wProv.y - 45, 40, 60); ctx.restore(); } else { ctx.fillStyle='#3d4d3d'; ctx.beginPath(); ctx.arc(wProv.x + wOff, wProv.y, 15, 0, Math.PI*2); ctx.fill(); }
+        const sprite = sprites.werewolf;
+        if (sprite) {
+            sprite.x = wProv.x + wOff;
+            sprite.y = wProv.y - 15;
+            sprite.width = 40;
+            sprite.height = 60;
+            sprite.anchor.set(0.5, 1);
+            app.stage.addChild(sprite);
+        }
         ctx.fillStyle='#b8c0d0'; ctx.font='bold 10px Cinzel'; ctx.fillText(`🐺 ${getTotalTroops(game.werewolf.mobileArmy)}`, wProv.x + wOff, wProv.y-48);
-        if (game.werewolf.generals.alpha > 0) { ctx.fillText(`⚡${game.werewolf.generals.alpha}`, wProv.x + wOff - 30, wProv.y - 60); }
+        if (game.werewolf.generals.alpha > 0) {
+            ctx.fillText(`⚡${game.werewolf.generals.alpha}`, wProv.x + wOff - 30, wProv.y - 60);
+        }
     }
-    ctx.shadowBlur = 0;
 
     // ВЫЗОВ ПОГОДЫ
     drawWeather();
@@ -950,7 +1011,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let p of game.provinces) { if ((x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) < 2500) { const curr = game.provinces.find(pr => pr.id === game.player.mobileArmy.location); if (p.owner === 'player' && p.id === curr.id) { game.selectedProvinceId = p.id; log(`📍 Выбрана ${p.name} для стройки.`, 'system'); updateUI(); break; } if (p.owner === 'player' && p.id !== curr.id) { game.player.mobileArmy.location = p.id; game.player.ap -= 1; log(`🏰 Армия передислоцировалась в ${p.name}.`, 'player'); updateUI(); break; } if ((p.owner === 'ai' || p.owner === 'werewolf' || p.owner === null) && game.player.ap > 0) { if (!curr.neighbors.includes(p.id)) return log('❌ Слишком далеко! Вторгаться можно только в соседние провинции.', 'system'); if (getTotalTroops(game.player.mobileArmy) === 0) return log('❌ Нет войск.', 'system'); if (!isNightTime()) return log('☀️ Сейчас день! Вампиры не могут атаковать.', 'player'); game.pendingActionProvId = p.id; document.getElementById('action-desc').textContent = `Ваша армия вошла в провинцию «${p.name}».`; document.getElementById('action-modal').style.display = 'flex'; break; } } }
     });
 
-    gameLoop();
+    // Запуск игрового цикла через PixiJS
+    app.ticker.add(() => {
+        if (!game.gameOver) drawMap();
+    });
 });
-
-function gameLoop() { if (!game.gameOver) drawMap(); requestAnimationFrame(gameLoop); }
