@@ -25,11 +25,8 @@
     </div>
 
     <div id="game-container">
-        <!-- ЛЕВЫЙ БЛОК -->
         <div id="main-area">
             <div id="bg-layer"></div>
-            
-            <!-- ВЕРХНЯЯ ПАНЕЛЬ (Только ресурсы) -->
             <div id="top-bar">
                 <div class="stat">ХОД: <span id="turn-counter">1</span></div>
                 <div class="stat">ДЕНЬ: <span id="day-counter">1</span></div>
@@ -38,7 +35,6 @@
                 <div class="stat">Золото: <span id="gold-counter">100</span></div>
             </div>
 
-            <!-- КНОПКИ МЕНЮ (Встроены в блок) -->
             <div id="menu-bar">
                 <button id="btn-mnu-new-game" class="menu-btn main-action">НОВАЯ ИГРА</button>
                 <button id="btn-mnu-save" class="menu-btn">СОХРАНИТЬ</button>
@@ -52,7 +48,6 @@
 
             <canvas id="game-canvas" width="730" height="550"></canvas>
             
-            <!-- НИЖНЯЯ ПАНЕЛЬ (Без иконок, с правильной шириной кнопок) -->
             <div id="ui-panel">
                 <div id="action-buttons">
                     <button id="btn-assault" class="action-btn" disabled>ШТУРМ</button>
@@ -104,7 +99,6 @@
             </div>
         </div>
 
-        <!-- ПРАВЫЙ БЛОК (ХРОНИКИ - РАЗДЕЛЕН) -->
         <div id="log-sidebar">
             <h3>ХРОНИКИ ТЬМЫ</h3>
             <div id="log-container"></div>
