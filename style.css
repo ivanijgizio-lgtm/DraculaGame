@@ -1,5 +1,5 @@
 :root {
-    --bg-dark: #07070b; /* Темнее, чем обычно */
+    --bg-dark: #07070b;
     --ui-bg: rgba(8, 8, 14, 0.95);
     --ui-border: #4a5b9a;
     --metal-blue: #4a5b9a;
@@ -31,34 +31,30 @@ body {
 }
 .start-buttons button:hover { color: var(--metal-blue); transform: scale(1.05); text-shadow: 0 0 40px rgba(74, 91, 154, 0.8); }
 
-/* ================= ВНЕШНЯЯ ОБЕРТКА ================= */
 #game-wrapper {
     width: 970px; height: 840px;
     background: transparent;
-    border: 2px solid rgba(74, 91, 154, 0.4); /* Тонкая внешняя рамка */
+    border: 2px solid rgba(74, 91, 154, 0.4);
     border-radius: 12px;
     box-shadow: 0 0 80px rgba(74, 91, 154, 0.1);
     display: flex; justify-content: center; align-items: center;
 }
 
-/* ================= ВНУТРЕННИЙ КОНТЕЙНЕР ================= */
 #game-container {
     display: none;
     position: relative;
-    width: 930px; /* Чуть меньше обертки */
-    height: 800px; /* Чуть меньше обертки */
+    width: 930px; height: 800px;
     background-color: transparent;
     display: flex;
     flex-direction: row;
-    gap: 20px; /* ФИЗИЧЕСКОЕ РАССТОЯНИЕ МЕЖДУ БЛОКАМИ */
+    gap: 20px;
     padding: 10px;
 }
 
-/* ================= ЛЕВЫЙ БЛОК (ИГРА) ================= */
 #main-area { 
     display: flex; flex-direction: column; width: 690px; height: 100%; position: relative; 
     background: rgba(0, 0, 0, 0.85);
-    border: 2px solid var(--metal-blue); /* ИНДИВИДУАЛЬНАЯ РАМКА */
+    border: 2px solid var(--metal-blue);
     border-radius: 8px;
     box-shadow: 0 0 30px rgba(74, 91, 154, 0.2);
 }
@@ -110,18 +106,12 @@ body {
 .sub-btn { background: transparent; border: none; color: var(--text-light); padding: 6px 12px; width: 100%; text-align: left; cursor: pointer; border-bottom: 1px solid #2a3450; font-size: 12px; transition: 0.2s; }
 .sub-btn:hover { background: rgba(28, 34, 48, 0.9); color: #ffffff; }
 
-/* ================= РАССТОЯНИЕ (ПУСТОТА) ================= */
-#block-gap {
-    width: 20px;
-    height: 100%;
-    flex-shrink: 0;
-}
+#block-gap { width: 20px; height: 100%; flex-shrink: 0; }
 
-/* ================= ПРАВЫЙ БЛОК (ХРОНИКИ) ================= */
 #log-sidebar { 
     width: 220px; height: 100%; padding: 12px;
     background: rgba(0, 0, 0, 0.85); 
-    border: 2px solid var(--metal-blue); /* ИНДИВИДУАЛЬНАЯ РАМКА */
+    border: 2px solid var(--metal-blue);
     border-radius: 8px;
     box-shadow: 0 0 30px rgba(74, 91, 154, 0.2);
     display: flex; flex-direction: column; flex-shrink: 0;
