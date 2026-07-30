@@ -110,12 +110,11 @@ function getDefaultGame() {
     };
 }
 let game = getDefaultGame();
-const canvas = document.getElementById('game-canvas');
-const ctx = canvas.getContext('2d');
 const fogCanvas = document.getElementById('fog-canvas');
 const fogCtx = fogCanvas.getContext('2d');
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (ЗАМЕНА ХОЛСТА) =================
+// Создаём приложение Pixi
 const app = new PIXI.Application({
     width: 730,
     height: 550,
@@ -124,8 +123,8 @@ const app = new PIXI.Application({
     resolution: window.devicePixelRatio || 1,
 });
 // Вставляем Pixi холст поверх старого canvas
-const gameCanvasContainer = document.getElementById('game-canvas');
-gameCanvasContainer.appendChild(app.view);
+const gameContainer = document.getElementById('game-canvas');
+gameContainer.appendChild(app.view);
 
 // ================= ТУМАН ВОЙНЫ =================
 let fogParticles = [];
@@ -515,7 +514,7 @@ function checkGameConditions() { if (game.gameOver) return; const pCount = game.
 function gameOver(winner) { if (game.gameOver) return; game.gameOver = true; document.querySelectorAll('.action-btn, .sub-btn').forEach(btn => btn.disabled = true); document.getElementById('bg-layer').style.opacity = '0.8'; const modal = document.getElementById('gameover-modal'); const title = document.getElementById('gameover-title'); const desc = document.getElementById('gameover-desc'); if (winner === 'player') { title.textContent = '🏆 ДРАКУЛА ВОЦАРИЛСЯ!'; desc.textContent = 'Европа навсегда погрузилась в вечную ночь.'; } else { title.textContent = '💀 ТЬМА ОТСТУПИЛА!'; desc.textContent = 'Враги оказались слишком сильны. Попробуйте изменить тактику.'; } modal.style.display = 'flex'; saveGame(); }
 function canAct() { return !game.gameOver && game.player.ap > 0 && !game.battleActive && !game.surrenderActive && !game.armyBattleActive; }
 
-// ================= ПОГОДА =================
+// ================= ПОГОДА (ИСПРАВЛЕННАЯ) =================
 function checkWeather() {
     if (game.turn % 20 === 0) { startSunset(); }
     if (game.turn % 10 === 0) { game.weather.rain = true; setTimeout(() => { game.weather.rain = false; }, 8000); }
@@ -533,34 +532,33 @@ function startSunset() {
     }, 15000);
 }
 function drawWeather() {
+    // Вместо canvas.getContext('2d') используем PixiJS Graphics
     if (game.weather.rain) {
-        ctx.strokeStyle = 'rgba(150, 180, 200, 0.3)';
-        ctx.lineWidth = 1;
-        for(let i=0; i<100; i++) {
-            let x = Math.random() * canvas.width;
-            let y = Math.random() * canvas.height;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x+4, y+15);
-            ctx.stroke();
+        for(let i=0; i<50; i++) {
+            let x = Math.random() * 730;
+            let y = Math.random() * 550;
+            const line = new PIXI.Graphics();
+            line.lineStyle(1, 0x96b4c8, 0.3);
+            line.moveTo(x, y);
+            line.lineTo(x+4, y+15);
+            app.stage.addChild(line);
         }
     }
     if (game.weather.lightning) {
         for(let i=0; i<3; i++) {
             let startX = 100 + Math.random() * 500;
             let startY = 20;
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(startX, startY);
+            const line = new PIXI.Graphics();
+            line.lineStyle(2, 0xffffff, 0.8);
+            line.moveTo(startX, startY);
             let prevX = startX, prevY = startY;
             for(let j=0; j<6; j++) {
                 let nextX = prevX + (Math.random() - 0.5) * 70;
                 let nextY = prevY + 20 + Math.random() * 40;
-                ctx.lineTo(nextX, nextY);
+                line.lineTo(nextX, nextY);
                 prevX = nextX; prevY = nextY;
             }
-            ctx.stroke();
+            app.stage.addChild(line);
         }
     }
 }
@@ -629,8 +627,8 @@ function aiTurn() {
 
 // ================= ОТРИСОВКА КАРТЫ =================
 function drawMap() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    app.stage.removeChildren(); // Очищаем сцену Pixi от старых спрайтов
+    // Очищаем сцену Pixi от старых спрайтов
+    app.stage.removeChildren();
 
     let isNight = isNightTime();
     
@@ -683,7 +681,6 @@ function drawMap() {
             sprite.alpha = 1;
             app.stage.addChild(sprite);
         }
-        // Добавляем текст с количеством войск на Canvas 2D
         ctx.fillStyle='#b8c0d0'; ctx.font='bold 10px Cinzel'; ctx.fillText(`🧛 ${getTotalTroops(game.player.mobileArmy)}`, pProv.x + pOff, pProv.y-48);
         if (game.player.lords.length > 0) {
             const lordSprite = sprites.highVampire;
@@ -740,7 +737,7 @@ function drawMap() {
         }
     }
 
-    // ВЫЗОВ ПОГОДЫ
+    // ВЫЗОВ ПОГОДЫ (переписана под Pixi)
     drawWeather();
 }
 
