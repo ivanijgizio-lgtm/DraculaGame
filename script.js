@@ -1,5 +1,4 @@
 // ================= ЗАГРУЗКА АССЕТОВ (PIXIJS) =================
-// Включаем идеальную резкость для пиксельной графики
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 
 const sprites = {
@@ -14,27 +13,27 @@ const sprites = {
 
 // ================= ЛОР И ЭНЦИКЛОПЕДИЯ =================
 const BUILD_LORE = {
-    'build': "🏗️ СТРОИТЬ: Возводите тёмные сооружения, усиливающие вашу мощь и влияние на население.",
-    'recruit': "🧛 ПРИЗВАТЬ: Найдите подходящих солдат и слуг для своей армии Тьмы. Каждое подразделение требует казарм.",
-    'garrison': "🛡️ ГАРНИЗОН: Перемещайте войска между активной армией и гарнизоном провинции для её защиты.",
-    'cemetery': "🪦 Кладбище: Некрополь, куда стекаются неупокоенные души. Дарует +5 крови за ход.",
-    'barracks': "⚔️ Казармы Lv1: Сердце военной машины. Без них обычные войска не могут быть призваны.",
-    'barracks_lv2': "⚔️⬆️ Казармы Lv2: Тренировочный полигон для элиты. Открывает призыв Рыцарей Тьмы.",
-    'ritual': "🕯️ Храм Тьмы: Святилище, притягивающее тёмные силы. Укрепляет веру населения во мрак (+5 поддержки Тьмы, +3 лояльности). Открывает найм Лордов.",
-    'dungeon': "⛓️ Тюрьма: Темницы, где стонут враги Тьмы. Страх заставляет население подчиняться, но ожесточает сердца (+10 поддержки Тьмы, -5 лояльности).",
-    'executions': "🪓 Казни: Эшафоты и дыбы на главной площади. Ужас и повиновение — вот плоды этих зрелищ (+15 поддержки Тьмы, -10 лояльности, -200 населения).",
-    'ball': "🎭 Бал Вампиров: Роскошный пир для знати Тьмы. Жители мечтают попасть в высшее общество, но угощение для гостей стоит крови (+20 поддержки Тьмы, +5 лояльности, -200 населения).",
-    'center': "🧛 Центр Обращения: Центр, где жители превращаются в покорных слуг тьмы (+10 поддержки Тьмы, +5 лояльности, +100 населения, +5 крови/ход).",
-    'citadel': "🏰 Цитадель: Оплот налоговой системы и тёмной бюрократии. Дарует право нанимать Сборщиков душ.",
-    'wall': "🧱 Стены: Защита от вторжений. +1 к укреплениям провинции.",
-    'castle': "🏰 Замок: Оплот власти. +2 укрепления, +20 гарнизона и повышает поддержку Тьмы.",
-    'market': "🏪 Рынок: Торговая площадь. Позволяет обменивать ресурсы 1 раз в ход.",
-    'infantry': "🗡️ Пехота: Основа любой армии. Надёжные щиты и копья, готовые стоять насмерть.",
-    'archer': "🏹 Лучники: Меткие стрелки, сеющие хаос на расстоянии.",
-    'cavalry': "🐴 Кавалерия: Быстрые и маневренные всадники, идеально подходят для фланговых атак.",
-    'knights': "⚔️ Рыцари Тьмы: Элитные бойцы в тяжёлой броне. Молот Тьмы, сокрушающий вражеские строй.",
-    'lord': "👑 Верховный Лорд: Бессмертный генерал. Без него армия не может штурмовать провинции.",
-    'soul_collector': "💀 Сборщик душ: Таинственный посредник, выбивающий долги и души. Приносит 50 золота каждый ход."
+    'build': "СТРОИТЬ: Возводите тёмные сооружения, усиливающие вашу мощь и влияние на население. Для стройки выберите свою провинцию на карте.",
+    'recruit': "ПРИЗВАТЬ: Найдите подходящих солдат и слуг для своей армии Тьмы. Некоторые юниты требуют специальных построек.",
+    'garrison': "ГАРНИЗОН: Перемещайте войска между активной армией и гарнизоном провинции для её защиты.",
+    'cemetery': "Кладбище: Некрополь, куда стекаются неупокоенные души. Дарует +5 крови за ход.",
+    'barracks': "Казармы Lv1: Сердце военной машины. Без них обычные войска не могут быть призваны.",
+    'barracks_lv2': "Казармы Lv2: Тренировочный полигон для элиты. Открывает призыв Рыцарей Тьмы.",
+    'ritual': "Храм Тьмы: Святилище, притягивающее тёмные силы. Открывает найм Верховных Лордов.",
+    'dungeon': "Тюрьма: Темницы, где стонут враги Тьмы. Страх заставляет население подчиняться.",
+    'executions': "Казни: Эшафоты и дыбы на главной площади. Ужас и повиновение.",
+    'ball': "Бал Вампиров: Роскошный пир для знати. Жители мечтают попасть в высшее общество.",
+    'center': "Центр Обращения: Центр, где жители превращаются в покорных слуг тьмы.",
+    'citadel': "Цитадель: Оплот налоговой системы. Дарует право нанимать Сборщиков душ.",
+    'wall': "Стены: Защита от вторжений. +1 к укреплениям провинции.",
+    'castle': "Замок: Оплот власти. +2 укрепления, +20 гарнизона.",
+    'market': "Рынок: Торговая площадь. Позволяет обменивать ресурсы.",
+    'infantry': "Пехота: Основа любой армии. Надёжные щиты и копья.",
+    'archer': "Лучники: Меткие стрелки, сеющие хаос на расстоянии.",
+    'cavalry': "Кавалерия: Быстрые и маневренные всадники.",
+    'knights': "Рыцари Тьмы: Элитные бойцы в тяжёлой броне.",
+    'lord': "Верховный Лорд: Бессмертный генерал. Без него армия не может штурмовать провинции.",
+    'soul_collector': "Сборщик душ: Таинственный посредник, выбивающий долги и души. Приносит 50 золота каждый ход."
 };
 
 const LORD_NAMES = [
@@ -110,10 +109,9 @@ function getDefaultGame() {
     };
 }
 let game = getDefaultGame();
-const fogCanvas = document.getElementById('fog-canvas');
-const fogCtx = fogCanvas.getContext('2d');
+const canvasContainer = document.getElementById('game-canvas');
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (ЗАМЕНА ХОЛСТА) =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
 // Создаём приложение Pixi
 const app = new PIXI.Application({
     width: 730,
@@ -122,11 +120,12 @@ const app = new PIXI.Application({
     transparent: true,
     resolution: window.devicePixelRatio || 1,
 });
-// Вставляем Pixi холст поверх старого canvas
-const gameContainer = document.getElementById('game-canvas');
-gameContainer.appendChild(app.view);
+// Вставляем Pixi холст в контейнер
+canvasContainer.appendChild(app.view);
 
 // ================= ТУМАН ВОЙНЫ =================
+const fogCanvas = document.getElementById('fog-canvas');
+const fogCtx = fogCanvas.getContext('2d');
 let fogParticles = [];
 for(let i=0; i<35; i++) {
     fogParticles.push({
@@ -213,7 +212,7 @@ function showTutorialStep(step) {
     }
 }
 
-// ================= СТАРТОВОЕ МЕНЮ =================
+// ================= ФУНКЦИИ УПРАВЛЕНИЯ ИГРОЙ =================
 function initGame() {
     document.getElementById('start-menu').style.display = 'none';
     document.getElementById('game-container').style.display = 'flex';
@@ -514,7 +513,7 @@ function checkGameConditions() { if (game.gameOver) return; const pCount = game.
 function gameOver(winner) { if (game.gameOver) return; game.gameOver = true; document.querySelectorAll('.action-btn, .sub-btn').forEach(btn => btn.disabled = true); document.getElementById('bg-layer').style.opacity = '0.8'; const modal = document.getElementById('gameover-modal'); const title = document.getElementById('gameover-title'); const desc = document.getElementById('gameover-desc'); if (winner === 'player') { title.textContent = '🏆 ДРАКУЛА ВОЦАРИЛСЯ!'; desc.textContent = 'Европа навсегда погрузилась в вечную ночь.'; } else { title.textContent = '💀 ТЬМА ОТСТУПИЛА!'; desc.textContent = 'Враги оказались слишком сильны. Попробуйте изменить тактику.'; } modal.style.display = 'flex'; saveGame(); }
 function canAct() { return !game.gameOver && game.player.ap > 0 && !game.battleActive && !game.surrenderActive && !game.armyBattleActive; }
 
-// ================= ПОГОДА (ИСПРАВЛЕННАЯ) =================
+// ================= ПОГОДА =================
 function checkWeather() {
     if (game.turn % 20 === 0) { startSunset(); }
     if (game.turn % 10 === 0) { game.weather.rain = true; setTimeout(() => { game.weather.rain = false; }, 8000); }
@@ -532,9 +531,8 @@ function startSunset() {
     }, 15000);
 }
 function drawWeather() {
-    // Вместо canvas.getContext('2d') используем PixiJS Graphics
     if (game.weather.rain) {
-        for(let i=0; i<50; i++) {
+        for(let i=0; i<100; i++) {
             let x = Math.random() * 730;
             let y = Math.random() * 550;
             const line = new PIXI.Graphics();
@@ -625,9 +623,13 @@ function aiTurn() {
     game.ai.faith += 3; checkGameConditions(); updateUI();
 }
 
-// ================= ОТРИСОВКА КАРТЫ =================
+// ================= ОТРИСОВКА КАРТЫ (ИСПРАВЛЕНА) =================
 function drawMap() {
-    // Очищаем сцену Pixi от старых спрайтов
+    // Получаем 2D-контекст для отрисовки гексов поверх Pixi слоя
+    const canvas2d = document.getElementById('game-canvas');
+    const ctx = canvas2d.getContext('2d');
+    
+    ctx.clearRect(0, 0, 730, 550);
     app.stage.removeChildren();
 
     let isNight = isNightTime();
@@ -678,7 +680,6 @@ function drawMap() {
             sprite.width = 40;
             sprite.height = 60;
             sprite.anchor.set(0.5, 1);
-            sprite.alpha = 1;
             app.stage.addChild(sprite);
         }
         ctx.fillStyle='#b8c0d0'; ctx.font='bold 10px Cinzel'; ctx.fillText(`🧛 ${getTotalTroops(game.player.mobileArmy)}`, pProv.x + pOff, pProv.y-48);
@@ -737,7 +738,6 @@ function drawMap() {
         }
     }
 
-    // ВЫЗОВ ПОГОДЫ (переписана под Pixi)
     drawWeather();
 }
 
@@ -748,11 +748,7 @@ function updateUI() {
     document.getElementById('ap-counter').textContent = `${game.player.ap}/${game.player.maxAp}`;
     document.getElementById('blood-counter').textContent = game.player.blood;
     document.getElementById('gold-counter').textContent = game.player.gold;
-    document.getElementById('elite-counter').textContent = game.player.lords.length;
-    const faithFill = document.getElementById('faith-bar-fill'); let faithPct = Math.min(100, game.ai.faith);
-    faithFill.style.width = faithPct + '%'; if (faithPct >= 80) faithFill.style.background = '#4a5b9a'; else faithFill.style.background = '#808ca0';
-    document.getElementById('faith-text').textContent = `${game.ai.faith} / 100`;
-
+    
     const prov = game.provinces.find(p => p.id === game.player.mobileArmy.location);
     const assaultBtn = document.getElementById('btn-assault');
     if (prov && prov.siegeBy === 'player' && game.player.ap > 0 && game.player.lords.length > 0 && !game.gameOver) { assaultBtn.disabled = false; } else { assaultBtn.disabled = true; }
@@ -766,7 +762,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('VampireWarSave'); game = getDefaultGame(); initGame(); });
     document.getElementById('btn-load-game').addEventListener('click', initGame);
-    document.getElementById('btn-restart').addEventListener('click', () => { document.getElementById('gameover-modal').style.display = 'none'; restartGame(); });
+    
+    // Кнопки Меню
+    document.getElementById('btn-mnu-new-game').addEventListener('click', () => { localStorage.removeItem('VampireWarSave'); game = getDefaultGame(); initGame(); });
+    document.getElementById('btn-mnu-save').addEventListener('click', saveGame);
+    document.getElementById('btn-mnu-load').addEventListener('click', loadGame);
+    document.getElementById('btn-mnu-restart').addEventListener('click', () => { document.getElementById('gameover-modal').style.display = 'none'; restartGame(); });
+    document.getElementById('btn-music-toggle').addEventListener('click', () => {
+        const bgm = document.getElementById('bgm');
+        if (bgm.paused) { bgm.volume = 0.4; bgm.play(); document.getElementById('btn-music-toggle').textContent = "🔊"; } else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "🔇"; }
+    });
+
     document.getElementById('btn-gameover-restart').addEventListener('click', restartGame);
 
     document.querySelectorAll('.dropdown-toggle').forEach(btn => {
@@ -780,18 +786,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.dropdown')) {
             document.querySelectorAll('.dropdown-content.open').forEach(el => el.classList.remove('open'));
-        }
-    });
-
-    document.getElementById('btn-music-toggle').addEventListener('click', () => {
-        const bgm = document.getElementById('bgm');
-        if (bgm.paused) {
-            bgm.volume = 0.4;
-            bgm.play();
-            document.getElementById('btn-music-toggle').textContent = "🎵 ВЫКЛ";
-        } else {
-            bgm.pause();
-            document.getElementById('btn-music-toggle').textContent = "🎵 ВКЛ";
         }
     });
 
@@ -935,8 +929,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    canvasContainer.addEventListener('mousemove', (e) => {
+        const rect = canvasContainer.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top;
         const tooltip = document.getElementById('tooltip');
         if (!tooltip) return; 
 
@@ -989,10 +983,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else tooltip.style.display = 'none';
     });
 
-    canvas.addEventListener('click', (e) => {
+    canvasContainer.addEventListener('click', (e) => {
         if (game.gameOver || game.battleActive || game.surrenderActive || game.armyBattleActive) return;
         if (game.player.ap === 0) return log('❌ У вас нет очков действий.', 'system');
-        const rect = canvas.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top;
+        const rect = canvasContainer.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top;
         const pProv = game.provinces.find(p => p.id === game.player.mobileArmy.location); const aProv = game.provinces.find(p => p.id === game.ai.mobileArmy.location); const wProv = game.provinces.find(p => p.id === game.werewolf.mobileArmy.location);
         let pOff = 0, aOff = 0, wOff = 0;
         if (pProv && aProv && pProv.id === aProv.id) { pOff = -20; aOff = 20; }
@@ -1008,7 +1002,6 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let p of game.provinces) { if ((x-p.x)*(x-p.x) + (y-p.y)*(y-p.y) < 2500) { const curr = game.provinces.find(pr => pr.id === game.player.mobileArmy.location); if (p.owner === 'player' && p.id === curr.id) { game.selectedProvinceId = p.id; log(`📍 Выбрана ${p.name} для стройки.`, 'system'); updateUI(); break; } if (p.owner === 'player' && p.id !== curr.id) { game.player.mobileArmy.location = p.id; game.player.ap -= 1; log(`🏰 Армия передислоцировалась в ${p.name}.`, 'player'); updateUI(); break; } if ((p.owner === 'ai' || p.owner === 'werewolf' || p.owner === null) && game.player.ap > 0) { if (!curr.neighbors.includes(p.id)) return log('❌ Слишком далеко! Вторгаться можно только в соседние провинции.', 'system'); if (getTotalTroops(game.player.mobileArmy) === 0) return log('❌ Нет войск.', 'system'); if (!isNightTime()) return log('☀️ Сейчас день! Вампиры не могут атаковать.', 'player'); game.pendingActionProvId = p.id; document.getElementById('action-desc').textContent = `Ваша армия вошла в провинцию «${p.name}».`; document.getElementById('action-modal').style.display = 'flex'; break; } } }
     });
 
-    // Запуск игрового цикла через PixiJS
     app.ticker.add(() => {
         if (!game.gameOver) drawMap();
     });
