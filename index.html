@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dracula: Conquest!</title>
+    
+    <!-- ИСПРАВЛЕНИЕ: Добавлена иконка, чтобы убрать ошибку 404 в консоли -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦇</text></svg>">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
@@ -28,7 +32,7 @@
     <!-- ИГРОВОЙ КОНТЕЙНЕР -->
     <div id="game-container">
         
-        <!-- ЛЕВЫЙ БЛОК: КАРТА И ИНТЕРФЕЙС (СОВЕРШЕННО ОТДЕЛЬНО) -->
+        <!-- ЛЕВЫЙ БЛОК: КАРТА И ИНТЕРФЕЙС -->
         <div id="left-container">
             <div id="bg-layer"></div>
 
@@ -50,10 +54,9 @@
             
             <canvas id="fog-canvas"></canvas>
             
-            <!-- ДВА ОТДЕЛЬНЫХ ХОЛСТА ДЛЯ КАРТЫ И ВОЙСК -->
             <div id="map-container">
-                <canvas id="game-canvas-2d"></canvas> <!-- Гексы идут сюда -->
-                <div id="pixi-canvas-container"></div>   <!-- Войска идут сюда (Pixi) -->
+                <canvas id="game-canvas-2d"></canvas>
+                <div id="pixi-canvas-container"></div>
             </div>
 
             <div id="ui-panel">
@@ -107,7 +110,7 @@
             </div>
         </div>
 
-        <!-- ПРАВЫЙ БЛОК: ХРОНИКИ ТЬМЫ (СОВЕРШЕННО ОТДЕЛЬНО) -->
+        <!-- ПРАВЫЙ БЛОК: ХРОНИКИ ТЬМЫ -->
         <div id="right-container">
             <h3>📜 ХРОНИКИ ТЬМЫ</h3>
             <div id="log-container"></div>
