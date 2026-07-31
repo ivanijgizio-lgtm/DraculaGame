@@ -42,7 +42,6 @@ app.stage.addChild(armyContainer);
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 async function loadSprites() {
     try {
-        // Если картинки лежат в папке assets - загрузятся. Если нет - не упадут.
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
@@ -161,7 +160,7 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ, ТЕКСТА И АРМИЙ =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
 function drawHexes() {
     hexContainer.removeChildren();
     game.hexGrid.forEach(hex => {
@@ -170,16 +169,16 @@ function drawHexes() {
         container.y = hex.y;
 
         const g = new PIXI.Graphics();
-        // ИСПРАВЛЕНИЕ: drawPolygon работает во всех версиях PixiJS
-        g.drawPolygon(...getHexCorners(0, 0)); 
-        
+        // ИСПРАВЛЕНИЕ: poly для рисования многоугольника в PixiJS v7
+        g.poly(...getHexCorners(0, 0)); 
+        g.fill(color);
+        g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
+        g.closePath();
+
         let color = 0x222222;
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
-        g.fill(color);
-        g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
-        g.closePath();
 
         g.interactive = true; 
         g.cursor = 'pointer'; 
@@ -214,12 +213,10 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // Фоллбэк: Если картинка загружена - показываем её. Если нет - рисуем цветной кружок с числом войск.
+    // Фоллбэк: Если нет картинки - рисуем цветной кружок с числом войск.
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
-        c.beginFill(color);
-        c.drawCircle(0, 0, 15);
-        c.endFill();
+        c.circle(0, 0, 15).fill(color); // Исправлено для PixiJS v7
         const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff });
         t.anchor.set(0.5);
         c.addChild(t);
