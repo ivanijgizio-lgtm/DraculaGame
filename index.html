@@ -91,8 +91,7 @@
     </div>
 
     <div id="tooltip"></div>
-
-    <div id="action-modal" class="modal">
+    <div id="action-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
         <div class="modal-content">
             <h2>ВАРВАРЫ У ВОРОТ!</h2>
             <p id="action-desc">Ваша армия вошла в провинцию. Что делать?</p>
@@ -102,7 +101,7 @@
             </div>
         </div>
     </div>
-    <div id="surrender-modal" class="modal">
+    <div id="surrender-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
         <div class="modal-content">
             <h2>ПРОВИНЦИЯ ЗАХВАЧЕНА!</h2>
             <p>Население побеждено. Какова ваша воля?</p>
