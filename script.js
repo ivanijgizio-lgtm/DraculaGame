@@ -53,7 +53,6 @@ loadSprites();
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
 
-// ИЗМЕНЕНИЕ 1: Гексы увеличены с 38 до 60
 const HEX_SIZE = 60; 
 function getHexCorners(cx, cy) {
     const corners = [];
@@ -67,7 +66,7 @@ function getHexCorners(cx, cy) {
 function hexToPixel(q, r) {
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 280, y: y + 180 }; // Центрируем карту под новые большие гексы
+    return { x: x + 280, y: y + 180 };
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -83,7 +82,6 @@ function getDefaultGame() {
             mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '0,0' },
             hasCitadel: false
         },
-        // ИЗМЕНЕНИЕ 2: Стартовые позиции врагов отодвинуты дальше
         ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '4,-2' } },
         werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '-4,2' } },
         hexGrid: []
@@ -177,7 +175,6 @@ function drawHexes() {
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
 
-        // Синтаксис PixiJS v5
         g.beginFill(color); 
         g.lineStyle(2, 0x333333, 0.7); 
         g.drawPolygon(...getHexCorners(0, 0));
@@ -200,10 +197,10 @@ function drawHexes() {
         g.on('mouseout', () => { g.tint = 0xFFFFFF; document.getElementById('tooltip').style.display = 'none'; });
         g.on('click', () => handleHexClick(hex));
 
-        // Увеличен шрифт названий для больших гексов
+        // ИСПРАВЛЕНИЕ: Текст поднят выше, чтобы не наезжать на соседей и армию
         const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 11, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
         nT.anchor.set(0.5);
-        nT.x = 0; nT.y = -12;
+        nT.x = 0; nT.y = -25;
 
         container.addChild(g);
         container.addChild(nT);
@@ -229,17 +226,17 @@ function drawArmies() {
         armyContainer.addChild(c);
     }
 
-    // ИЗМЕНЕНИЕ 3: Масштаб иконок армий уменьшен (с 0.1 до 0.07)
+    // ИСПРАВЛЕНИЕ: Масштаб армий увеличен, чтобы они были видны на крупных гексах
     if (pPos) {
-        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.07); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
+        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.15); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
         else renderFallback(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111);
     }
     if (aPos) {
-        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.09); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
+        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.18); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
         else renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
     }
     if (wPos) {
-        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.07); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
+        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.15); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
         else renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
     }
 }
@@ -380,7 +377,6 @@ function attachLoreListeners() {
     });
 }
 
-// Вспомогательные функции для модальных окон
 function openDiplomacy() {
     document.getElementById('dip-gold').textContent = game.player.gold;
     document.getElementById('diplomacy-modal').style.display = 'flex';
@@ -435,7 +431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "🔇"; }
     });
 
-    // ИЗМЕНЕНИЕ 4: Восстановлены кнопки Дипломатии, Рынка и Технологий
+    // Дипломатия, Рынок, Технологии
     document.getElementById('btn-open-diplomacy').addEventListener('click', openDiplomacy);
     document.getElementById('btn-open-market').addEventListener('click', openMarket);
     document.getElementById('btn-open-tech').addEventListener('click', openTech);
