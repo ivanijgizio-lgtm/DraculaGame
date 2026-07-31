@@ -141,8 +141,8 @@ function drawHexes() {
         container.y = hex.y;
 
         const g = new PIXI.Graphics();
-        // ИСПРАВЛЕНИЕ: polygon(...массив) - правильный синтаксис PixiJS v7
-        g.polygon(...getHexCorners(0, 0)); 
+        // ИСПРАВЛЕНИЕ: poly, а не polygon для PixiJS v7.3.2
+        g.poly(...getHexCorners(0, 0)); 
         
         let color = 0x222222;
         if (hex.owner === 'player') color = 0x7a1111;
@@ -199,7 +199,6 @@ function updateUI() {
     document.getElementById('blood-counter').textContent = game.player.blood;
     document.getElementById('gold-counter').textContent = game.player.gold;
     
-    // ИСПРАВЛЕНИЕ: Днем ШТУРМ обязан быть заблокирован!
     const cH = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     const isReadyToAssault = (cH && cH.siegeBy === 'player' && game.player.ap > 0 && isNightTime() && !game.gameOver);
     document.getElementById('btn-assault').disabled = !isReadyToAssault;
