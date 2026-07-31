@@ -20,9 +20,7 @@ const BUILD_LORE = {
     'infantry': "Пехота: Основа любой армии. Надёжные щиты.",
     'archer': "Лучники: Меткие стрелки, сеющие хаос на расстоянии.",
     'cavalry': "Кавалерия: Быстрые и маневренные всадники.",
-    'lord': "Верховный Лорд: Бессмертный генерал. +10% к атаке за каждого нанятого.",
-    'siege': "ОСАДИТЬ: Окружить провинцию. Позволит штурмовать на следующем ходу.",
-    'assault_now': "АТАКОВАТЬ: Немедленно штурмовать провинцию."
+    'lord': "Верховный Лорд: Бессмертный генерал. +10% к атаке за каждого нанятого."
 };
 
 // ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
@@ -45,7 +43,6 @@ async function loadSprites() {
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
-        if(!spritePlayer) console.warn('Иконка армии Дракулы не найдена. Будет отрисован текстовый маркер.');
     } catch (e) {}
 }
 loadSprites();
@@ -169,16 +166,18 @@ function drawHexes() {
         container.y = hex.y;
 
         const g = new PIXI.Graphics();
-        // ИСПРАВЛЕНИЕ: poly для рисования многоугольника в PixiJS v7
-        g.poly(...getHexCorners(0, 0)); 
-        g.fill(color);
-        g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
-        g.closePath();
-
+        
+        // ИСПРАВЛЕНИЕ: Сначала определяем цвет, потом рисуем
         let color = 0x222222;
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
+
+        // Рисование многоугольника и заливка (PixiJS v7)
+        g.poly(...getHexCorners(0, 0)); 
+        g.fill(color);
+        g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
+        g.closePath();
 
         g.interactive = true; 
         g.cursor = 'pointer'; 
@@ -216,7 +215,7 @@ function drawArmies() {
     // Фоллбэк: Если нет картинки - рисуем цветной кружок с числом войск.
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
-        c.circle(0, 0, 15).fill(color); // Исправлено для PixiJS v7
+        c.circle(0, 0, 15).fill(color);
         const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff });
         t.anchor.set(0.5);
         c.addChild(t);
@@ -351,7 +350,7 @@ function endPlayerTurn() {
     saveGame(); updateUI();
 }
 
-// ================= СИСТЕМА ЛОРА (ЭНЦИКЛОПЕДИЯ НА ВСЕ КНОПКИ) =================
+// ================= СИСТЕМА ЛОРА =================
 function attachLoreListeners() {
     document.querySelectorAll('[data-lore]').forEach(btn => {
         btn.addEventListener('mouseenter', (e) => {
@@ -384,7 +383,7 @@ function initGame() {
         game.player.lords.push({ name: LORD_NAMES[0], battles: 0 });
     }
     document.getElementById('btn-end-turn').disabled = false;
-    attachLoreListeners(); // Привязываем ЛОР к кнопкам после прогрузки
+    attachLoreListeners();
     updateUI(); log('Дракула пробудился! Завоюйте Европу.', 'system');
 }
 
