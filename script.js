@@ -1,3 +1,30 @@
+// ================= БАЗА ЛОРА ДЛЯ КНОПОК =================
+const BUILD_LORE = {
+    'build': "СТРОИТЬ: Возводите тёмные сооружения, усиливающие вашу мощь.",
+    'recruit': "ПРИЗВАТЬ: Найдите подходящих солдат и слуг для своей армии.",
+    'assault': "ШТУРМ: Атакуйте осажденную вражескую провинцию (Ночью).",
+    'cancelsiege': "СНЯТЬ ОСАДУ: Снимите осаду с текущей вражеской провинции.",
+    'endturn': "СЛЕД. ХОД: Завершите текущий ход и перейдите к следующему (Ночь/День).",
+    'newgame': "НОВАЯ ИГРА: Начать новое завоевание.",
+    'save': "СОХРАНИТЬ: Сохранить текущую партию (Локально).",
+    'load': "ЗАГРУЗИТЬ: Загрузить сохраненную партию.",
+    'menu': "МЕНЮ: Перезапустить и вернуться в главное меню.",
+    'music': "МУЗЫКА: Включить/Выключить саундтрек.",
+    'clearlog': "ОЧИСТИТЬ: Стереть все записи в Хрониках Тьмы.",
+    'cemetery': "Кладбище: Дарует +5 крови за ход.",
+    'barracks': "Казармы Lv1: Без них обычные войска не могут быть призваны.",
+    'ritual': "Храм Тьмы: Открывает найм Верховных Лордов.",
+    'wall': "Стены: +1 к укреплениям провинции.",
+    'castle': "Замок: +2 укрепления, +20 гарнизона.",
+    'citadel': "Цитадель: Дарует право нанимать Сборщиков душ.",
+    'infantry': "Пехота: Основа любой армии. Надёжные щиты.",
+    'archer': "Лучники: Меткие стрелки, сеющие хаос на расстоянии.",
+    'cavalry': "Кавалерия: Быстрые и маневренные всадники.",
+    'lord': "Верховный Лорд: Бессмертный генерал. +10% к атаке за каждого нанятого.",
+    'siege': "ОСАДИТЬ: Окружить провинцию. Позволит штурмовать на следующем ходу.",
+    'assault_now': "АТАКОВАТЬ: Немедленно штурмовать провинцию."
+};
+
 // ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
@@ -11,13 +38,15 @@ app.stage.addChild(hexContainer);
 const armyContainer = new PIXI.Container();
 app.stage.addChild(armyContainer);
 
-// ================= ЗАГРУЗКА КАРТИНОК (ЗАЩИЩЕНА) =================
+// ================= ЗАГРУЗКА СПРАЙТОВ (С ФОЛЛБЭКОМ) =================
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 async function loadSprites() {
     try {
+        // Если картинки лежат в папке assets - загрузятся. Если нет - не упадут.
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
+        if(!spritePlayer) console.warn('Иконка армии Дракулы не найдена. Будет отрисован текстовый маркер.');
     } catch (e) {}
 }
 loadSprites();
@@ -132,7 +161,7 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
+// ================= ОТРИСОВКА ГЕКСОВ, ТЕКСТА И АРМИЙ =================
 function drawHexes() {
     hexContainer.removeChildren();
     game.hexGrid.forEach(hex => {
@@ -141,8 +170,8 @@ function drawHexes() {
         container.y = hex.y;
 
         const g = new PIXI.Graphics();
-        // ИСПРАВЛЕНИЕ: poly, а не polygon для PixiJS v7.3.2
-        g.poly(...getHexCorners(0, 0)); 
+        // ИСПРАВЛЕНИЕ: drawPolygon работает во всех версиях PixiJS
+        g.drawPolygon(...getHexCorners(0, 0)); 
         
         let color = 0x222222;
         if (hex.owner === 'player') color = 0x7a1111;
@@ -152,7 +181,6 @@ function drawHexes() {
         g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
         g.closePath();
 
-        // ИНТЕРАКТИВНОСТЬ
         g.interactive = true; 
         g.cursor = 'pointer'; 
         g.hexData = hex;
@@ -170,12 +198,10 @@ function drawHexes() {
         g.on('mouseout', () => { g.tint = 0xFFFFFF; document.getElementById('tooltip').style.display = 'none'; });
         g.on('click', () => handleHexClick(hex));
 
-        // ТЕКСТ НАЗВАНИЯ
         const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 9, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
         nT.anchor.set(0.5);
         nT.x = 0; nT.y = -12;
 
-        // Добавляем детей в контейнер, а не в Graphics
         container.addChild(g);
         container.addChild(nT);
         hexContainer.addChild(container);
@@ -185,11 +211,34 @@ function drawHexes() {
 function drawArmies() {
     armyContainer.removeChildren();
     const pPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
-    if (pPos && spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.1); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
-    if (aPos && spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.12); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
-    if (wPos && spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.1); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
+
+    // Фоллбэк: Если картинка загружена - показываем её. Если нет - рисуем цветной кружок с числом войск.
+    function renderFallback(x, y, count, color) {
+        const c = new PIXI.Graphics();
+        c.beginFill(color);
+        c.drawCircle(0, 0, 15);
+        c.endFill();
+        const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff });
+        t.anchor.set(0.5);
+        c.addChild(t);
+        c.x = x; c.y = y;
+        armyContainer.addChild(c);
+    }
+
+    if (pPos) {
+        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.1); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
+        else renderFallback(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111);
+    }
+    if (aPos) {
+        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.12); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
+        else renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
+    }
+    if (wPos) {
+        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.1); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
+        else renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
+    }
 }
 
 function updateUI() {
@@ -305,6 +354,29 @@ function endPlayerTurn() {
     saveGame(); updateUI();
 }
 
+// ================= СИСТЕМА ЛОРА (ЭНЦИКЛОПЕДИЯ НА ВСЕ КНОПКИ) =================
+function attachLoreListeners() {
+    document.querySelectorAll('[data-lore]').forEach(btn => {
+        btn.addEventListener('mouseenter', (e) => {
+            const loreKey = btn.getAttribute('data-lore');
+            const loreText = BUILD_LORE[loreKey];
+            if (loreText) {
+                const t = document.getElementById('lore-tooltip');
+                if(t) {
+                    t.textContent = loreText;
+                    t.style.display = 'block';
+                    t.style.left = (e.pageX + 10) + 'px';
+                    t.style.top = (e.pageY + 10) + 'px';
+                }
+            }
+        });
+        btn.addEventListener('mouseleave', () => {
+            const t = document.getElementById('lore-tooltip');
+            if(t) t.style.display = 'none';
+        });
+    });
+}
+
 // ================= ИНИЦИАЛИЗАЦИЯ =================
 function initGame() {
     document.getElementById('start-menu').style.display = 'none';
@@ -315,6 +387,7 @@ function initGame() {
         game.player.lords.push({ name: LORD_NAMES[0], battles: 0 });
     }
     document.getElementById('btn-end-turn').disabled = false;
+    attachLoreListeners(); // Привязываем ЛОР к кнопкам после прогрузки
     updateUI(); log('Дракула пробудился! Завоюйте Европу.', 'system');
 }
 
@@ -323,7 +396,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
-    // Кнопки меню и музыка
     document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
     document.getElementById('btn-load-game').addEventListener('click', initGame);
     document.getElementById('btn-mnu-save').addEventListener('click', saveGame);
@@ -378,7 +450,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (game.player.gold < 10) return log('Нужно 10 золота.', 'system');
                 game.player.gold -= 10;
                 game.player.lords.push({ name: LORD_NAMES[game.player.lords.length % LORD_NAMES.length], battles: 0 });
-                log('Лорд примкнул к армии!', 'player');
+                log(`Лорд "${LORD_NAMES[game.player.lords.length - 1]}" примкнул к армии!`, 'player');
                 game.player.ap -= 1; updateUI(); return;
             }
             const costs = { 'infantry': 10, 'archer': 15, 'cavalry': 20 };
@@ -419,7 +491,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (h && h.siegeBy === 'player') { h.siegeBy = null; log(`Осада снята с ${h.name}.`, 'player'); updateUI(); }
     });
 
-    // Модалка порабощения
     document.getElementById('btn-exterminate').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 150; game.player.blood += 80; log('Истребление! Ресурсы добыты.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
