@@ -102,9 +102,10 @@ body {
 .modal-content { background: rgba(5, 5, 8, 0.95); border: 2px solid var(--metal-blue); border-radius: 16px; padding: 25px; width: 420px; text-align: center; box-shadow: 0 0 80px rgba(74, 91, 154, 0.4); backdrop-filter: blur(8px); cursor: default;}
 .modal-content h2 { color: #fff; margin-bottom: 10px; font-weight: 400; }
 
-#tooltip {
+#tooltip, #lore-tooltip {
     display: none; position: fixed; z-index: 20; border-radius: 8px;
     font-size: 13px; color: #e0e5f0; pointer-events: none;
     backdrop-filter: blur(8px); border: 1px solid var(--metal-blue); box-shadow: 0 4px 30px rgba(0,0,0,0.8);
     padding: 12px 16px; background: rgba(10, 11, 16, 0.9);
 }
+#lore-tooltip { max-width: 280px; }
