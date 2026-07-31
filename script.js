@@ -11,36 +11,34 @@ app.stage.addChild(hexContainer);
 const armyContainer = new PIXI.Container();
 app.stage.addChild(armyContainer);
 
-// ================= ЗАГРУЗКА АССЕТОВ =================
-let spritePlayer, spriteAI, spriteWerewolf;
+// ================= ЗАГРУЗКА КАРТИНОК (ЗАЩИЩЕНА) =================
+let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 async function loadSprites() {
     try {
-        spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png');
-        spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg');
-        spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp');
-    } catch (e) {
-        console.warn("Ошибка загрузки спрайтов. Убедитесь, что файлы лежат в папке assets.");
-    }
+        spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
+        spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
+        spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
+    } catch (e) {}
 }
 loadSprites();
 
-// ================= ДАННЫЕ ИГРЫ И ГЕКСЫ =================
+// ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
 
 const HEX_SIZE = 38;
-function hexToPixel(q, r) {
-    const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
-    const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 300, y: y + 200 }; // Центрирование
-}
 function getHexCorners(cx, cy) {
     const corners = [];
     for (let i = 0; i < 6; i++) {
-        const angle_deg = 60 * i - 30;
-        const angle_rad = Math.PI / 180 * angle_deg;
-        corners.push({ x: cx + HEX_SIZE * Math.cos(angle_rad), y: cy + HEX_SIZE * Math.sin(angle_rad) });
+        const angle = (60 * i - 30) * Math.PI / 180;
+        corners.push(cx + HEX_SIZE * Math.cos(angle), cy + HEX_SIZE * Math.sin(angle));
     }
     return corners;
+}
+
+function hexToPixel(q, r) {
+    const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
+    const y = HEX_SIZE * (3/2 * r);
+    return { x: x + 300, y: y + 200 };
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -105,47 +103,47 @@ function log(msg, type = 'system') {
     c.appendChild(e); c.scrollTop = c.scrollHeight;
 }
 function getLordBonus() {
-    let attackBonus = 0;
+    let bonus = 0;
     game.player.lords.forEach(l => {
-        if (l.battles >= 2 && l.battles < 5) attackBonus += 0.1;
-        else if (l.battles >= 5) attackBonus += 0.2;
+        if (l.battles >= 2 && l.battles < 5) bonus += 0.1;
+        else if (l.battles >= 5) bonus += 0.2;
     });
-    return attackBonus;
+    return bonus;
 }
-function saveGame() { try { localStorage.setItem('DraculaHexFinal', JSON.stringify(game)); } catch (e) {} }
+function saveGame() { localStorage.setItem('DraculaHexFinal', JSON.stringify(game)); }
 function loadGame() {
-    try {
-        const saved = localStorage.getItem('DraculaHexFinal');
-        if (saved) { const parsed = JSON.parse(saved); game = parsed; return true; }
-    } catch (e) { console.error("Ошибка загрузки"); return false; }
+    const saved = localStorage.getItem('DraculaHexFinal');
+    if (saved) { game = JSON.parse(saved); return true; }
     return false;
 }
 function checkGameConditions() {
     if (game.gameOver) return;
     const pCount = game.hexGrid.filter(h => h.owner === 'player').length;
-    const aiCount = game.hexGrid.filter(h => h.owner === 'ai').length;
-    const wCount = game.hexGrid.filter(h => h.owner === 'werewolf').length;
     if (pCount === 0) gameOver('ai');
-    else if (aiCount === 0 && wCount === 0) gameOver('player');
+    else if (game.hexGrid.filter(h => h.owner === 'ai').length === 0 && game.hexGrid.filter(h => h.owner === 'werewolf').length === 0) gameOver('player');
 }
 function gameOver(winner) {
     if (game.gameOver) return;
     game.gameOver = true;
-    const modal = document.getElementById('gameover-modal');
-    const title = document.getElementById('gameover-title');
-    const desc = document.getElementById('gameover-desc');
-    if (winner === 'player') { title.textContent = 'ДРАКУЛА ВОЦАРИЛСЯ!'; desc.textContent = 'Европа навсегда погрузилась в вечную ночь.'; }
-    else { title.textContent = 'ТЬМА ОТСТУПИЛА!'; desc.textContent = 'Враги оказались слишком сильны. Попробуйте изменить тактику.'; }
-    modal.style.display = 'flex';
+    document.getElementById('btn-end-turn').disabled = true;
+    document.getElementById('btn-assault').disabled = true;
+    document.getElementById('gameover-title').textContent = winner === 'player' ? 'ДРАКУЛА ВОЦАРИЛСЯ!' : 'ТЬМА ОТСТУПИЛА!';
+    document.getElementById('gameover-desc').textContent = winner === 'player' ? 'Европа навсегда погрузилась в вечную ночь.' : 'Враги оказались слишком сильны.';
+    document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА PIXIJS =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
 function drawHexes() {
     hexContainer.removeChildren();
     game.hexGrid.forEach(hex => {
-        const corners = getHexCorners(hex.x, hex.y);
+        const container = new PIXI.Container();
+        container.x = hex.x;
+        container.y = hex.y;
+
         const g = new PIXI.Graphics();
-        g.poly(corners);
+        // ИСПРАВЛЕНИЕ: polygon(...массив) - правильный синтаксис PixiJS v7
+        g.polygon(...getHexCorners(0, 0)); 
+        
         let color = 0x222222;
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
@@ -154,23 +152,33 @@ function drawHexes() {
         g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
         g.closePath();
 
-        g.interactive = true; g.cursor = 'pointer'; g.hexData = hex;
+        // ИНТЕРАКТИВНОСТЬ
+        g.interactive = true; 
+        g.cursor = 'pointer'; 
+        g.hexData = hex;
         g.on('mouseover', (e) => {
-            g.tint = 0xFFFFFF;
+            g.tint = 0x88aadd;
             const t = document.getElementById('tooltip');
             const o = hex.owner ? (hex.owner === 'player' ? 'Дракула' : (hex.owner === 'ai' ? 'Ватикан' : 'Оборотни')) : 'Ничейная';
             let r = '';
             if (hex.owner === null) r = `<br>⚔️ Добыча: 🪙${hex.resources.gold} | 🩸${hex.resources.blood}`;
             t.innerHTML = `<b>${hex.name}</b><br>Владелец: ${o}<br>🛡️ Гарн: ${getTotalTroops(hex.owner === 'player' ? hex.playerGarrison : hex.aiGarrison)}<br>🏰 Укр: ${hex.fortification}${r}`;
-            t.style.display = 'block'; t.style.left = (e.data.global.x + 20) + 'px'; t.style.top = (e.data.global.y + 20) + 'px';
+            t.style.display = 'block';
+            t.style.left = (e.data.originalEvent.clientX + 20) + 'px';
+            t.style.top = (e.data.originalEvent.clientY + 20) + 'px';
         });
         g.on('mouseout', () => { g.tint = 0xFFFFFF; document.getElementById('tooltip').style.display = 'none'; });
         g.on('click', () => handleHexClick(hex));
 
+        // ТЕКСТ НАЗВАНИЯ
         const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 9, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
-        nT.anchor.set(0.5); nT.x = hex.x; nT.y = hex.y - 12;
-        g.addChild(nT);
-        hexContainer.addChild(g);
+        nT.anchor.set(0.5);
+        nT.x = 0; nT.y = -12;
+
+        // Добавляем детей в контейнер, а не в Graphics
+        container.addChild(g);
+        container.addChild(nT);
+        hexContainer.addChild(container);
     });
 }
 
@@ -191,10 +199,10 @@ function updateUI() {
     document.getElementById('blood-counter').textContent = game.player.blood;
     document.getElementById('gold-counter').textContent = game.player.gold;
     
-    // Активация кнопки ШТУРМ
+    // ИСПРАВЛЕНИЕ: Днем ШТУРМ обязан быть заблокирован!
     const cH = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
-    const bA = document.getElementById('btn-assault');
-    bA.disabled = !(cH && cH.siegeBy === 'player' && game.player.ap > 0 && isNightTime() && !game.gameOver);
+    const isReadyToAssault = (cH && cH.siegeBy === 'player' && game.player.ap > 0 && isNightTime() && !game.gameOver);
+    document.getElementById('btn-assault').disabled = !isReadyToAssault;
     
     drawHexes(); drawArmies();
 }
@@ -204,8 +212,7 @@ function handleHexClick(hex) {
     if (game.gameOver || game.player.ap <= 0) return log('Нет очков действий.', 'system');
     const cH = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     if (!cH) return;
-    const isNeighbor = getNeighbors(cH.q, cH.r).some(n => n.q === hex.q && n.r === hex.r);
-    if (!isNeighbor) return log('Слишком далеко! Только соседи.', 'system');
+    if (!getNeighbors(cH.q, cH.r).some(n => n.q === hex.q && n.r === hex.r)) return log('Слишком далеко! Только соседи.', 'system');
 
     if (hex.owner === 'player') {
         game.selectedHexId = `${hex.q},${hex.r}`;
@@ -213,10 +220,8 @@ function handleHexClick(hex) {
     }
     if (hex.owner === null) {
         game.player.mobileArmy.hexId = `${hex.q},${hex.r}`;
-        if (getTotalTroops(game.player.mobileArmy) > 0) {
-            hex.owner = 'player'; hex.playerGarrison.infantry += 5;
-            log(`${hex.name} захвачена!`, 'player');
-        } else log(`Армия переместилась в ${hex.name}.`, 'player');
+        if (getTotalTroops(game.player.mobileArmy) > 0) { hex.owner = 'player'; hex.playerGarrison.infantry += 5; log(`${hex.name} захвачена!`, 'player'); } 
+        else log(`Армия переместилась в ${hex.name}.`, 'player');
         game.player.ap -= 1; updateUI(); return;
     }
     if (hex.owner === 'ai' || hex.owner === 'werewolf') {
@@ -236,13 +241,8 @@ function executeBattle(targetHex) {
     let totalDef = getTotalTroops(defGar) + targetHex.fortification * 5;
     if (totalAtt === 0) { game.battleActive = false; return log('Армия пуста.', 'system'); }
 
-    // Подсчет силы с учетом лордов
-    let powerAtt = totalAtt * (1 + getLordBonus());
-    let powerDef = totalDef;
-
-    // Пропорциональные потери (избегаем деления на 0)
-    let attLoss = Math.floor(Math.random() * 0.2 * powerAtt);
-    let defLoss = Math.floor(Math.random() * 0.2 * powerDef);
+    let attLoss = Math.floor(Math.random() * 0.2 * totalAtt * (1 + getLordBonus()));
+    let defLoss = Math.floor(Math.random() * 0.2 * totalDef);
     if (attLoss > totalAtt) attLoss = totalAtt - 1;
     if (defLoss > totalDef) defLoss = totalDef - 1;
 
@@ -267,7 +267,7 @@ function executeBattle(targetHex) {
     game.battleActive = false; updateUI();
 }
 
-// ================= ЭКОНОМИКА И ХОДЫ =================
+// ================= ЭКОНОМИКА И ХОД =================
 function collectIncome() {
     game.hexGrid.forEach(h => {
         if (h.owner === 'player') {
@@ -306,14 +306,16 @@ function endPlayerTurn() {
     saveGame(); updateUI();
 }
 
-// ================= МЕХАНИКИ ИНТЕРФЕЙСА =================
+// ================= ИНИЦИАЛИЗАЦИЯ =================
 function initGame() {
     document.getElementById('start-menu').style.display = 'none';
     document.getElementById('game-container').style.display = 'flex';
     if (!loadGame()) {
-        game = getDefaultGame(); game.hexGrid = initHexGrid();
+        game = getDefaultGame(); 
+        game.hexGrid = initHexGrid();
         game.player.lords.push({ name: LORD_NAMES[0], battles: 0 });
     }
+    document.getElementById('btn-end-turn').disabled = false;
     updateUI(); log('Дракула пробудился! Завоюйте Европу.', 'system');
 }
 
@@ -322,17 +324,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
+    // Кнопки меню и музыка
     document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
     document.getElementById('btn-load-game').addEventListener('click', initGame);
     document.getElementById('btn-mnu-save').addEventListener('click', saveGame);
     document.getElementById('btn-mnu-load').addEventListener('click', initGame);
     document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
-    // Строительство и Найм
+    document.getElementById('btn-mnu-restart').addEventListener('click', () => {
+        if(confirm('Выйти в главное меню? Прогресс этого хода будет потерян.')) {
+            document.getElementById('start-menu').style.display = 'flex';
+            document.getElementById('game-container').style.display = 'none';
+            game.gameOver = false;
+            document.getElementById('gameover-modal').style.display = 'none';
+        }
+    });
+    document.getElementById('btn-music-toggle').addEventListener('click', () => {
+        const bgm = document.getElementById('bgm');
+        if (bgm.paused) { bgm.volume = 0.4; bgm.play().catch(()=>{}); document.getElementById('btn-music-toggle').textContent = "🔊"; } 
+        else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "🔇"; }
+    });
+
+    // Строительство
     const builds = { 'build-cemetery': 'cemetery', 'build-barracks': 'barracks', 'build-ritual': 'dark_temple', 'build-wall': 'wall', 'build-castle': 'castle', 'build-citadel': 'citadel' };
     Object.keys(builds).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
-            if (game.player.ap <= 0 || !game.selectedHexId) return log('Выберите свой гекс.', 'system');
+            if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
+            if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
             if (!h || h.owner !== 'player') return log('Не ваша территория.', 'system');
             const costs = { 'cemetery': 30, 'barracks': 20, 'dark_temple': 20, 'wall': 10, 'castle': 40, 'citadel': 40 };
@@ -347,12 +365,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // Найм
     const recruits = { 'recruit-inf': 'infantry', 'recruit-arch': 'archer', 'recruit-cav': 'cavalry', 'recruit-lord': 'lord' };
     Object.keys(recruits).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
-            if (game.player.ap <= 0 || !game.selectedHexId) return log('Выберите свой гекс.', 'system');
+            if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
+            if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
             if (!h || h.owner !== 'player') return log('Не ваша территория.', 'system');
+
             if (recruits[id] === 'lord') {
                 if (!h.buildings.find(b => b.type === 'dark_temple')) return log('Нужен Храм Тьмы.', 'system');
                 if (game.player.gold < 10) return log('Нужно 10 золота.', 'system');
@@ -373,9 +394,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Осада и Штурм
+    // Осады и битвы
     document.getElementById('btn-siege').addEventListener('click', () => {
-        if (!game.pendingActionHexId) return;
+        if (!game.pendingActionHexId || game.player.ap <= 0) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
         h.siegeBy = 'player'; game.player.mobileArmy.hexId = `${h.q},${h.r}`;
         game.player.ap -= 1; log(`${h.name} взята в осаду!`, 'player');
@@ -390,6 +411,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.getElementById('btn-assault').addEventListener('click', () => {
         if (!isNightTime()) return log('День! Штурм отменяется.', 'player');
+        if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h && h.siegeBy === 'player') { game.player.ap -= 1; executeBattle(h); }
     });
@@ -398,7 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (h && h.siegeBy === 'player') { h.siegeBy = null; log(`Осада снята с ${h.name}.`, 'player'); updateUI(); }
     });
 
-    // Модалка захвата
+    // Модалка порабощения
     document.getElementById('btn-exterminate').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 150; game.player.blood += 80; log('Истребление! Ресурсы добыты.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
