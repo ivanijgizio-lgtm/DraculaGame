@@ -2,7 +2,7 @@
 const BUILD_LORE = {
     'build': "СТРОИТЬ: Возводите тёмные сооружения, усиливающие вашу мощь.",
     'recruit': "ПРИЗВАТЬ: Найдите подходящих солдат и слуг для своей армии.",
-    'assault': "ШТУРМ: Атакуйте осажденную вражескую провинцию (Ночью).",
+    'assault': "ШТУРМ: Атакуйте осажденную вражескую провинцию (Ночью). Требует 1 AP.",
     'cancelsiege': "СНЯТЬ ОСАДУ: Снимите осаду с текущей вражеской провинции.",
     'endturn': "СЛЕД. ХОД: Завершите текущий ход и перейдите к следующему (Ночь/День).",
     'newgame': "НОВАЯ ИГРА: Начать новое завоевание.",
@@ -20,10 +20,13 @@ const BUILD_LORE = {
     'infantry': "Пехота: Основа любой армии. Надёжные щиты.",
     'archer': "Лучники: Меткие стрелки, сеющие хаос на расстоянии.",
     'cavalry': "Кавалерия: Быстрые и маневренные всадники.",
-    'lord': "Верховный Лорд: Бессмертный генерал. +10% к атаке за каждого нанятого."
+    'lord': "Верховный Лорд: Бессмертный генерал. +10% к атаке за каждого нанятого.",
+    'diplomacy': "ДИПЛОМАТИЯ: Заключайте союзы или перемирия.",
+    'market': "РЫНОК: Обменивайте ресурсы.",
+    'tech': "ТЕХНОЛОГИИ: Изучайте новые темные искусства."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (ПОДДЕРЖКА v5) =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS v5 =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
     width: 690, height: 490,
@@ -40,8 +43,6 @@ app.stage.addChild(armyContainer);
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 async function loadSprites() {
     try {
-        // В PixiJS v5 ассеты грузятся чуть иначе, используем простой Loader
-        // Для гарантии совместимости вернем null, если произойдет ошибка
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
@@ -52,7 +53,8 @@ loadSprites();
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
 
-const HEX_SIZE = 38;
+// ИЗМЕНЕНИЕ 1: Гексы увеличены с 38 до 60
+const HEX_SIZE = 60; 
 function getHexCorners(cx, cy) {
     const corners = [];
     for (let i = 0; i < 6; i++) {
@@ -65,7 +67,7 @@ function getHexCorners(cx, cy) {
 function hexToPixel(q, r) {
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 300, y: y + 200 };
+    return { x: x + 280, y: y + 180 }; // Центрируем карту под новые большие гексы
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -81,8 +83,9 @@ function getDefaultGame() {
             mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '0,0' },
             hasCitadel: false
         },
-        ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '2,-1' } },
-        werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '0,1' } },
+        // ИЗМЕНЕНИЕ 2: Стартовые позиции врагов отодвинуты дальше
+        ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '4,-2' } },
+        werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '-4,2' } },
         hexGrid: []
     };
 }
@@ -159,7 +162,7 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (ИСПРАВЛЕННЫЙ СИНТАКСИС PIXIJS v5) =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (PIXIJS V5) =================
 function drawHexes() {
     hexContainer.removeChildren();
     game.hexGrid.forEach(hex => {
@@ -174,9 +177,9 @@ function drawHexes() {
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
 
-        // ================= ВАЖНО: СИНТАКСИС PIXIJS v5 =================
+        // Синтаксис PixiJS v5
         g.beginFill(color); 
-        g.lineStyle(2, 0x333333, 0.7); // В v5 аргументы передаются через запятую
+        g.lineStyle(2, 0x333333, 0.7); 
         g.drawPolygon(...getHexCorners(0, 0));
         g.endFill();
 
@@ -197,7 +200,8 @@ function drawHexes() {
         g.on('mouseout', () => { g.tint = 0xFFFFFF; document.getElementById('tooltip').style.display = 'none'; });
         g.on('click', () => handleHexClick(hex));
 
-        const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 9, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
+        // Увеличен шрифт названий для больших гексов
+        const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 11, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
         nT.anchor.set(0.5);
         nT.x = 0; nT.y = -12;
 
@@ -215,7 +219,6 @@ function drawArmies() {
 
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
-        // Фоллбэк-отрисовка в синтаксисе PixiJS v5
         c.beginFill(color);
         c.drawCircle(0, 0, 15);
         c.endFill();
@@ -226,16 +229,17 @@ function drawArmies() {
         armyContainer.addChild(c);
     }
 
+    // ИЗМЕНЕНИЕ 3: Масштаб иконок армий уменьшен (с 0.1 до 0.07)
     if (pPos) {
-        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.1); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
+        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.07); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
         else renderFallback(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111);
     }
     if (aPos) {
-        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.12); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
+        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.09); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
         else renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
     }
     if (wPos) {
-        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.1); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
+        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.07); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
         else renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
     }
 }
@@ -353,7 +357,7 @@ function endPlayerTurn() {
     saveGame(); updateUI();
 }
 
-// ================= СИСТЕМА ЛОРА =================
+// ================= СИСТЕМА ЛОРА И ДОП. КНОПОК =================
 function attachLoreListeners() {
     document.querySelectorAll('[data-lore]').forEach(btn => {
         btn.addEventListener('mouseenter', (e) => {
@@ -376,6 +380,21 @@ function attachLoreListeners() {
     });
 }
 
+// Вспомогательные функции для модальных окон
+function openDiplomacy() {
+    document.getElementById('dip-gold').textContent = game.player.gold;
+    document.getElementById('diplomacy-modal').style.display = 'flex';
+}
+function openMarket() {
+    document.getElementById('mkt-gold').textContent = game.player.gold;
+    document.getElementById('mkt-blood').textContent = game.player.blood;
+    document.getElementById('market-modal').style.display = 'flex';
+}
+function openTech() {
+    document.getElementById('tech-gold').textContent = game.player.gold;
+    document.getElementById('tech-modal').style.display = 'flex';
+}
+
 // ================= ИНИЦИАЛИЗАЦИЯ =================
 function initGame() {
     document.getElementById('start-menu').style.display = 'none';
@@ -395,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
+    // Меню и музыка
     document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
     document.getElementById('btn-load-game').addEventListener('click', initGame);
     document.getElementById('btn-mnu-save').addEventListener('click', saveGame);
@@ -414,6 +434,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (bgm.paused) { bgm.volume = 0.4; bgm.play().catch(()=>{}); document.getElementById('btn-music-toggle').textContent = "🔊"; } 
         else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "🔇"; }
     });
+
+    // ИЗМЕНЕНИЕ 4: Восстановлены кнопки Дипломатии, Рынка и Технологий
+    document.getElementById('btn-open-diplomacy').addEventListener('click', openDiplomacy);
+    document.getElementById('btn-open-market').addEventListener('click', openMarket);
+    document.getElementById('btn-open-tech').addEventListener('click', openTech);
 
     // Строительство
     const builds = { 'build-cemetery': 'cemetery', 'build-barracks': 'barracks', 'build-ritual': 'dark_temple', 'build-wall': 'wall', 'build-castle': 'castle', 'build-citadel': 'citadel' };
@@ -490,6 +515,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (h && h.siegeBy === 'player') { h.siegeBy = null; log(`Осада снята с ${h.name}.`, 'player'); updateUI(); }
     });
 
+    // Сдача / Порабощение
     document.getElementById('btn-exterminate').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 150; game.player.blood += 80; log('Истребление! Ресурсы добыты.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
@@ -502,4 +528,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { h.playerGarrison.infantry += 10; log('Обращение! Новые слуги тьмы.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
+
+    // Технологии / Дипломатия / Рынок (Заглушки механик)
+    document.getElementById('dip-truce-ai').addEventListener('click', () => log('Функция перемирия в разработке.', 'system'));
+    document.getElementById('dip-truce-wolf').addEventListener('click', () => log('Функция перемирия в разработке.', 'system'));
+    
+    document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
+        if(game.player.gold >= 10) { game.player.gold -= 10; game.player.blood += 8; log('Обмен: 10🪙 -> 8🩸', 'player'); updateUI(); }
+        else log('Недостаточно золота!', 'system');
+    });
+    document.getElementById('mkt-blood-to-gold').addEventListener('click', () => {
+        if(game.player.blood >= 10) { game.player.blood -= 10; game.player.gold += 8; log('Обмен: 10🩸 -> 8🪙', 'player'); updateUI(); }
+        else log('Недостаточно крови!', 'system');
+    });
+
+    document.getElementById('tech-reform').addEventListener('click', () => log('Функция технологий в разработке.', 'system'));
+    document.getElementById('tech-necro').addEventListener('click', () => log('Функция технологий в разработке.', 'system'));
 });
