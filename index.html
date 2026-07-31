@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dracula: Conquest!</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦇</text></svg>">
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap" rel="stylesheet">
@@ -17,151 +16,165 @@
                 <span class="gothic-main">DRACULA</span><br>
                 <span class="gothic-sub">CONQUEST</span>
             </h1>
-            <p class="start-desc">Тьма пробуждается. Европа склонится перед ночью.</p>
+            <p>Тьма пробуждается. Европа склонится перед ночью.</p>
             <div class="start-buttons">
-                <button id="btn-new-game" class="action-btn main-action">НОВАЯ ИГРА</button>
-                <button id="btn-load-game" class="action-btn">ЗАГРУЗИТЬ</button>
+                <button id="btn-new-game" class="action-btn main-action" data-lore="newgame">🦇 НОВАЯ ИГРА</button>
+                <button id="btn-load-game" class="action-btn" data-lore="load">📜 ЗАГРУЗИТЬ</button>
             </div>
         </div>
     </div>
 
-    <div id="game-wrapper">
-        <div id="game-container">
-            <div id="main-area">
-                <div id="bg-layer"></div>
-                
-                <div id="top-bar">
-                    <div class="stat">ХОД: <span id="turn-counter">1</span></div>
-                    <div class="stat">ДЕНЬ: <span id="day-counter">1</span></div>
-                    <div class="stat">Действия: <span id="ap-counter">2/2</span></div>
-                    <div class="stat">Кровь: <span id="blood-counter">10</span></div>
-                    <div class="stat">Золото: <span id="gold-counter">100</span></div>
+    <div id="game-container">
+        <div id="bg-layer"></div>
+        
+        <div id="main-area">
+            <div id="top-bar">
+                <div class="stat">⚔️ ХОД: <span id="turn-counter">1</span></div>
+                <div class="stat">☀️ ДЕНЬ: <span id="day-counter">1</span></div>
+                <div class="stat">⚡ Действия: <span id="ap-counter">2/2</span></div>
+                <div class="stat">🩸 Кровь: <span id="blood-counter">10</span></div>
+                <div class="stat">💰 Золото: <span id="gold-counter">100</span></div>
+                <div class="stat">🧛 Лорды: <span id="elite-counter">0</span></div>
+                <div id="faith-container">
+                    <span>⛪ ВЕРА ВАТИКАНА</span>
+                    <div id="faith-bar-bg"><div id="faith-bar-fill"></div></div>
+                    <span id="faith-text">0 / 100</span>
                 </div>
-
-                <div id="menu-bar">
-                    <button id="btn-mnu-new-game" class="menu-btn main-action" data-lore="newgame">НОВАЯ ИГРА</button>
-                    <button id="btn-mnu-save" class="menu-btn" data-lore="save">СОХРАНИТЬ</button>
-                    <button id="btn-mnu-load" class="menu-btn" data-lore="load">ЗАГРУЗИТЬ</button>
-                    <button id="btn-mnu-restart" class="menu-btn" data-lore="menu">МЕНЮ</button>
-                    <button id="btn-music-toggle" class="menu-btn" data-lore="music">🔊</button>
-                </div>
-                
-                <div id="pixi-container" style="position: relative; z-index: 1; margin-top: 55px; width: 690px; height: 490px; border: 1px solid transparent;"></div>
-                
-                <div id="ui-panel">
-                    <div id="action-buttons">
-                        <button id="btn-assault" class="action-btn" data-lore="assault" disabled>ШТУРМ</button>
-                        
-                        <div class="dropdown">
-                            <button class="action-btn dropdown-toggle" data-lore="build">СТРОИТЬ</button>
-                            <div class="dropdown-content">
-                                <button id="build-cemetery" class="sub-btn" data-lore="cemetery">Кладбище (30🪙)</button>
-                                <button id="build-barracks" class="sub-btn" data-lore="barracks">Казармы Lv1 (20🪙)</button>
-                                <button id="build-ritual" class="sub-btn" data-lore="ritual">Храм Тьмы (20🪙)</button>
-                                <button id="build-wall" class="sub-btn" data-lore="wall">Стены (10🪙)</button>
-                                <button id="build-castle" class="sub-btn" data-lore="castle">Замок (40🪙)</button>
-                                <button id="build-citadel" class="sub-btn" data-lore="citadel">Цитадель (40🪙)</button>
-                            </div>
+                <button id="btn-restart" class="action-btn" style="background:#111; border-color:#4a5b9a; flex:0.5; font-size:10px;" data-lore="menu">🔄 МЕНЮ</button>
+                <button id="btn-music-toggle" class="action-btn" style="flex:0.3; font-size:10px;" data-lore="music">🎵 ВКЛ</button>
+            </div>
+            
+            <canvas id="fog-canvas" width="680" height="550"></canvas>
+            <div id="sunset-overlay" style="position: absolute; top: 25px; left: 0; width: 730px; height: 550px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
+            <canvas id="game-canvas" width="680" height="550"></canvas>
+            
+            <div id="ui-panel">
+                <div id="action-buttons">
+                    <button id="btn-assault" class="action-btn" data-lore="assault" disabled>💥 ШТУРМ</button>
+                    
+                    <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" data-lore="build">🏗️ СТРОИТЬ</button>
+                        <div class="dropdown-content">
+                            <button id="build-cemetery" class="sub-btn" data-lore="cemetery">🪦 Кладбище (30🪙)</button>
+                            <button id="build-barracks" class="sub-btn" data-lore="barracks">⚔️ Казармы Lv1 (20🪙)</button>
+                            <button id="build-barracks-2" class="sub-btn" data-lore="barracks_lv2">⚔️⬆️ Казармы Lv2 (50🪙)</button>
+                            <button id="build-ritual" class="sub-btn" data-lore="ritual">🕯️ Храм Тьмы (20🪙)</button>
+                            <button id="build-dungeon" class="sub-btn" data-lore="dungeon">⛓️ Тюрьма (15🪙)</button>
+                            <button id="build-executions" class="sub-btn" data-lore="executions">🪓 Казни (10🪙)</button>
+                            <button id="build-ball" class="sub-btn" data-lore="ball">🎭 Бал Вампиров (30🪙)</button>
+                            <button id="build-center" class="sub-btn" data-lore="center">🧛 Центр Обращения (25🪙)</button>
+                            <button id="build-citadel" class="sub-btn" data-lore="citadel">🏰 Цитадель (40🪙)</button>
+                            <button id="build-wall" class="sub-btn" data-lore="wall">🧱 Стены (10🪙)</button>
+                            <button id="build-castle" class="sub-btn" data-lore="castle">🏰 Замок (40🪙)</button>
+                            <button id="build-market" class="sub-btn" data-lore="market">🏪 Рынок (20🪙)</button>
                         </div>
-
-                        <div class="dropdown">
-                            <button class="action-btn dropdown-toggle" data-lore="recruit">ПРИЗВАТЬ</button>
-                            <div class="dropdown-content">
-                                <button id="recruit-inf" class="sub-btn" data-lore="infantry">Пехота (10🪙)</button>
-                                <button id="recruit-arch" class="sub-btn" data-lore="archer">Лучники (15🪙)</button>
-                                <button id="recruit-cav" class="sub-btn" data-lore="cavalry">Кавалерия (20🪙)</button>
-                                <button id="recruit-lord" class="sub-btn" data-lore="lord">Лорд (10🪙)</button>
-                            </div>
-                        </div>
-
-                        <button id="btn-cancel-siege" class="action-btn" data-lore="cancelsiege">СНЯТЬ ОСАДУ</button>
-                        <button id="btn-open-diplomacy" class="action-btn" data-lore="diplomacy">ДИПЛОМАТИЯ</button>
-                        <button id="btn-open-market" class="action-btn" data-lore="market">РЫНОК</button>
-                        <button id="btn-open-tech" class="action-btn" data-lore="tech">ТЕХНОЛОГИИ</button>
-                        <button id="btn-end-turn" class="action-btn main-action" data-lore="endturn">СЛЕД. ХОД</button>
                     </div>
+
+                    <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" data-lore="recruit">🧛 ПРИЗВАТЬ</button>
+                        <div class="dropdown-content">
+                            <button id="recruit-inf" class="sub-btn" data-lore="infantry">🗡️ 5 Пехоты (10🪙)</button>
+                            <button id="recruit-arch" class="sub-btn" data-lore="archer">🏹 5 Лучников (15🪙)</button>
+                            <button id="recruit-cav" class="sub-btn" data-lore="cavalry">🐴 3 Кавалерии (20🪙)</button>
+                            <button id="recruit-knights" class="sub-btn" data-lore="knights">⚔️ Рыцари Тьмы (30🪙)</button>
+                            <button id="recruit-lord" class="sub-btn" data-lore="lord">👑 Призвать Лорда (10🪙)</button>
+                            <button id="recruit-soul" class="sub-btn" data-lore="soul_collector">💀 Сборщик душ (25🪙)</button>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="action-btn garrison-btn dropdown-toggle" data-lore="garrison">🛡️ ГАРНИЗОН</button>
+                        <div class="dropdown-content">
+                            <button id="btn-garrison-add" class="sub-btn" data-lore="garrison_add">⬆️ ОСТАВИТЬ (10 бойцов)</button>
+                            <button id="btn-garrison-take" class="sub-btn" data-lore="garrison_take">⬇️ ПРИЗВАТЬ (10 бойцов)</button>
+                        </div>
+                    </div>
+
+                    <button id="btn-cancel-siege" class="action-btn" data-lore="cancelsiege">🚫 СНЯТЬ ОСАДУ</button>
+                    <button id="btn-open-diplomacy" class="action-btn" data-lore="diplomacy">🤝 ДИПЛОМАТИЯ</button>
+                    <button id="btn-open-market" class="action-btn" data-lore="market">⚖️ РЫНОК</button>
+                    <button id="btn-open-tech" class="action-btn" data-lore="tech">⚙️ ТЕХНОЛОГИИ</button>
+                    <button id="btn-end-turn" class="action-btn main-action" data-lore="endturn">⏩ СЛЕД. ХОД</button>
                 </div>
             </div>
+        </div>
 
-            <div id="block-gap"></div>
-
-            <div id="log-sidebar">
-                <h3>ХРОНИКИ ТЬМЫ</h3>
-                <div id="log-container"></div>
-                <button id="btn-clear-log" class="action-btn" data-lore="clearlog" style="margin-top:5px; font-size:11px; padding:4px 12px;">ОЧИСТИТЬ</button>
-            </div>
+        <div id="log-sidebar">
+            <h3>📜 ХРОНИКИ ТЬМЫ</h3>
+            <div id="log-container"></div>
+            <button id="btn-clear-log" class="action-btn" data-lore="clearlog" style="margin-top:5px; width:100%; font-size:10px; background:#1a1828;">🧹 ОЧИСТИТЬ</button>
         </div>
     </div>
 
-    <div id="lore-tooltip"></div>
     <div id="tooltip"></div>
+    <div id="lore-tooltip"></div>
 
-    <!-- Модальные окна -->
-    <div id="action-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+    <!-- МОДАЛКИ -->
+    <div id="action-modal" class="modal">
         <div class="modal-content">
-            <h2>ВАРВАРЫ У ВОРОТ!</h2>
+            <h2>🏰 ВАРВАРЫ У ВОРОТ!</h2>
             <p id="action-desc">Ваша армия вошла в провинцию. Что делать?</p>
             <div id="action-options">
-                <button id="btn-siege" class="action-btn" style="border-color: #4a5b9a;">ОСАДИТЬ (1 AP)</button>
-                <button id="btn-assault-now" class="action-btn main-action">АТАКОВАТЬ (1 AP)</button>
+                <button id="btn-siege" class="action-btn" style="border-color: #4a5b9a;">🚩 ОСАДИТЬ (1 AP)</button>
+                <button id="btn-assault-now" class="action-btn main-action">⚔️ АТАКОВАТЬ (1 AP)</button>
             </div>
         </div>
     </div>
-
-    <div id="surrender-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+    <div id="surrender-modal" class="modal">
         <div class="modal-content">
-            <h2>ПРОВИНЦИЯ ЗАХВАЧЕНА!</h2>
+            <h2>🏰 ПРОВИНЦИЯ ЗАХВАЧЕНА!</h2>
             <p>Население побеждено. Какова ваша воля?</p>
             <div id="surrender-options">
-                <button id="btn-exterminate" class="action-btn main-action" style="background:#2a2040;">ИСТРЕБИТЬ</button>
-                <button id="btn-enslave" class="action-btn" style="background:#1a1828; border-color:#4a5b9a;">ПОРАБОТИТЬ</button>
-                <button id="btn-convert" class="action-btn" style="background:#0f0d18; border-color:#4a5b9a;">ОБРАТИТЬ</button>
+                <button id="btn-exterminate" class="action-btn main-action" style="background:#2a2040;">💀 ИСТРЕБИТЬ</button>
+                <button id="btn-enslave" class="action-btn" style="background:#1a1828; border-color:#4a5b9a;">⛓️ ПОРАБОТИТЬ</button>
+                <button id="btn-convert" class="action-btn" style="background:#0f0d18; border-color:#4a5b9a;">🧛 ОБРАТИТЬ</button>
             </div>
             <p id="surrender-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
         </div>
     </div>
-
     <div id="gameover-modal" class="modal">
         <div class="modal-content">
-            <h2 id="gameover-title">ИГРА ЗАВЕРШЕНА!</h2>
+            <h2 id="gameover-title">🏆 ИГРА ЗАВЕРШЕНА!</h2>
             <p id="gameover-desc" style="margin: 15px 0; font-size: 16px;"></p>
             <div id="gameover-options">
-                <button id="btn-gameover-restart" class="btn-restart-game main-action" style="width: 80%;">НАЧАТЬ ЗАНОВО</button>
+                <button id="btn-gameover-restart" class="btn-restart-game main-action" style="width: 80%;">🔄 НАЧАТЬ ЗАНОВО</button>
             </div>
         </div>
     </div>
 
-    <!-- Дипломатия / Рынок / Технологии (Заглушки) -->
-    <div id="diplomacy-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+    <div id="diplomacy-modal" class="modal">
         <div class="modal-content">
-            <h2>ДИПЛОМАТИЯ</h2>
-            <p id="diplomacy-info" style="margin:10px 0; color:#b8c0d0;">Ваши ресурсы: 🪙<span id="dip-gold">0</span></p>
-            <div id="dip-options">
-                <button id="dip-truce-ai" class="action-btn">Перемирие с Ватиканом (30🪙)</button>
-                <button id="dip-truce-wolf" class="action-btn">Перемирие с Оборотнями (30🪙)</button>
+            <h2>🤝 ДИПЛОМАТИЯ</h2>
+            <p id="diplomacy-info">Выберите действие.</p>
+            <div id="diplomacy-options" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button id="dip-truce-ai" class="action-btn" style="width:80%;">🕊️ Перемирие с Ватиканом (30🪙, 2 хода)</button>
+                <button id="dip-truce-wolf" class="action-btn" style="width:80%;">🕊️ Перемирие с Оборотнями (30🪙, 2 хода)</button>
+                <button id="dip-alliance" class="action-btn" style="width:80%;">⚔️ Союз против Оборотней (50🪙)</button>
             </div>
+            <p id="diplomacy-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
         </div>
     </div>
-
-    <div id="market-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+    <div id="market-modal" class="modal">
         <div class="modal-content">
-            <h2>РЫНОК</h2>
-            <p id="market-info" style="margin:10px 0; color:#b8c0d0;">🪙<span id="mkt-gold">0</span> | 🩸<span id="mkt-blood">0</span></p>
-            <div id="mkt-options">
-                <button id="mkt-gold-to-blood" class="action-btn">10 🪙 → 8 🩸</button>
-                <button id="mkt-blood-to-gold" class="action-btn">10 🩸 → 8 🪙</button>
+            <h2>⚖️ РЫНОК ТЬМЫ</h2>
+            <p id="market-info">Обмен ресурсов. (1 раз за ход)</p>
+            <div id="market-options" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button id="mkt-gold-to-blood" class="action-btn" style="width:80%;">🪙 10 Золота → 🩸 8 Крови</button>
+                <button id="mkt-blood-to-gold" class="action-btn" style="width:80%;">🩸 10 Крови → 🪙 8 Золота</button>
             </div>
+            <p id="market-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
         </div>
     </div>
-
-    <div id="tech-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+    <div id="tech-modal" class="modal">
         <div class="modal-content">
-            <h2>ТЕХНОЛОГИИ</h2>
-            <p id="tech-info" style="margin:10px 0; color:#b8c0d0;">🪙<span id="tech-gold">0</span></p>
-            <div id="tech-options">
-                <button id="tech-reform" class="action-btn">Военная реформа (30🪙)</button>
-                <button id="tech-necro" class="action-btn">Некромантия (30🪙)</button>
+            <h2>⚙️ ДРЕВО ТЕХНОЛОГИЙ</h2>
+            <p id="tech-info">Исследуйте технологии для усиления армии. (30🪙 за штуку)</p>
+            <div id="tech-options" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button id="tech-reform" class="action-btn" style="width:80%;">⚔️ Военная реформа (+10% к мощи армии)</button>
+                <button id="tech-necro" class="action-btn" style="width:80%;">💀 Некромантия (Убитые враги дают +1 крови)</button>
+                <button id="tech-trade" class="action-btn" style="width:80%;">📜 Торговые пути (Рынок работает 2 раза за ход)</button>
             </div>
+            <p id="tech-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
         </div>
     </div>
 
