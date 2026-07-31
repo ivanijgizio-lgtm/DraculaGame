@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
 </head>
 <body>
     <div id="start-menu" class="start-overlay">
@@ -26,7 +27,6 @@
 
     <div id="game-wrapper">
         <div id="game-container">
-            
             <div id="main-area">
                 <div id="bg-layer"></div>
                 
@@ -46,57 +46,35 @@
                     <button id="btn-music-toggle" class="menu-btn">🔊</button>
                 </div>
                 
-                <canvas id="fog-canvas" width="690" height="490"></canvas>
-                <div id="sunset-overlay"></div>
-
-                <canvas id="game-canvas" width="690" height="490"></canvas>
+                <div id="pixi-container" style="position: relative; z-index: 1; margin-top: 55px; width: 690px; height: 490px; border: 1px solid transparent;"></div>
                 
                 <div id="ui-panel">
                     <div id="action-buttons">
                         <button id="btn-assault" class="action-btn" disabled>ШТУРМ</button>
                         
                         <div class="dropdown">
-                            <button class="action-btn dropdown-toggle" data-lore="build">СТРОИТЬ</button>
+                            <button class="action-btn dropdown-toggle">СТРОИТЬ</button>
                             <div class="dropdown-content">
-                                <button id="build-cemetery" class="sub-btn" data-lore="cemetery">Кладбище (30🪙)</button>
-                                <button id="build-barracks" class="sub-btn" data-lore="barracks">Казармы Lv1 (20🪙)</button>
-                                <button id="build-barracks-2" class="sub-btn" data-lore="barracks_lv2">Казармы Lv2 (50🪙)</button>
-                                <button id="build-ritual" class="sub-btn" data-lore="ritual">Храм Тьмы (20🪙)</button>
-                                <button id="build-dungeon" class="sub-btn" data-lore="dungeon">Тюрьма (15🪙)</button>
-                                <button id="build-executions" class="sub-btn" data-lore="executions">Казни (10🪙)</button>
-                                <button id="build-ball" class="sub-btn" data-lore="ball">Бал Вампиров (30🪙)</button>
-                                <button id="build-center" class="sub-btn" data-lore="center">Обращение (25🪙)</button>
-                                <button id="build-citadel" class="sub-btn" data-lore="citadel">Цитадель (40🪙)</button>
-                                <button id="build-wall" class="sub-btn" data-lore="wall">Стены (10🪙)</button>
-                                <button id="build-castle" class="sub-btn" data-lore="castle">Замок (40🪙)</button>
-                                <button id="build-market" class="sub-btn" data-lore="market">Рынок (20🪙)</button>
+                                <button id="build-cemetery" class="sub-btn">Кладбище (30🪙)</button>
+                                <button id="build-barracks" class="sub-btn">Казармы Lv1 (20🪙)</button>
+                                <button id="build-ritual" class="sub-btn">Храм Тьмы (20🪙)</button>
+                                <button id="build-wall" class="sub-btn">Стены (10🪙)</button>
+                                <button id="build-castle" class="sub-btn">Замок (40🪙)</button>
+                                <button id="build-citadel" class="sub-btn">Цитадель (40🪙)</button>
                             </div>
                         </div>
 
                         <div class="dropdown">
-                            <button class="action-btn dropdown-toggle" data-lore="recruit">ПРИЗВАТЬ</button>
+                            <button class="action-btn dropdown-toggle">ПРИЗВАТЬ</button>
                             <div class="dropdown-content">
-                                <button id="recruit-inf" class="sub-btn" data-lore="infantry">Пехота (10🪙)</button>
-                                <button id="recruit-arch" class="sub-btn" data-lore="archer">Лучники (15🪙)</button>
-                                <button id="recruit-cav" class="sub-btn" data-lore="cavalry">Кавалерия (20🪙)</button>
-                                <button id="recruit-knights" class="sub-btn" data-lore="knights">Рыцари Тьмы (30🪙)</button>
-                                <button id="recruit-lord" class="sub-btn" data-lore="lord">Лорд (10🪙)</button>
-                                <button id="recruit-soul" class="sub-btn" data-lore="soul_collector">Сборщик душ (25🪙)</button>
-                            </div>
-                        </div>
-
-                        <div class="dropdown">
-                            <button class="action-btn garrison-btn dropdown-toggle" data-lore="garrison">ГАРНИЗОН</button>
-                            <div class="dropdown-content">
-                                <button id="btn-garrison-add" class="sub-btn" data-lore="garrison_add">ОСТАВИТЬ (10 бойцов)</button>
-                                <button id="btn-garrison-take" class="sub-btn" data-lore="garrison_take">ПРИЗВАТЬ (10 бойцов)</button>
+                                <button id="recruit-inf" class="sub-btn">Пехота (10🪙)</button>
+                                <button id="recruit-arch" class="sub-btn">Лучники (15🪙)</button>
+                                <button id="recruit-cav" class="sub-btn">Кавалерия (20🪙)</button>
+                                <button id="recruit-lord" class="sub-btn">Лорд (10🪙)</button>
                             </div>
                         </div>
 
                         <button id="btn-cancel-siege" class="action-btn">СНЯТЬ ОСАДУ</button>
-                        <button id="btn-open-diplomacy" class="action-btn">ДИПЛОМАТИЯ</button>
-                        <button id="btn-open-market" class="action-btn">РЫНОК</button>
-                        <button id="btn-open-tech" class="action-btn">ТЕХНОЛОГИИ</button>
                         <button id="btn-end-turn" class="action-btn main-action">СЛЕД. ХОД</button>
                     </div>
                 </div>
@@ -109,20 +87,11 @@
                 <div id="log-container"></div>
                 <button id="btn-clear-log" class="action-btn" style="margin-top:5px; font-size:11px; padding:4px 12px;">ОЧИСТИТЬ</button>
             </div>
-            
         </div>
     </div>
 
     <div id="tooltip"></div>
-    <div id="lore-tooltip"></div>
 
-    <div id="tutorial-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="tutorial-title">ДОБРО ПОЖАЛОВАТЬ!</h2>
-            <p id="tutorial-desc" style="margin: 15px 0; font-size: 15px; line-height: 1.5;"></p>
-            <button id="btn-tutorial-next" class="action-btn main-action" style="padding: 10px 30px;">ДАЛЕЕ</button>
-        </div>
-    </div>
     <div id="action-modal" class="modal">
         <div class="modal-content">
             <h2>ВАРВАРЫ У ВОРОТ!</h2>
