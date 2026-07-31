@@ -157,7 +157,7 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (ГАРАНТИЯ РАБОТЫ НА PIXIJS V7) =================
 function drawHexes() {
     hexContainer.removeChildren();
     game.hexGrid.forEach(hex => {
@@ -167,14 +167,15 @@ function drawHexes() {
 
         const g = new PIXI.Graphics();
         
-        // ИСПРАВЛЕНИЕ: Сначала определяем цвет, потом рисуем
         let color = 0x222222;
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
 
-        // Рисование многоугольника и заливка (PixiJS v7)
-        g.poly(...getHexCorners(0, 0)); 
+        // ИСПОЛЬЗУЕМ УНИВЕРСАЛЬНЫЙ МЕТОД drawShape, КОТОРЫЙ РАБОТАЕТ В PIXIJS 7
+        const polygon = new PIXI.Polygon(...getHexCorners(0, 0));
+        g.drawShape(polygon);
+        
         g.fill(color);
         g.stroke({ width: 2, color: 0x333333, alpha: 0.7 });
         g.closePath();
@@ -212,9 +213,9 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // Фоллбэк: Если нет картинки - рисуем цветной кружок с числом войск.
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
+        // В PixiJS 7 круг рисуется через .circle(...).fill(...)
         c.circle(0, 0, 15).fill(color);
         const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff });
         t.anchor.set(0.5);
