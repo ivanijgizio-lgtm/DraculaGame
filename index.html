@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.12/pixi.min.js"></script>
 </head>
 <body>
     <div id="start-menu" class="start-overlay">
@@ -39,43 +39,46 @@
                 </div>
 
                 <div id="menu-bar">
-                    <button id="btn-mnu-new-game" class="menu-btn main-action">НОВАЯ ИГРА</button>
-                    <button id="btn-mnu-save" class="menu-btn">СОХРАНИТЬ</button>
-                    <button id="btn-mnu-load" class="menu-btn">ЗАГРУЗИТЬ</button>
-                    <button id="btn-mnu-restart" class="menu-btn">МЕНЮ</button>
-                    <button id="btn-music-toggle" class="menu-btn">🔊</button>
+                    <button id="btn-mnu-new-game" class="menu-btn main-action" data-lore="newgame">НОВАЯ ИГРА</button>
+                    <button id="btn-mnu-save" class="menu-btn" data-lore="save">СОХРАНИТЬ</button>
+                    <button id="btn-mnu-load" class="menu-btn" data-lore="load">ЗАГРУЗИТЬ</button>
+                    <button id="btn-mnu-restart" class="menu-btn" data-lore="menu">МЕНЮ</button>
+                    <button id="btn-music-toggle" class="menu-btn" data-lore="music">🔊</button>
                 </div>
                 
                 <div id="pixi-container" style="position: relative; z-index: 1; margin-top: 55px; width: 690px; height: 490px; border: 1px solid transparent;"></div>
                 
                 <div id="ui-panel">
                     <div id="action-buttons">
-                        <button id="btn-assault" class="action-btn" disabled>ШТУРМ</button>
+                        <button id="btn-assault" class="action-btn" data-lore="assault" disabled>ШТУРМ</button>
                         
                         <div class="dropdown">
-                            <button class="action-btn dropdown-toggle">СТРОИТЬ</button>
+                            <button class="action-btn dropdown-toggle" data-lore="build">СТРОИТЬ</button>
                             <div class="dropdown-content">
-                                <button id="build-cemetery" class="sub-btn">Кладбище (30🪙)</button>
-                                <button id="build-barracks" class="sub-btn">Казармы Lv1 (20🪙)</button>
-                                <button id="build-ritual" class="sub-btn">Храм Тьмы (20🪙)</button>
-                                <button id="build-wall" class="sub-btn">Стены (10🪙)</button>
-                                <button id="build-castle" class="sub-btn">Замок (40🪙)</button>
-                                <button id="build-citadel" class="sub-btn">Цитадель (40🪙)</button>
+                                <button id="build-cemetery" class="sub-btn" data-lore="cemetery">Кладбище (30🪙)</button>
+                                <button id="build-barracks" class="sub-btn" data-lore="barracks">Казармы Lv1 (20🪙)</button>
+                                <button id="build-ritual" class="sub-btn" data-lore="ritual">Храм Тьмы (20🪙)</button>
+                                <button id="build-wall" class="sub-btn" data-lore="wall">Стены (10🪙)</button>
+                                <button id="build-castle" class="sub-btn" data-lore="castle">Замок (40🪙)</button>
+                                <button id="build-citadel" class="sub-btn" data-lore="citadel">Цитадель (40🪙)</button>
                             </div>
                         </div>
 
                         <div class="dropdown">
-                            <button class="action-btn dropdown-toggle">ПРИЗВАТЬ</button>
+                            <button class="action-btn dropdown-toggle" data-lore="recruit">ПРИЗВАТЬ</button>
                             <div class="dropdown-content">
-                                <button id="recruit-inf" class="sub-btn">Пехота (10🪙)</button>
-                                <button id="recruit-arch" class="sub-btn">Лучники (15🪙)</button>
-                                <button id="recruit-cav" class="sub-btn">Кавалерия (20🪙)</button>
-                                <button id="recruit-lord" class="sub-btn">Лорд (10🪙)</button>
+                                <button id="recruit-inf" class="sub-btn" data-lore="infantry">Пехота (10🪙)</button>
+                                <button id="recruit-arch" class="sub-btn" data-lore="archer">Лучники (15🪙)</button>
+                                <button id="recruit-cav" class="sub-btn" data-lore="cavalry">Кавалерия (20🪙)</button>
+                                <button id="recruit-lord" class="sub-btn" data-lore="lord">Лорд (10🪙)</button>
                             </div>
                         </div>
 
-                        <button id="btn-cancel-siege" class="action-btn">СНЯТЬ ОСАДУ</button>
-                        <button id="btn-end-turn" class="action-btn main-action">СЛЕД. ХОД</button>
+                        <button id="btn-cancel-siege" class="action-btn" data-lore="cancelsiege">СНЯТЬ ОСАДУ</button>
+                        <button id="btn-open-diplomacy" class="action-btn" data-lore="diplomacy">ДИПЛОМАТИЯ</button>
+                        <button id="btn-open-market" class="action-btn" data-lore="market">РЫНОК</button>
+                        <button id="btn-open-tech" class="action-btn" data-lore="tech">ТЕХНОЛОГИИ</button>
+                        <button id="btn-end-turn" class="action-btn main-action" data-lore="endturn">СЛЕД. ХОД</button>
                     </div>
                 </div>
             </div>
@@ -85,12 +88,15 @@
             <div id="log-sidebar">
                 <h3>ХРОНИКИ ТЬМЫ</h3>
                 <div id="log-container"></div>
-                <button id="btn-clear-log" class="action-btn" style="margin-top:5px; font-size:11px; padding:4px 12px;">ОЧИСТИТЬ</button>
+                <button id="btn-clear-log" class="action-btn" data-lore="clearlog" style="margin-top:5px; font-size:11px; padding:4px 12px;">ОЧИСТИТЬ</button>
             </div>
         </div>
     </div>
 
+    <div id="lore-tooltip"></div>
     <div id="tooltip"></div>
+
+    <!-- Модальные окна -->
     <div id="action-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
         <div class="modal-content">
             <h2>ВАРВАРЫ У ВОРОТ!</h2>
@@ -101,6 +107,7 @@
             </div>
         </div>
     </div>
+
     <div id="surrender-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
         <div class="modal-content">
             <h2>ПРОВИНЦИЯ ЗАХВАЧЕНА!</h2>
@@ -113,12 +120,47 @@
             <p id="surrender-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
         </div>
     </div>
+
     <div id="gameover-modal" class="modal">
         <div class="modal-content">
             <h2 id="gameover-title">ИГРА ЗАВЕРШЕНА!</h2>
             <p id="gameover-desc" style="margin: 15px 0; font-size: 16px;"></p>
             <div id="gameover-options">
                 <button id="btn-gameover-restart" class="btn-restart-game main-action" style="width: 80%;">НАЧАТЬ ЗАНОВО</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дипломатия / Рынок / Технологии (Заглушки) -->
+    <div id="diplomacy-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal-content">
+            <h2>ДИПЛОМАТИЯ</h2>
+            <p id="diplomacy-info" style="margin:10px 0; color:#b8c0d0;">Ваши ресурсы: 🪙<span id="dip-gold">0</span></p>
+            <div id="dip-options">
+                <button id="dip-truce-ai" class="action-btn">Перемирие с Ватиканом (30🪙)</button>
+                <button id="dip-truce-wolf" class="action-btn">Перемирие с Оборотнями (30🪙)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="market-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal-content">
+            <h2>РЫНОК</h2>
+            <p id="market-info" style="margin:10px 0; color:#b8c0d0;">🪙<span id="mkt-gold">0</span> | 🩸<span id="mkt-blood">0</span></p>
+            <div id="mkt-options">
+                <button id="mkt-gold-to-blood" class="action-btn">10 🪙 → 8 🩸</button>
+                <button id="mkt-blood-to-gold" class="action-btn">10 🩸 → 8 🪙</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tech-modal" class="modal" onclick="if(event.target===this)this.style.display='none'">
+        <div class="modal-content">
+            <h2>ТЕХНОЛОГИИ</h2>
+            <p id="tech-info" style="margin:10px 0; color:#b8c0d0;">🪙<span id="tech-gold">0</span></p>
+            <div id="tech-options">
+                <button id="tech-reform" class="action-btn">Военная реформа (30🪙)</button>
+                <button id="tech-necro" class="action-btn">Некромантия (30🪙)</button>
             </div>
         </div>
     </div>
