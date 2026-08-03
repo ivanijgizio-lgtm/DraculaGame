@@ -39,7 +39,7 @@ const BUILD_LORE = {
 // ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (УВЕЛИЧЕН РАЗМЕР) =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
-    width: 910, height: 580, // УВЕЛИЧИЛИ РАЗМЕР ИГРЫ
+    width: 910, height: 580, 
     backgroundColor: 0x0a0a0e, transparent: false, resolution: window.devicePixelRatio || 1,
 });
 document.getElementById('game-canvas').style.display = 'none';
@@ -65,9 +65,9 @@ async function loadSprites() {
 }
 loadSprites();
 
-// ================= ДАННЫЕ =================
+// ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
-const HEX_SIZE = 50; 
+const HEX_SIZE = 50; // Оптимальный размер
 function getHexCorners(cx, cy) {
     const corners = [];
     for (let i = 0; i < 6; i++) {
@@ -79,7 +79,7 @@ function getHexCorners(cx, cy) {
 function hexToPixel(q, r) {
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 360, y: y + 260 }; // Перецентрировали карту для 910x580
+    return { x: x + 360, y: y + 260 }; // Центрируем
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -420,10 +420,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
-    document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
-    document.getElementById('btn-load-game').addEventListener('click', initGame);
+    document.getElementById('btn-new-game').addEventListener('click', () => { console.log('▶️ Нажата Новая Игра'); localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
+    document.getElementById('btn-load-game').addEventListener('click', () => { console.log('▶️ Нажата Загрузить'); initGame(); });
     
     document.getElementById('btn-mnu-restart').addEventListener('click', () => {
+        console.log('▶️ Нажата Меню');
         if(confirm('Выйти в главное меню? Прогресс этого хода будет потерян.')) {
             document.getElementById('start-menu').style.display = 'flex';
             document.getElementById('game-container').style.display = 'none';
@@ -432,19 +433,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     document.getElementById('btn-music-toggle').addEventListener('click', () => {
+        console.log('▶️ Нажата Звук');
         const bgm = document.getElementById('bgm');
         if (bgm.paused) { bgm.volume = 0.4; bgm.play().catch(()=>{}); document.getElementById('btn-music-toggle').textContent = "ЗВУК"; } 
         else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "ЗВУК"; }
     });
-    document.getElementById('btn-clear-log').addEventListener('click', () => document.getElementById('log-container').innerHTML = '');
+    document.getElementById('btn-clear-log').addEventListener('click', () => { console.log('▶️ Нажата Очистить'); document.getElementById('log-container').innerHTML = ''; });
 
-    document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
+    document.getElementById('btn-end-turn').addEventListener('click', () => { console.log('▶️ Нажата След. Ход'); endPlayerTurn(); });
 
-    document.getElementById('btn-open-diplomacy').addEventListener('click', () => document.getElementById('diplomacy-modal').style.display = 'flex');
-    document.getElementById('btn-open-market').addEventListener('click', () => document.getElementById('market-modal').style.display = 'flex');
-    document.getElementById('btn-open-tech').addEventListener('click', () => document.getElementById('tech-modal').style.display = 'flex');
+    document.getElementById('btn-open-diplomacy').addEventListener('click', () => { console.log('▶️ Нажата Дипломатия'); document.getElementById('diplomacy-modal').style.display = 'flex'; });
+    document.getElementById('btn-open-market').addEventListener('click', () => { console.log('▶️ Нажата Рынок'); document.getElementById('market-modal').style.display = 'flex'; });
+    document.getElementById('btn-open-tech').addEventListener('click', () => { console.log('▶️ Нажата Технологии'); document.getElementById('tech-modal').style.display = 'flex'; });
 
-    // ===== ИСПРАВЛЕНИЕ: РАСШИРЕННЫЙ СПИСОК ПОСТРОЕК =====
+    // ===== СТРОИТЕЛЬСТВО =====
     const builds = { 
         'build-cemetery': 'cemetery', 'build-barracks': 'barracks', 'build-barracks-2': 'barracks_lv2',
         'build-ritual': 'dark_temple', 'build-dungeon': 'dungeon', 'build-executions': 'executions',
@@ -453,6 +455,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     Object.keys(builds).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
+            console.log(`▶️ Строительство: ${id}`);
             if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
             if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
@@ -469,13 +472,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // ===== ИСПРАВЛЕНИЕ: РАСШИРЕННЫЙ СПИСОК ПРИЗЫВА =====
+    // ===== ПРИЗЫВ =====
     const recruits = { 
         'recruit-inf': 'infantry', 'recruit-arch': 'archer', 'recruit-cav': 'cavalry', 
         'recruit-knights': 'knights', 'recruit-lord': 'lord', 'recruit-soul': 'soul_collector' 
     };
     Object.keys(recruits).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
+            console.log(`▶️ Призыв: ${id}`);
             if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
             if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
@@ -491,8 +495,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (recruits[id] === 'soul_collector') {
                 if (!game.player.hasCitadel) return log('Сначала постройте Цитадель.', 'system');
                 if (game.player.gold < 25) return log('Нужно 25 золота.', 'system');
-                game.player.gold -= 25; game.player.hasCitadel = true; // Пример механики
-                log('Сборщик душ нанят! Он будет приносить золото.', 'player');
+                game.player.gold -= 25; game.player.hasCitadel = true;
+                log('Сборщик душ нанят! Будет приносить золото.', 'player');
                 game.player.ap -= 1; updateUI(); return;
             }
             if (recruits[id] === 'knights') {
@@ -517,8 +521,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // ГАРНИЗОН
+    // ===== ГАРНИЗОН =====
     document.getElementById('btn-garrison-add').addEventListener('click', () => {
+        console.log('▶️ Гарнизон: Оставить');
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (!h || h.owner !== 'player' || getTotalTroops(game.player.mobileArmy) < 10) return log('Нет армии для перевода.', 'system');
@@ -527,6 +532,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         game.player.ap -= 1; updateUI();
     });
     document.getElementById('btn-garrison-take').addEventListener('click', () => {
+        console.log('▶️ Гарнизон: Призвать');
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (!h || h.owner !== 'player' || getTotalTroops(h.playerGarrison) < 10) return log('Нет гарнизона для призыва.', 'system');
@@ -535,8 +541,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         game.player.ap -= 1; updateUI();
     });
 
-    // ОСАДЫ И БИТВЫ
+    // ===== ОСАДЫ И БИТВЫ =====
     document.getElementById('btn-siege').addEventListener('click', () => {
+        console.log('▶️ Модалка: Осадить');
         if (!game.pendingActionHexId || game.player.ap <= 0) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
         h.siegeBy = 'player'; game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1;
@@ -544,44 +551,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('action-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('btn-assault-now').addEventListener('click', () => {
+        console.log('▶️ Модалка: Атаковать');
         if (!game.pendingActionHexId) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
         game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1; document.getElementById('action-modal').style.display = 'none'; executeBattle(h);
     });
     document.getElementById('btn-assault').addEventListener('click', () => {
+        console.log('▶️ Кнопка: Штурм');
         if (!isNightTime()) return log('День! Штурм отменяется.', 'player');
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h && h.siegeBy === 'player') { game.player.ap -= 1; executeBattle(h); }
     });
     document.getElementById('btn-cancel-siege').addEventListener('click', () => {
+        console.log('▶️ Кнопка: Снять осаду');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h && h.siegeBy === 'player') { h.siegeBy = null; log(`Осада снята с ${h.name}.`, 'player'); updateUI(); }
     });
 
-    // МОДАЛКА ПОРАБОЩЕНИЯ
+    // ===== МОДАЛКА ПОРАБОЩЕНИЯ =====
     document.getElementById('btn-exterminate').addEventListener('click', () => {
+        console.log('▶️ Модалка: Истребить');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 150; game.player.blood += 80; log('Истребление! Ресурсы добыты.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
     document.getElementById('btn-enslave').addEventListener('click', () => {
+        console.log('▶️ Модалка: Поработить');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 50; game.player.blood += 20; h.playerGarrison.infantry += 10; log('Порабощение! Гарнизон пополнен.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
     document.getElementById('btn-convert').addEventListener('click', () => {
+        console.log('▶️ Модалка: Обратить');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { h.playerGarrison.infantry += 10; log('Обращение! Новые слуги тьмы.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
 
-    // РЫНОК И ТЕХНОЛОГИИ
+    // ===== РЫНОК И ТЕХНОЛОГИИ =====
     document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
+        console.log('▶️ Рынок: Золото->Кровь');
         if(game.player.gold >= 10) { game.player.gold -= 10; game.player.blood += 8; log('Обмен: 10🪙 -> 8🩸', 'player'); updateUI(); }
         else log('Недостаточно золота!', 'system');
     });
     document.getElementById('mkt-blood-to-gold').addEventListener('click', () => {
+        console.log('▶️ Рынок: Кровь->Золото');
         if(game.player.blood >= 10) { game.player.blood -= 10; game.player.gold += 8; log('Обмен: 10🩸 -> 8🪙', 'player'); updateUI(); }
         else log('Недостаточно крови!', 'system');
     });
-    document.getElementById('tech-reform').addEventListener('click', () => log('Функция технологий в разработке.', 'system'));
-    document.getElementById('tech-necro').addEventListener('click', () => log('Функция технологий в разработке.', 'system'));
+    document.getElementById('tech-reform').addEventListener('click', () => { console.log('▶️ Технологии: Реформа'); log('Функция технологий в разработке.', 'system'); });
+    document.getElementById('tech-necro').addEventListener('click', () => { console.log('▶️ Технологии: Некромантия'); log('Функция технологий в разработке.', 'system'); });
 });
