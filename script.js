@@ -36,7 +36,7 @@ const BUILD_LORE = {
     'garrison_take': "ПРИЗВАТЬ: Призвать 10 пехотинцев из гарнизона в мобильную армию."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (УВЕЛИЧЕН РАЗМЕР) =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
     width: 910, height: 580, 
@@ -67,7 +67,7 @@ loadSprites();
 
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
-const HEX_SIZE = 50; // Оптимальный размер
+const HEX_SIZE = 50; 
 function getHexCorners(cx, cy) {
     const corners = [];
     for (let i = 0; i < 6; i++) {
@@ -79,7 +79,7 @@ function getHexCorners(cx, cy) {
 function hexToPixel(q, r) {
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 360, y: y + 260 }; // Центрируем
+    return { x: x + 360, y: y + 260 };
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -420,6 +420,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
+    // === ИСПРАВЛЕНИЕ: ОБРАБОТЧИКИ ВЫПАДАЮЩИХ СПИСКОВ ===
+    document.querySelectorAll('.dropdown-toggle').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const content = this.parentElement.querySelector('.dropdown-content');
+            document.querySelectorAll('.dropdown-content.open').forEach(el => {
+                if (el !== content) el.classList.remove('open');
+            });
+            content.classList.toggle('open');
+            console.log(`▶️ Выпадающий список: toggle`);
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown-content.open').forEach(el => el.classList.remove('open'));
+        }
+    });
+
+    // === ОСТАЛЬНЫЕ КНОПКИ ===
     document.getElementById('btn-new-game').addEventListener('click', () => { console.log('▶️ Нажата Новая Игра'); localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
     document.getElementById('btn-load-game').addEventListener('click', () => { console.log('▶️ Нажата Загрузить'); initGame(); });
     
