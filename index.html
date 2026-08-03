@@ -16,7 +16,7 @@
                 <span class="gothic-main">DRACULA</span><br>
                 <span class="gothic-sub">CONQUEST</span>
             </h1>
-            <p>Тьма пробуждается. Европа склонится перед ночью.</p>
+            <!-- Убрали описание -->
             <div class="start-buttons">
                 <button id="btn-new-game" class="action-btn main-action" data-lore="newgame">НОВАЯ ИГРА</button>
                 <button id="btn-load-game" class="action-btn" data-lore="load">ЗАГРУЗИТЬ</button>
@@ -40,13 +40,13 @@
                     <div id="faith-bar-bg"><div id="faith-bar-fill"></div></div>
                     <span id="faith-text">0 / 100</span>
                 </div>
-                <button id="btn-mnu-restart" class="action-btn" style="background:#111; border-color:#4a5b9a; flex:0.5; font-size:10px;" data-lore="menu">МЕНЮ</button>
-                <button id="btn-music-toggle" class="action-btn" style="flex:0.3; font-size:10px;" data-lore="music">ЗВУК</button>
+                <button id="btn-mnu-restart" class="action-btn" style="background:#111; border-color:#4a5b9a; font-size:10px; width:60px;" data-lore="menu">МЕНЮ</button>
+                <button id="btn-music-toggle" class="action-btn" style="font-size:10px; width:50px;" data-lore="music">ЗВУК</button>
             </div>
             
-            <canvas id="fog-canvas" width="680" height="550"></canvas>
-            <div id="sunset-overlay" style="position: absolute; top: 25px; left: 0; width: 730px; height: 550px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
-            <canvas id="game-canvas" width="680" height="550"></canvas>
+            <canvas id="fog-canvas" width="910" height="580"></canvas>
+            <div id="sunset-overlay" style="position: absolute; top: 25px; left: 0; width: 920px; height: 580px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
+            <canvas id="game-canvas" width="910" height="580"></canvas>
             
             <div id="ui-panel">
                 <div id="action-buttons">
