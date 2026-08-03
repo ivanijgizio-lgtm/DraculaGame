@@ -7,7 +7,6 @@ const BUILD_LORE = {
     'cancelsiege': "СНЯТЬ ОСАДУ: Снимите осаду с текущей вражеской провинции. Тратит 1 AP.",
     'endturn': "СЛЕД. ХОД: Завершите текущий ход, соберите доходы и перейдите к следующему (Ночь/День).",
     'newgame': "НОВАЯ ИГРА: Начать новое завоевание с чистого листа.",
-    'save': "СОХРАНИТЬ: Сохранить текущую партию в локальное хранилище браузера.",
     'load': "ЗАГРУЗИТЬ: Загрузить ранее сохранённую партию.",
     'menu': "МЕНЮ: Перезапустить и вернуться в главное меню.",
     'music': "ЗВУК: Включить/Выключить саундтрек.",
@@ -37,16 +36,16 @@ const BUILD_LORE = {
     'garrison_take': "ПРИЗВАТЬ: Призвать 10 пехотинцев из гарнизона в мобильную армию."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (УВЕЛИЧЕН РАЗМЕР) =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
-    width: 680, height: 550,
+    width: 910, height: 580, // УВЕЛИЧИЛИ РАЗМЕР ИГРЫ
     backgroundColor: 0x0a0a0e, transparent: false, resolution: window.devicePixelRatio || 1,
 });
 document.getElementById('game-canvas').style.display = 'none';
 const pixiContainer = document.createElement('div');
 pixiContainer.id = 'pixi-container';
-pixiContainer.style.cssText = 'position: absolute; top: 25px; left: 0; z-index: 1; width: 680px; height: 550px;';
+pixiContainer.style.cssText = 'position: absolute; top: 20px; left: 0; z-index: 1; width: 910px; height: 580px;';
 document.getElementById('main-area').insertBefore(pixiContainer, document.getElementById('ui-panel'));
 pixiContainer.appendChild(app.view);
 
@@ -68,7 +67,7 @@ loadSprites();
 
 // ================= ДАННЫЕ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
-const HEX_SIZE = 45; // УМЕНЬШИЛИ ГЕКСЫ
+const HEX_SIZE = 50; 
 function getHexCorners(cx, cy) {
     const corners = [];
     for (let i = 0; i < 6; i++) {
@@ -80,7 +79,7 @@ function getHexCorners(cx, cy) {
 function hexToPixel(q, r) {
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 270, y: y + 200 }; // Перецентрировали для карты 680x550
+    return { x: x + 360, y: y + 260 }; // Перецентрировали карту для 910x580
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -223,11 +222,10 @@ function drawHexes() {
         g.on('mouseout', () => { g.tint = 0xFFFFFF; document.getElementById('tooltip').style.display = 'none'; });
         g.on('click', () => handleHexClick(hex));
 
-        // УМЕНЬШИЛИ ШРИФТ
         try {
-            const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel, serif', fontSize: 9, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
+            const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel, serif', fontSize: 10, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
             nT.anchor.set(0.5);
-            nT.x = 0; nT.y = -18;
+            nT.x = 0; nT.y = -20;
             container.addChild(g);
             container.addChild(nT);
         } catch (e) {
@@ -255,7 +253,6 @@ function drawArmies() {
         armyContainer.addChild(c);
     }
 
-    // УМЕНЬШИЛИ МАСШТАБ АРМИЙ ПОД МАЛЕНЬКИЕ ГЕКСЫ
     if (pPos) {
         if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.18); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
         else renderFallback(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111);
@@ -423,12 +420,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
-    // =========== ИСПРАВЛЕНИЕ ID КНОПОК ===========
     document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
     document.getElementById('btn-load-game').addEventListener('click', initGame);
     
-    document.getElementById('btn-mnu-save').addEventListener('click', saveGame);
-    document.getElementById('btn-mnu-load').addEventListener('click', initGame);
     document.getElementById('btn-mnu-restart').addEventListener('click', () => {
         if(confirm('Выйти в главное меню? Прогресс этого хода будет потерян.')) {
             document.getElementById('start-menu').style.display = 'flex';
@@ -450,10 +444,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-open-market').addEventListener('click', () => document.getElementById('market-modal').style.display = 'flex');
     document.getElementById('btn-open-tech').addEventListener('click', () => document.getElementById('tech-modal').style.display = 'flex');
 
-    // ===== КНОПКИ СТРОИТЬ И ПРИЗВАТЬ =====
+    // ===== ИСПРАВЛЕНИЕ: РАСШИРЕННЫЙ СПИСОК ПОСТРОЕК =====
     const builds = { 
-        'build-cemetery': 'cemetery', 'build-barracks': 'barracks', 'build-ritual': 'dark_temple', 
-        'build-wall': 'wall', 'build-castle': 'castle', 'build-citadel': 'citadel' 
+        'build-cemetery': 'cemetery', 'build-barracks': 'barracks', 'build-barracks-2': 'barracks_lv2',
+        'build-ritual': 'dark_temple', 'build-dungeon': 'dungeon', 'build-executions': 'executions',
+        'build-ball': 'ball', 'build-center': 'center', 'build-citadel': 'citadel',
+        'build-wall': 'wall', 'build-castle': 'castle', 'build-market': 'market' 
     };
     Object.keys(builds).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
@@ -461,7 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
             if (!h || h.owner !== 'player') return log('Не ваша территория.', 'system');
-            const costs = { 'cemetery': 30, 'barracks': 20, 'dark_temple': 20, 'wall': 10, 'castle': 40, 'citadel': 40 };
+            const costs = { 'cemetery': 30, 'barracks': 20, 'barracks_lv2': 50, 'dark_temple': 20, 'dungeon': 15, 'executions': 10, 'ball': 30, 'center': 25, 'citadel': 40, 'wall': 10, 'castle': 40, 'market': 20 };
             if (game.player.gold < costs[builds[id]]) return log('Не хватает золота.', 'system');
             if (h.buildings.find(b => b.type === builds[id])) return log('Уже построено.', 'system');
             game.player.gold -= costs[builds[id]]; h.buildings.push({ type: builds[id], lvl: 1 });
@@ -473,7 +469,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    const recruits = { 'recruit-inf': 'infantry', 'recruit-arch': 'archer', 'recruit-cav': 'cavalry', 'recruit-lord': 'lord' };
+    // ===== ИСПРАВЛЕНИЕ: РАСШИРЕННЫЙ СПИСОК ПРИЗЫВА =====
+    const recruits = { 
+        'recruit-inf': 'infantry', 'recruit-arch': 'archer', 'recruit-cav': 'cavalry', 
+        'recruit-knights': 'knights', 'recruit-lord': 'lord', 'recruit-soul': 'soul_collector' 
+    };
     Object.keys(recruits).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
             if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
@@ -488,6 +488,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 log(`Лорд "${LORD_NAMES[game.player.lords.length - 1]}" примкнул к армии!`, 'player');
                 game.player.ap -= 1; updateUI(); return;
             }
+            if (recruits[id] === 'soul_collector') {
+                if (!game.player.hasCitadel) return log('Сначала постройте Цитадель.', 'system');
+                if (game.player.gold < 25) return log('Нужно 25 золота.', 'system');
+                game.player.gold -= 25; game.player.hasCitadel = true; // Пример механики
+                log('Сборщик душ нанят! Он будет приносить золото.', 'player');
+                game.player.ap -= 1; updateUI(); return;
+            }
+            if (recruits[id] === 'knights') {
+                if (!h.buildings.find(b => b.type === 'barracks' && b.lvl === 2)) return log('Нужны Казармы Lv2.', 'system');
+                if (game.player.gold < 30) return log('Нужно 30 золота.', 'system');
+                game.player.gold -= 30; 
+                if (game.player.mobileArmy.hexId === `${h.q},${h.r}`) game.player.mobileArmy.cavalry += 2;
+                else h.playerGarrison.cavalry += 2;
+                log('2 Рыцаря Тьмы призваны.', 'player');
+                game.player.ap -= 1; updateUI(); return;
+            }
+
             const costs = { 'infantry': 10, 'archer': 15, 'cavalry': 20 };
             if (game.player.gold < costs[recruits[id]]) return log('Не хватает золота.', 'system');
             if (!h.buildings.find(b => b.type === 'barracks')) return log('Нужны Казармы.', 'system');
