@@ -1,39 +1,39 @@
-// ================= ПОЛНЫЙ БАЗОВЫЙ ЛОР =================
+// ================= РАСШИРЕННЫЙ ЛОР (5 ПРЕДЛОЖЕНИЙ) =================
 const BUILD_LORE = {
-    'build': "СТРОИТЬ: Возводите тёмные сооружения, усиливающие вашу мощь. Тратит 1 AP.",
-    'recruit': "ПРИЗВАТЬ: Найдите подходящих солдат и слуг для своей армии. Тратит 1 AP.",
-    'garrison': "ГАРНИЗОН: Перемещайте войска между армией и гарнизоном. Тратит 1 AP.",
-    'assault': "ШТУРМ: Атакуйте осаждённую вражескую провинцию. Работает только Ночью и требует 1 AP.",
-    'cancelsiege': "СНЯТЬ ОСАДУ: Снимите осаду с текущей вражеской провинции. Тратит 1 AP.",
-    'endturn': "СЛЕД. ХОД: Завершите текущий ход, соберите доходы и перейдите к следующему (Ночь/День).",
-    'newgame': "НОВАЯ ИГРА: Начать новое завоевание с чистого листа.",
-    'load': "ЗАГРУЗИТЬ: Загрузить ранее сохранённую партию.",
-    'menu': "МЕНЮ: Перезапустить и вернуться в главное меню.",
-    'music': "ЗВУК: Включить/Выключить саундтрек.",
-    'clearlog': "ОЧИСТИТЬ: Стереть все записи в Хрониках Тьмы.",
-    'cemetery': "Кладбище: Дарует +5 крови за ход.",
-    'barracks': "Казармы Lv1: Открывает призыв обычных войск (Пехота, Лучники, Кавалерия).",
-    'barracks_lv2': "Казармы Lv2: Открывает призыв Рыцарей Тьмы.",
-    'ritual': "Храм Тьмы: Открывает найм Верховных Лордов.",
-    'dungeon': "Тюрьма: +10 поддержки Тьмы, -5 лояльности.",
-    'executions': "Казни: +15 поддержки Тьмы, -10 лояльности.",
-    'ball': "Бал Вампиров: +20 поддержки Тьмы, +5 лояльности.",
-    'center': "Центр Обращения: +10 поддержки Тьмы, +5 лояльности, +100 населения.",
-    'citadel': "Цитадель: Открывает найм Сборщиков душ.",
-    'wall': "Стены: +1 к укреплениям провинции.",
-    'castle': "Замок: +2 укрепления, +20 гарнизона.",
-    'market': "Рынок: Позволяет обменивать ресурсы.",
-    'infantry': "5 Пехоты: Надёжные щиты. Требуются Казармы Lv1.",
-    'archer': "5 Лучников: Меткие стрелки. Требуются Казармы Lv1.",
-    'cavalry': "3 Кавалерии: Быстрые всадники. Требуются Казармы Lv1.",
-    'knights': "Рыцари Тьмы: Элитные бойцы в тяжёлой броне. Требуются Казармы Lv2.",
-    'lord': "Призвать Лорда: Верховный генерал, дающий +10% к мощи армии. Требуется Храм Тьмы.",
-    'soul_collector': "Сборщик душ: Приносит 50 золота каждый ход. Требуется Цитадель.",
-    'diplomacy': "ДИПЛОМАТИЯ: Заключайте союзы или перемирия.",
-    'market': "РЫНОК: Обменивайте ресурсы. 1 раз за ход.",
-    'tech': "ТЕХНОЛОГИИ: Изучайте новые темные искусства.",
-    'garrison_add': "ОСТАВИТЬ: Переместить 10 пехотинцев из мобильной армии в гарнизон.",
-    'garrison_take': "ПРИЗВАТЬ: Призвать 10 пехотинцев из гарнизона в мобильную армию."
+    'build': "СТРОИТЬ: Возводите тёмные сооружения, чтобы укрепить свою власть в захваченных землях. Каждое здание тратит 1 Очко Действия (AP) и требует золота. Стройте Казармы, чтобы пополнять армию, и Храмы, чтобы призывать Лордов. Возводите Стены и Замки для защиты провинций от вражеских вторжений. Тщательно планируйте цепочку построек, так как они открывают доступ к элитным юнитам.",
+    'recruit': "ПРИЗВАТЬ: Найдите подходящих солдат и слуг среди покорённого населения или с помощью древних ритуалов. Каждый призыв тратит 1 Очко Действия (AP) и требует золота, а также наличия необходимых зданий. Базовые подразделения, такие как пехота и лучники, набираются в провинциях с Казармами Lv1. Элитные бойцы, вроде Рыцарей Тьмы и Сборщиков душ, требуют более продвинутых построек.",
+    'garrison': "ГАРНИЗОН: Управляйте распределением войск между вашей мобильной армией и гарнизоном провинции. Оставленные в гарнизоне бойцы защищают территорию от вражеских набегов и дают вам время на перегруппировку. Призванные из гарнизона солдаты моментально пополняют вашу походную армию. Эта механика позволяет гибко реагировать на угрозы и не тратить золото на новый найм. Перемещение 10 бойцов стоит 1 Очко Действия (AP).",
+    'assault': "ШТУРМ: Атакуйте вражескую провинцию, которая находится под вашей осадой. Штурм доступен исключительно в ночное время суток, когда силы тьмы наиболее могущественны. Наличие хотя бы одного Лорда в армии критически важно для успешного штурма. Каждая атака стоит 1 Очко Действия (AP) и наносит урон как вашим войскам, так и гарнизону противника. Результат битвы зависит от общей мощи вашей армии и боевого опыта ваших Лордов.",
+    'cancelsiege': "СНЯТЬ ОСАДУ: Откажитесь от осады текущей провинции и отведите армию на соседнюю дружественную территорию. Это действие полезно, если вы переоценили свои силы или противник подтянул подкрепление. Снятие осады стоит 1 Очко Действия (AP) и позволяет перебросить армию в безопасное место. Помните, что вражеская провинция также снимает осадное положение и может начать контратаку. Используйте эту команду, чтобы сохранить армию и перегруппироваться.",
+    'endturn': "СЛЕД. ХОД: Завершите текущий ход и передайте инициативу противникам. В начале вашего следующего хода будет автоматически собран доход со всех подконтрольных провинций. У вас восстановятся все Очки Действий (AP) до максимума. Переключение между днём и ночью влияет на доступность штурмов. Будьте внимательны: враги тоже делают свои ходы и могут атаковать вас!",
+    'newgame': "НОВАЯ ИГРА: Начните новое завоевание Европы с чистого листа. Все текущие успехи и сохранения будут стерты, карта вернётся в изначальное состояние. Вы начнёте с базовой армией, 2 Очками Действий и начальным запасом золота и крови. Это единственный способ полностью обнулить партию и опробовать новую стратегию завоевания.",
+    'load': "ЗАГРУЗИТЬ: Загрузить ранее сохранённую партию из локального хранилища вашего браузера. Это позволяет продолжить игру с того места, где вы остановились. Если сохранения нет, игра начнётся заново. Используйте сохранение, чтобы не потерять прогресс в большой кампании.",
+    'menu': "МЕНЮ: Выйдите из текущей игры в главное меню. Прогресс текущего хода не будет сохранён, и вам предложат подтвердить это действие. В главном меню вы сможете начать новую игру или загрузить старую партию. Убедитесь, что вы сохранились через кнопку 'СОХРАНИТЬ' перед выходом.",
+    'music': "ЗВУК: Включите или выключите фоновое музыкальное сопровождение. Музыка помогает погрузиться в мрачную атмосферу завоеваний и сражений. Если звук пропал, проверьте, не заблокировал ли его браузер. Нажатие на кнопку переключает состояние громкости.",
+    'clearlog': "ОЧИСТИТЬ: Стереть все записи в боковой панели 'Хроники Тьмы'. Это сделает лог чистым и позволит сосредоточиться на новых событиях. Исторические записи не влияют на игровой процесс и служат только для информации.",
+    'cemetery': "Кладбище: Дарует +5 крови каждый ход за счёт энергии мёртвых. Это пассивный источник ресурса, который крайне важен для найма элитных юнитов. Вампиры черпают силу в смерти, и кладбище — идеальное место для пополнения запасов крови. Стройте его на своих первых землях для быстрой экономики.",
+    'barracks': "Казармы Lv1: Открывает возможность найма обычных войск (5 Пехоты, 5 Лучников, 3 Кавалерии). Без этого здания вы не сможете пополнять ряды своей мобильной армии. Это первый шаг к созданию боеспособного отряда для захвата нейтральных территорий. Казармы — сердце любой военной провинции.",
+    'barracks_lv2': "Казармы Lv2: Улучшенные казармы, которые позволяют призывать Рыцарей Тьмы. Для постройки Lv2 необходимо, чтобы в провинции уже были обычные Казармы Lv1. Рыцари Тьмы — это элитные тяжёлые бойцы, способные переломить ход битвы. Инвестируйте в это здание, чтобы получить доступ к сильнейшей пехоте.",
+    'ritual': "Храм Тьмы: Священное место для тёмных ритуалов, открывающее найм Верховных Лордов. Лорды — ключевые генералы, дающие бонус к мощи армии и позволяющие штурмовать провинции. Наличие Храма обязательно для успешного завоевания сложных территорий. Только самые преданные Тьме строят этот храм.",
+    'dungeon': "Тюрьма: Постройка, которая увеличивает поддержку Тьмы на 10%, но снижает лояльность населения на 5%. В тюрьмах содержатся те, кто не желает принимать власть Дракулы. Это отличный способ сломить дух сопротивления в новых провинциях. Злоупотребление тюрьмами может вызвать бунты.",
+    'executions': "Казни: Жестокое, но эффективное средство. Даёт +15% к поддержке Тьмы, снижает лояльность на 10% и уменьшает население провинции. Устрашение — основной метод управления в империи Тьмы. Казни деморализуют врагов, но могут оставить провинцию без рабочей силы.",
+    'ball': "Бал Вампиров: Пышное мероприятие для высшей знати, увеличивающее поддержку Тьмы на 20% и лояльность на 5%. Бал позволяет отвлечь элиту и заручиться их поддержкой. Это хороший способ стабилизировать провинцию и поднять её ресурсный потенциал.",
+    'center': "Центр Обращения: Место, где пленники превращаются в новых слуг тьмы. Даёт +10% поддержки Тьмы, +5% лояльности и +100 населения. Обращение позволяет быстро восстановить численность населения в провинциях после войн. Это идеальное здание для экономического роста.",
+    'citadel': "Цитадель: Мощнейшее оборонительное сооружение, открывающее найм Сборщиков душ. Постройка Цитадели значительно укрепляет вашу военную и экономическую мощь. Сборщики душ приносят 50 золота каждый ход, что окупает затраты на строительство. Цитадель — символ вашего владычества.",
+    'wall': "Стены: Укрепляет провинцию на +1 уровень. Стены — простой и дешёвый способ защитить свои границы от набегов врага. Возведение стен станет серьёзным препятствием для армий Ватикана и Оборотней. Не пренебрегайте обороной.",
+    'castle': "Замок: Мощное оборонительное сооружение, дающее +2 к укреплениям и +20 к гарнизону. Замки автоматически пополняют войска и делают провинцию неприступной крепостью. Это ваш главный оплот на линии фронта. Инвестируйте в замки на стратегически важных территориях.",
+    'market': "Рынок: Позволяет обменивать золото и кровь по курсу 10 к 8. Рынок — единственный способ быстро перебросить ресурсы в нужное русло. Он критически важен в экстренных ситуациях, когда вам срочно нужно золото или кровь. Помните, что им можно пользоваться только 1 раз за ход.",
+    'infantry': "5 Пехоты: Надёжные щиты вашей армии. Требуют наличия Казарм Lv1 в выбранной провинции. Пехота — это основа вашей армии, которая примет на себя основной удар. Дешёвые в найме и быстро восполнимые. Держите баланс между пехотой и кавалерией.",
+    'archer': "5 Лучников: Меткие стрелки, которые наносят урон врагу ещё до того, как он вступит в ближний бой. Требуют Казарм Lv1. Лучники эффективны против пехоты и кавалерии. Используйте их в обороне и поддержке.",
+    'cavalry': "3 Кавалерии: Быстрые и манёвренные всадники, идеально подходящие для прорыва и преследования. Требуют Казарм Lv1. Кавалерия особенно эффективна в атаке и может быстро перемещаться между провинциями. Создайте ударный кулак из кавалерии.",
+    'knights': "Рыцари Тьмы: Элитные бойцы в тяжёлой броне, которые наносят сокрушительный удар. Требуются Казармы Lv2. Рыцари Тьмы — элита вашей армии, способная в одиночку переломить ход битвы. Инвестируйте в них на поздних этапах игры.",
+    'lord': "Призвать Лорда: Верховный генерал, дающий 10% бонус к мощи армии. Требуется наличие Храма Тьмы в провинции. Лорды — бессмертные существа, которые набирают опыт с каждым сражением. С каждым новым Лордом ваша армия становится сильнее. Они — ваши ключевые полководцы.",
+    'soul_collector': "Сборщик душ: Таинственный посредник, который приносит 50 золота каждый ход. Требуется наличие Цитадели. Сборщик душ окупает себя всего за несколько ходов и является лучшей инвестицией в экономику. Используйте его для быстрого накопления ресурсов на войну.",
+    'diplomacy': "ДИПЛОМАТИЯ: Заключайте перемирия или союзы с другими фракциями. Перемирие на 2 хода с Ватиканом или Оборотнями стоит 30 золота и даёт передышку в войне. Союз против Оборотней за 50 золота заставит Ватикан атаковать их вместо вас. Тщательно выбирайте, с кем говорить, чтобы выиграть время.",
+    'market': "РЫНОК: Обменивайте ресурсы в любой момент своего хода. 10 золота дают 8 крови, и наоборот. Эта операция доступна только 1 раз за ход. Иногда у вас может быть переизбыток одного ресурса и нехватка другого. Рынок решает эту проблему.",
+    'tech': "ТЕХНОЛОГИИ: Исследуйте древние тёмные технологии за 30 золота каждая. Военная реформа увеличивает общую мощь армии. Некромантия позволяет получать кровь за каждую смерть врага. Торговые пути удваивают использование Рынка. Выбирайте технологии под свою стратегию.",
+    'garrison_add': "ОСТАВИТЬ: Переместите 10 пехотинцев из вашей мобильной армии в гарнизон текущей провинции. Оставшиеся в гарнизоне войска будут защищать провинцию. Это действие стоит 1 Очко Действия (AP). Используйте, чтобы закрепиться на только что захваченных территориях.",
+    'garrison_take': "ПРИЗВАТЬ: Возьмите 10 пехотинцев из гарнизона провинции в вашу мобильную армию. Это позволит быстро восстановить численность армии без траты золота. Действие стоит 1 Очко Действия (AP). Призывайте солдат, готовясь к крупной наступательной операции."
 };
 
 // ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
@@ -58,9 +58,11 @@ app.stage.addChild(armyContainer);
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 async function loadSprites() {
     try {
+        // Убедитесь, что в папке assets лежат файлы: Vampire Army.png, Knight Vatican.jpg, Werewolf Army.webp
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
+        if (!spritePlayer) console.warn('Армии: Не найден sprite Vampire Army.png');
     } catch (e) {}
 }
 loadSprites();
@@ -93,7 +95,10 @@ function getDefaultGame() {
         player: {
             ap: 2, maxAp: 2, gold: 100, blood: 10, lords: [],
             mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '0,0' },
-            hasCitadel: false
+            hasCitadel: false,
+            // ДОБАВЛЕНЫ ПОЛЯ ДЛЯ ДИПЛОМАТИИ И ТЕХНОЛОГИЙ
+            allianceWithAI: false, truceTurnsAI: 0, truceTurnsWolf: 0,
+            techs: { militaryReform: false, necromancy: false, tradeRoutes: false }
         },
         ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '4,-2' } },
         werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '-4,2' } },
@@ -179,7 +184,7 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (С БОЛЬШИМИ АРМИЯМИ) =================
 function drawHexes() {
     hexContainer.removeChildren();
     game.hexGrid.forEach(hex => {
@@ -244,25 +249,26 @@ function drawArmies() {
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
         c.beginFill(color);
-        c.drawCircle(0, 0, 12);
+        c.drawCircle(0, 0, 14);
         c.endFill();
-        const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 9, fill: 0xffffff });
+        const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff });
         t.anchor.set(0.5);
         c.addChild(t);
         c.x = x; c.y = y;
         armyContainer.addChild(c);
     }
 
+    // УВЕЛИЧЕН МАСШТАБ АРМИЙ, ЧТОБЫ ОНИ БЫЛИ ВИДНЫ (0.22 и 0.26)
     if (pPos) {
-        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.18); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
+        if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.22); s.x = pPos.x; s.y = pPos.y; armyContainer.addChild(s); }
         else renderFallback(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111);
     }
     if (aPos) {
-        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.22); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
+        if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.26); s.x = aPos.x; s.y = aPos.y; armyContainer.addChild(s); }
         else renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
     }
     if (wPos) {
-        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.18); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
+        if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.22); s.x = wPos.x; s.y = wPos.y; armyContainer.addChild(s); }
         else renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
     }
 }
@@ -342,15 +348,34 @@ function executeBattle(targetHex) {
     game.battleActive = false; updateUI();
 }
 
-// ================= ЭКОНОМИКА =================
+// ================= ЭКОНОМИКА И ИИ =================
 function collectIncome() {
+    let bloodBonus = 0;
+    let goldBonus = 0;
+    let slaveGold = 0;
+    let isNecro = game.player.techs.necromancy;
+
     game.hexGrid.forEach(h => {
         if (h.owner === 'player') {
-            game.player.gold += 2 + (h.resources?.gold || 0);
-            game.player.blood += 1 + (h.resources?.blood || 0);
-        } else if (h.owner === 'ai') game.ai.gold += 2;
-        else if (h.owner === 'werewolf') game.werewolf.gold += 3;
+            // Базовый доход
+            goldBonus += 2 + (h.resources?.gold || 0);
+            bloodBonus += 1 + (h.resources?.blood || 0);
+            
+            // Бонусы от построек
+            h.buildings.forEach(b => {
+                if (b.type === 'cemetery') bloodBonus += 5;
+                if (b.type === 'citadel' && game.player.hasCitadel) goldBonus += 50;
+            });
+        } else if (h.owner === 'ai') {
+            game.ai.gold += 2;
+        } else if (h.owner === 'werewolf') {
+            game.werewolf.gold += 3;
+        }
     });
+
+    game.player.blood += bloodBonus;
+    game.player.gold += goldBonus;
+    if (isNecro) log('Некромантия активирована.', 'system');
 }
 
 function aiTurn() {
@@ -420,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
 
-    // === ИСПРАВЛЕНИЕ: ОБРАБОТЧИКИ ВЫПАДАЮЩИХ СПИСКОВ ===
+    // === ВЫПАДАЮЩИЕ СПИСКИ ===
     document.querySelectorAll('.dropdown-toggle').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -429,22 +454,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (el !== content) el.classList.remove('open');
             });
             content.classList.toggle('open');
-            console.log(`▶️ Выпадающий список: toggle`);
         });
     });
-
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.dropdown')) {
             document.querySelectorAll('.dropdown-content.open').forEach(el => el.classList.remove('open'));
         }
     });
 
-    // === ОСТАЛЬНЫЕ КНОПКИ ===
-    document.getElementById('btn-new-game').addEventListener('click', () => { console.log('▶️ Нажата Новая Игра'); localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
-    document.getElementById('btn-load-game').addEventListener('click', () => { console.log('▶️ Нажата Загрузить'); initGame(); });
+    // === ОСНОВНЫЕ КНОПКИ ===
+    document.getElementById('btn-new-game').addEventListener('click', () => { localStorage.removeItem('DraculaHexFinal'); game = getDefaultGame(); game.hexGrid = initHexGrid(); initGame(); });
+    document.getElementById('btn-load-game').addEventListener('click', initGame);
     
     document.getElementById('btn-mnu-restart').addEventListener('click', () => {
-        console.log('▶️ Нажата Меню');
         if(confirm('Выйти в главное меню? Прогресс этого хода будет потерян.')) {
             document.getElementById('start-menu').style.display = 'flex';
             document.getElementById('game-container').style.display = 'none';
@@ -453,18 +475,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     document.getElementById('btn-music-toggle').addEventListener('click', () => {
-        console.log('▶️ Нажата Звук');
         const bgm = document.getElementById('bgm');
         if (bgm.paused) { bgm.volume = 0.4; bgm.play().catch(()=>{}); document.getElementById('btn-music-toggle').textContent = "ЗВУК"; } 
         else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "ЗВУК"; }
     });
-    document.getElementById('btn-clear-log').addEventListener('click', () => { console.log('▶️ Нажата Очистить'); document.getElementById('log-container').innerHTML = ''; });
+    document.getElementById('btn-clear-log').addEventListener('click', () => document.getElementById('log-container').innerHTML = '');
+    document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
-    document.getElementById('btn-end-turn').addEventListener('click', () => { console.log('▶️ Нажата След. Ход'); endPlayerTurn(); });
+    // === ДИПЛОМАТИЯ, РЫНОК, ТЕХНОЛОГИИ (ОТКРЫТИЕ) ===
+    document.getElementById('btn-open-diplomacy').addEventListener('click', () => { 
+        document.getElementById('dip-gold').textContent = game.player.gold;
+        document.getElementById('diplomacy-modal').style.display = 'flex'; 
+    });
+    document.getElementById('btn-open-market').addEventListener('click', () => { 
+        document.getElementById('mkt-gold').textContent = game.player.gold;
+        document.getElementById('mkt-blood').textContent = game.player.blood;
+        document.getElementById('market-modal').style.display = 'flex'; 
+    });
+    document.getElementById('btn-open-tech').addEventListener('click', () => { 
+        document.getElementById('tech-gold').textContent = game.player.gold;
+        document.getElementById('tech-modal').style.display = 'flex'; 
+    });
 
-    document.getElementById('btn-open-diplomacy').addEventListener('click', () => { console.log('▶️ Нажата Дипломатия'); document.getElementById('diplomacy-modal').style.display = 'flex'; });
-    document.getElementById('btn-open-market').addEventListener('click', () => { console.log('▶️ Нажата Рынок'); document.getElementById('market-modal').style.display = 'flex'; });
-    document.getElementById('btn-open-tech').addEventListener('click', () => { console.log('▶️ Нажата Технологии'); document.getElementById('tech-modal').style.display = 'flex'; });
+    // ===== ДИПЛОМАТИЯ (ЛОГИКА) =====
+    document.getElementById('dip-truce-ai').addEventListener('click', () => {
+        if (game.player.gold < 30) return log('Не хватает золота для перемирия.', 'system');
+        if (game.player.truceTurnsAI > 0) return log('Перемирие с Ватиканом уже активно.', 'system');
+        game.player.gold -= 30; game.player.truceTurnsAI = 2;
+        log('Заключено перемирие с Ватиканом на 2 хода!', 'player');
+        document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
+    });
+    document.getElementById('dip-truce-wolf').addEventListener('click', () => {
+        if (game.player.gold < 30) return log('Не хватает золота для перемирия.', 'system');
+        if (game.player.truceTurnsWolf > 0) return log('Перемирие с Оборотнями уже активно.', 'system');
+        game.player.gold -= 30; game.player.truceTurnsWolf = 2;
+        log('Заключено перемирие с Оборотнями на 2 хода!', 'player');
+        document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
+    });
+    document.getElementById('dip-alliance').addEventListener('click', () => {
+        if (game.player.gold < 50) return log('Не хватает золота для союза.', 'system');
+        if (game.player.allianceWithAI) return log('Союз против Оборотней уже активен.', 'system');
+        game.player.gold -= 50; game.player.allianceWithAI = true;
+        log('Заключен союз с Ватиканом против Оборотней!', 'player');
+        document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
+    });
+
+    // ===== РЫНОК (ЛОГИКА) =====
+    document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
+        if(game.player.gold >= 10) { game.player.gold -= 10; game.player.blood += 8; log('Обмен: 10🪙 -> 8🩸', 'player'); document.getElementById('market-modal').style.display = 'none'; updateUI(); }
+        else log('Недостаточно золота!', 'system');
+    });
+    document.getElementById('mkt-blood-to-gold').addEventListener('click', () => {
+        if(game.player.blood >= 10) { game.player.blood -= 10; game.player.gold += 8; log('Обмен: 10🩸 -> 8🪙', 'player'); document.getElementById('market-modal').style.display = 'none'; updateUI(); }
+        else log('Недостаточно крови!', 'system');
+    });
+
+    // ===== ТЕХНОЛОГИИ (ЛОГИКА) =====
+    document.getElementById('tech-reform').addEventListener('click', () => {
+        if (game.player.gold < 30) return log('Не хватает золота для Военной реформы.', 'system');
+        if (game.player.techs.militaryReform) return log('Военная реформа уже изучена.', 'system');
+        game.player.gold -= 30; game.player.techs.militaryReform = true;
+        log('Изучена Военная реформа! Мощь армии увеличена на 10%.', 'player');
+        document.getElementById('tech-modal').style.display = 'none'; updateUI();
+    });
+    document.getElementById('tech-necro').addEventListener('click', () => {
+        if (game.player.gold < 30) return log('Не хватает золота для Некромантии.', 'system');
+        if (game.player.techs.necromancy) return log('Некромантия уже изучена.', 'system');
+        game.player.gold -= 30; game.player.techs.necromancy = true;
+        log('Изучена Некромантия! Убитые враги приносят дополнительную кровь.', 'player');
+        document.getElementById('tech-modal').style.display = 'none'; updateUI();
+    });
+    document.getElementById('tech-trade').addEventListener('click', () => {
+        if (game.player.gold < 30) return log('Не хватает золота для Торговых путей.', 'system');
+        if (game.player.techs.tradeRoutes) return log('Торговые пути уже изучены.', 'system');
+        game.player.gold -= 30; game.player.techs.tradeRoutes = true;
+        log('Изучены Торговые пути! Рынком можно пользоваться 2 раза за ход.', 'player');
+        document.getElementById('tech-modal').style.display = 'none'; updateUI();
+    });
 
     // ===== СТРОИТЕЛЬСТВО =====
     const builds = { 
@@ -475,7 +562,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     Object.keys(builds).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
-            console.log(`▶️ Строительство: ${id}`);
             if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
             if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
@@ -499,7 +585,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     Object.keys(recruits).forEach(id => {
         document.getElementById(id).addEventListener('click', () => {
-            console.log(`▶️ Призыв: ${id}`);
             if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
             if (!game.selectedHexId) return log('Кликните по своему гексу на карте, чтобы выбрать его.', 'system');
             const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
@@ -516,7 +601,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!game.player.hasCitadel) return log('Сначала постройте Цитадель.', 'system');
                 if (game.player.gold < 25) return log('Нужно 25 золота.', 'system');
                 game.player.gold -= 25; game.player.hasCitadel = true;
-                log('Сборщик душ нанят! Будет приносить золото.', 'player');
+                log('Сборщик душ нанят!', 'player');
                 game.player.ap -= 1; updateUI(); return;
             }
             if (recruits[id] === 'knights') {
@@ -543,7 +628,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ===== ГАРНИЗОН =====
     document.getElementById('btn-garrison-add').addEventListener('click', () => {
-        console.log('▶️ Гарнизон: Оставить');
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (!h || h.owner !== 'player' || getTotalTroops(game.player.mobileArmy) < 10) return log('Нет армии для перевода.', 'system');
@@ -552,7 +636,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         game.player.ap -= 1; updateUI();
     });
     document.getElementById('btn-garrison-take').addEventListener('click', () => {
-        console.log('▶️ Гарнизон: Призвать');
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (!h || h.owner !== 'player' || getTotalTroops(h.playerGarrison) < 10) return log('Нет гарнизона для призыва.', 'system');
@@ -563,7 +646,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ===== ОСАДЫ И БИТВЫ =====
     document.getElementById('btn-siege').addEventListener('click', () => {
-        console.log('▶️ Модалка: Осадить');
         if (!game.pendingActionHexId || game.player.ap <= 0) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
         h.siegeBy = 'player'; game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1;
@@ -571,52 +653,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('action-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('btn-assault-now').addEventListener('click', () => {
-        console.log('▶️ Модалка: Атаковать');
         if (!game.pendingActionHexId) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
         game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1; document.getElementById('action-modal').style.display = 'none'; executeBattle(h);
     });
     document.getElementById('btn-assault').addEventListener('click', () => {
-        console.log('▶️ Кнопка: Штурм');
         if (!isNightTime()) return log('День! Штурм отменяется.', 'player');
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h && h.siegeBy === 'player') { game.player.ap -= 1; executeBattle(h); }
     });
     document.getElementById('btn-cancel-siege').addEventListener('click', () => {
-        console.log('▶️ Кнопка: Снять осаду');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h && h.siegeBy === 'player') { h.siegeBy = null; log(`Осада снята с ${h.name}.`, 'player'); updateUI(); }
     });
 
     // ===== МОДАЛКА ПОРАБОЩЕНИЯ =====
     document.getElementById('btn-exterminate').addEventListener('click', () => {
-        console.log('▶️ Модалка: Истребить');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 150; game.player.blood += 80; log('Истребление! Ресурсы добыты.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
     document.getElementById('btn-enslave').addEventListener('click', () => {
-        console.log('▶️ Модалка: Поработить');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { game.player.gold += 50; game.player.blood += 20; h.playerGarrison.infantry += 10; log('Порабощение! Гарнизон пополнен.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
     document.getElementById('btn-convert').addEventListener('click', () => {
-        console.log('▶️ Модалка: Обратить');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) { h.playerGarrison.infantry += 10; log('Обращение! Новые слуги тьмы.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
-
-    // ===== РЫНОК И ТЕХНОЛОГИИ =====
-    document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
-        console.log('▶️ Рынок: Золото->Кровь');
-        if(game.player.gold >= 10) { game.player.gold -= 10; game.player.blood += 8; log('Обмен: 10🪙 -> 8🩸', 'player'); updateUI(); }
-        else log('Недостаточно золота!', 'system');
-    });
-    document.getElementById('mkt-blood-to-gold').addEventListener('click', () => {
-        console.log('▶️ Рынок: Кровь->Золото');
-        if(game.player.blood >= 10) { game.player.blood -= 10; game.player.gold += 8; log('Обмен: 10🩸 -> 8🪙', 'player'); updateUI(); }
-        else log('Недостаточно крови!', 'system');
-    });
-    document.getElementById('tech-reform').addEventListener('click', () => { console.log('▶️ Технологии: Реформа'); log('Функция технологий в разработке.', 'system'); });
-    document.getElementById('tech-necro').addEventListener('click', () => { console.log('▶️ Технологии: Некромантия'); log('Функция технологий в разработке.', 'system'); });
 });
