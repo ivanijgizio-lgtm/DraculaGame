@@ -6,6 +6,7 @@ const BUILD_LORE = {
     'assault': "ШТУРМ: Атакуйте вражескую провинцию, которая находится под вашей осадой. Штурм доступен исключительно в ночное время суток, когда силы тьмы наиболее могущественны. Наличие хотя бы одного Лорда в армии критически важно для успешного штурма. Каждая атака стоит 1 Очко Действия (AP) и наносит урон как вашим войскам, так и гарнизону противника. Результат битвы зависит от общей мощи вашей армии и боевого опыта ваших Лордов.",
     'cancelsiege': "СНЯТЬ ОСАДУ: Откажитесь от осады текущей провинции и отведите армию на соседнюю дружественную территорию. Это действие полезно, если вы переоценили свои силы или противник подтянул подкрепление. Снятие осады стоит 1 Очко Действия (AP) и позволяет перебросить армию в безопасное место. Помните, что вражеская провинция также снимает осадное положение и может начать контратаку. Используйте эту команду, чтобы сохранить армию и перегруппироваться.",
     'endturn': "СЛЕД. ХОД: Завершите текущий ход и передайте инициативу противникам. В начале вашего следующего хода будет автоматически собран доход со всех подконтрольных провинций. У вас восстановятся все Очки Действий (AP) до максимума. Переключение между днём и ночью влияет на доступность штурмов. Будьте внимательны: враги тоже делают свои ходы и могут атаковать вас!",
+    'factions': "ФРАКЦИИ: Изучите конфликтующие силы Европы. Вампиры, Ватикан, Оборотни и Оккультисты — у каждой свои цели, лидеры и уникальные особенности. Знание врага — ключ к тактической победе.",
     'newgame': "НОВАЯ ИГРА: Начните новое завоевание Европы с чистого листа. Все текущие успехи и сохранения будут стерты, карта вернётся в изначальное состояние. Вы начнёте с базовой армией, 2 Очками Действий и начальным запасом золота и крови. Это единственный способ полностью обнулить партию и опробовать новую стратегию завоевания.",
     'load': "ЗАГРУЗИТЬ: Загрузить ранее сохранённую партию из локального хранилища вашего браузера. Это позволяет продолжить игру с того места, где вы остановились. Если сохранения нет, игра начнётся заново. Используйте сохранение, чтобы не потерять прогресс в большой кампании.",
     'menu': "МЕНЮ: Выйдите из текущей игры в главное меню. Прогресс текущего хода не будет сохранён, и вам предложат подтвердить это действие. В главном меню вы сможете начать новую игру или загрузить старую партию. Убедитесь, что вы сохранились через кнопку 'СОХРАНИТЬ' перед выходом.",
@@ -33,19 +34,20 @@ const BUILD_LORE = {
     'market': "РЫНОК: Обменивайте ресурсы в любой момент своего хода. 10 золота дают 8 крови, и наоборот. Эта операция доступна только 1 раз за ход. Иногда у вас может быть переизбыток одного ресурса и нехватка другого. Рынок решает эту проблему.",
     'tech': "ТЕХНОЛОГИИ: Исследуйте древние тёмные технологии за 30 золота каждая. Военная реформа увеличивает общую мощь армии. Некромантия позволяет получать кровь за каждую смерть врага. Торговые пути удваивают использование Рынка. Выбирайте технологии под свою стратегию.",
     'garrison_add': "ОСТАВИТЬ: Переместите 10 пехотинцев из вашей мобильной армии в гарнизон текущей провинции. Оставшиеся в гарнизоне войска будут защищать провинцию. Это действие стоит 1 Очко Действия (AP). Используйте, чтобы закрепиться на только что захваченных территориях.",
-    'garrison_take': "ПРИЗВАТЬ: Возьмите 10 пехотинцев из гарнизона провинции в вашу мобильную армию. Это позволит быстро восстановить численность армии без траты золота. Действие стоит 1 Очко Действия (AP). Призывайте солдат, готовясь к крупной наступательной операции."
+    'garrison_take': "ПРИЗВАТЬ: Возьмите 10 пехотинцев из гарнизона провинции в вашу мобильную армию. Это позволит быстро восстановить численность армии без траты золота. Действие стоит 1 Очко Действия (AP). Призывайте солдат, готовясь к крупной наступательной операции.",
+    'factions': "ФРАКЦИИ: Узнайте о могущественных силах, борющихся за Европу. Каждая фракция имеет своих лидеров, мотивы и уникальные возможности. Понимание их целей поможет вам выбрать правильную стратегию."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (РАСШИРЕНА ДО 1100x650) =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
-    width: 910, height: 580, 
+    width: 1100, height: 650, 
     backgroundColor: 0x0a0a0e, transparent: false, resolution: window.devicePixelRatio || 1,
 });
 document.getElementById('game-canvas').style.display = 'none';
 const pixiContainer = document.createElement('div');
 pixiContainer.id = 'pixi-container';
-pixiContainer.style.cssText = 'position: absolute; top: 20px; left: 0; z-index: 1; width: 910px; height: 580px;';
+pixiContainer.style.cssText = 'position: absolute; top: 20px; left: 0; z-index: 1; width: 1100px; height: 650px;';
 document.getElementById('main-area').insertBefore(pixiContainer, document.getElementById('ui-panel'));
 pixiContainer.appendChild(app.view);
 
@@ -69,8 +71,6 @@ async function loadSprites() {
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
 
         if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
-        if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
-        if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
     } catch (e) {}
 }
 loadSprites();
@@ -89,7 +89,7 @@ function getHexCorners(cx, cy) {
 function hexToPixel(q, r) {
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 360, y: y + 260 };
+    return { x: x + 400, y: y + 300 }; // Отцентрировано для 1100x650
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -107,8 +107,9 @@ function getDefaultGame() {
             allianceWithAI: false, truceTurnsAI: 0, truceTurnsWolf: 0,
             techs: { militaryReform: false, necromancy: false, tradeRoutes: false }
         },
-        ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '4,-2' } },
-        werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '-4,2' } },
+        ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '5,-3' } },
+        werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '-5,4' } },
+        occultist: { gold: 0 }, // Оккультисты не двигаются, но их можно захватить
         hexGrid: []
     };
 }
@@ -117,27 +118,74 @@ let game = getDefaultGame();
 
 function initHexGrid() {
     const grid = [];
+    // ============ 50 ВЫМЫШЛЕНЫХ ГЕКСОВ ============
     const mapData = [
+        // Вампиры (Дракула) - Красные
         { q: 0, r: 0, name: 'Transilvania', owner: 'player', fort: 1, pop: 2000 },
         { q: 1, r: 0, name: 'Wallachia', owner: 'player', fort: 0, pop: 1500 },
         { q: -1, r: 0, name: 'Moldavia', owner: 'player', fort: 0, pop: 1500 },
-        { q: 0, r: 1, name: 'Carpathia', owner: 'werewolf', fort: 0, pop: 2500 },
-        { q: 2, r: -1, name: 'Vaticanum', owner: 'ai', fort: 3, pop: 5000 },
-        { q: 2, r: 0, name: 'Roma', owner: 'ai', fort: 2, pop: 4000 },
-        { q: 3, r: -1, name: 'Florentia', owner: 'ai', fort: 1, pop: 3000 },
-        { q: -2, r: 0, name: 'Dacia', owner: 'werewolf', fort: 0, pop: 2000 },
-        { q: 1, r: 1, name: 'Moesia', owner: 'werewolf', fort: 0, pop: 1500 },
-        { q: 3, r: 0, name: 'Ruins', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
-        { q: -3, r: 1, name: 'Silver Mines', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
-        { q: -2, r: 2, name: 'Blood Marshes', owner: null, res: { gold: 0, blood: 20 }, fort: 0, pop: 0 },
+        { q: 0, r: -1, name: 'Pannonia', owner: 'player', fort: 0, pop: 1200 },
+        { q: 2, r: -1, name: 'Tatra Peaks', owner: 'player', fort: 1, pop: 1000 },
+        
+        // Ватикан - Белые/Золотые
+        { q: 5, r: -3, name: 'Vaticanum', owner: 'ai', fort: 3, pop: 5000 },
+        { q: 6, r: -3, name: 'Roma', owner: 'ai', fort: 2, pop: 4000 },
+        { q: 6, r: -4, name: 'Florentia', owner: 'ai', fort: 1, pop: 3000 },
+        { q: 7, r: -4, name: 'Parma', owner: 'ai', fort: 1, pop: 2500 },
+        { q: 7, r: -3, name: 'Ancona', owner: 'ai', fort: 1, pop: 2000 },
+        { q: 5, r: -4, name: 'Perugia', owner: 'ai', fort: 0, pop: 2000 },
+        { q: 4, r: -3, name: 'Siena', owner: 'ai', fort: 0, pop: 1500 },
+        { q: 6, r: -2, name: 'Ravenna', owner: 'ai', fort: 0, pop: 1500 },
+        { q: 8, r: -3, name: 'Dalmatian Coast', owner: 'ai', fort: 0, pop: 1000 },
+        { q: 8, r: -2, name: 'Zadar', owner: 'ai', fort: 0, pop: 1000 },
+
+        // Оборотни - Зелёные
+        { q: -5, r: 4, name: 'Carpathia', owner: 'werewolf', fort: 0, pop: 2500 },
+        { q: -4, r: 4, name: 'Dacia', owner: 'werewolf', fort: 0, pop: 2000 },
+        { q: -3, r: 4, name: 'Moesia', owner: 'werewolf', fort: 0, pop: 1500 },
+        { q: -4, r: 5, name: 'Iron Gate', owner: 'werewolf', fort: 0, pop: 1500 },
+        { q: -3, r: 3, name: 'Crimson Peak', owner: 'werewolf', fort: 1, pop: 2000 },
+        { q: -2, r: 3, name: 'Whispering Woods', owner: 'werewolf', fort: 0, pop: 1200 },
+        { q: -6, r: 3, name: 'Ashen Steppes', owner: 'werewolf', fort: 0, pop: 1000 },
+        { q: -6, r: 4, name: 'Misty Valley', owner: 'werewolf', fort: 0, pop: 1000 },
+        { q: -2, r: 4, name: 'Amber Pass', owner: 'werewolf', fort: 0, pop: 1000 },
+        { q: -5, r: 5, name: 'Mournful Plains', owner: 'werewolf', fort: 0, pop: 1000 },
+
+        // Оккультисты (Новая фракция) - Фиолетовые
+        { q: 3, r: 2, name: 'The Black Citadel', owner: 'occultist', fort: 2, pop: 1000 },
+        { q: 4, r: 2, name: 'Temple of Old Ones', owner: 'occultist', fort: 1, pop: 800 },
+        { q: 2, r: 3, name: 'Sunken Spire', owner: 'occultist', fort: 1, pop: 500 },
+        { q: -2, r: -3, name: 'Obsidian Fortress', owner: 'occultist', fort: 2, pop: 800 },
+        { q: -3, r: -2, name: 'The Pyre of Saints', owner: 'occultist', fort: 1, pop: 500 },
+        { q: 4, r: 1, name: 'Veridia Forest', owner: 'occultist', fort: 0, pop: 400 },
+        { q: 5, r: 2, name: 'Gilded Harbor', owner: 'occultist', fort: 0, pop: 400 },
+        { q: -1, r: -4, name: 'Chasm of Echoes', owner: 'occultist', fort: 1, pop: 400 },
+
+        // Нейтральные (Ничейные) - Серые / Места для фарма
+        { q: -2, r: -1, name: 'Silver Mines', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
+        { q: -3, r: 2, name: 'Blood Marshes', owner: null, res: { gold: 0, blood: 20 }, fort: 0, pop: 0 },
+        { q: 3, r: 1, name: 'Ruins', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
+        { q: 4, r: 0, name: 'Moravian Corridor', owner: null, res: { gold: 10, blood: 5 }, fort: 0, pop: 0 },
+        { q: -4, r: -2, name: 'Cursed Forge', owner: null, res: { gold: 5, blood: 10 }, fort: 0, pop: 0 },
+        { q: -3, r: 0, name: 'Tattered Shore', owner: null, res: { gold: 10, blood: 5 }, fort: 0, pop: 0 },
+        { q: 1, r: 2, name: 'Drowning Bog', owner: null, res: { gold: 0, blood: 15 }, fort: 0, pop: 0 },
+        { q: -1, r: 2, name: 'Forgotten Tundra', owner: null, res: { gold: 5, blood: 5 }, fort: 0, pop: 0 },
+        { q: 2, r: -2, name: 'Eternal Glen', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
+        { q: -2, r: -2, name: 'Starfall Fields', owner: null, res: { gold: 15, blood: 5 }, fort: 0, pop: 0 },
+        { q: 3, r: -2, name: 'Thornwood', owner: null, res: { gold: 5, blood: 0 }, fort: 0, pop: 0 },
+        { q: 5, r: 0, name: 'Empty Lands', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
+        { q: -5, r: -1, name: 'Bleak Expanse', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
+        { q: -4, r: -1, name: 'Silent Depths', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
+        { q: 3, r: -3, name: 'Lonely Plateau', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
     ];
     
     mapData.forEach(d => {
         const pos = hexToPixel(d.q, d.r);
-        let support = { player: 20, ai: 70, werewolf: 10 };
-        if (d.owner === 'player') support = { player: 80, ai: 10, werewolf: 10 };
-        else if (d.owner === 'ai') support = { player: 10, ai: 85, werewolf: 5 };
-        else if (d.owner === 'werewolf') support = { player: 5, ai: 15, werewolf: 80 };
+        let support = { player: 20, ai: 70, werewolf: 10, occultist: 0 };
+        if (d.owner === 'player') support = { player: 80, ai: 10, werewolf: 10, occultist: 0 };
+        else if (d.owner === 'ai') support = { player: 10, ai: 85, werewolf: 5, occultist: 0 };
+        else if (d.owner === 'werewolf') support = { player: 5, ai: 15, werewolf: 80, occultist: 0 };
+        else if (d.owner === 'occultist') support = { player: 0, ai: 0, werewolf: 0, occultist: 100 };
 
         grid.push({
             q: d.q, r: d.r, x: pos.x, y: pos.y, name: d.name, owner: d.owner, resources: d.res || { gold: 0, blood: 0 },
@@ -204,6 +252,7 @@ function drawHexes() {
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
+        else if (hex.owner === 'occultist') color = 0x4a2e59; // Фиолетовый для Оккультистов
 
         g.beginFill(color); 
         g.lineStyle(2, 0x333333, 0.7); 
@@ -214,16 +263,17 @@ function drawHexes() {
         g.on('mouseover', (e) => {
             g.tint = 0x88aadd;
             const t = document.getElementById('tooltip');
-            const o = hex.owner ? (hex.owner === 'player' ? 'Дракула' : (hex.owner === 'ai' ? 'Ватикан' : 'Оборотни')) : 'Ничейная';
+            const o = hex.owner ? (hex.owner === 'player' ? 'Дракула' : (hex.owner === 'ai' ? 'Ватикан' : (hex.owner === 'werewolf' ? 'Оборотни' : 'Оккультисты'))) : 'Ничейная';
             let r = '';
             if (hex.owner === null) r = `<br>⚔️ Добыча: 🪙${hex.resources.gold} | 🩸${hex.resources.blood}`;
             t.innerHTML = `
                 <b style="font-size:14px;">${hex.name}</b><br>
                 Владелец: ${o}<br>
-                🧛 Поддержка Тьмы: ${hex.support.player}%<br>
-                ⛪ Поддержка Ватикана: ${hex.support.ai}%<br>
-                🐺 Поддержка Оборотней: ${hex.support.werewolf}%<br>
-                🛡️ Гарнизон: ${getTotalTroops(hex.owner === 'player' ? hex.playerGarrison : hex.aiGarrison)}<br>
+                🧛 Тьма: ${hex.support.player}%<br>
+                ⛪ Ватикан: ${hex.support.ai}%<br>
+                🐺 Оборотни: ${hex.support.werewolf}%<br>
+                🔮 Оккультисты: ${hex.support.occultist}%<br>
+                🛡️ Гарнизон: ${getTotalTroops(hex.owner === 'player' ? hex.playerGarrison : (hex.owner === 'ai' ? hex.aiGarrison : 0))}<br>
                 👥 Население: ${hex.population}<br>
                 🏰 Укрепления: ${hex.fortification}${r}
             `;
@@ -235,7 +285,7 @@ function drawHexes() {
         g.on('click', () => handleHexClick(hex));
 
         try {
-            const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel, serif', fontSize: 10, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
+            const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel, serif', fontSize: 9, fill: 0xffffff, align: 'center', dropShadow: true, dropShadowColor: 0x000000 });
             nT.anchor.set(0.5);
             nT.x = 0; nT.y = -20;
             container.addChild(g);
@@ -253,92 +303,69 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // ФУНКЦИЯ БЕЗОПАСНОГО КРУЖКА-ЗАГЛУШКИ
+    // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАГЛУШКИ - ГАРАНТИРОВАННО РИСУЕТ КРУЖОК
     function renderFallback(x, y, count, color) {
         try {
             const c = new PIXI.Graphics();
             c.beginFill(color);
             c.drawCircle(0, 0, 14);
             c.endFill();
-            
-            // Создание текста обёрнуто в защиту
-            const t = new PIXI.Text(`${count}`, { fontFamily: 'Arial, sans-serif', fontSize: 10, fill: 0xffffff });
+            const t = new PIXI.Text(`${count}`, { fontFamily: 'Arial', fontSize: 10, fill: 0xffffff });
             t.anchor.set(0.5);
             c.addChild(t);
-            
             c.x = x; c.y = y;
             armyContainer.addChild(c);
-        } catch (e) {
-            console.warn("Ошибка отрисовки резервной армии:", e);
-        }
+        } catch (e) { console.warn("Ошибка отрисовки резервной армии:", e); }
     }
 
-    // Отрисовка армии Дракулы (Вампиры)
+    // Армия Дракулы
     if (pPos) {
         let count = getTotalTroops(game.player.mobileArmy);
         if (spritePlayer) { 
             const s = new PIXI.Sprite(spritePlayer); 
             s.anchor.set(0.5); 
-            s.scale.set(0.2); // Уменьшен масштаб
-            s.x = pPos.x; 
-            s.y = pPos.y; 
+            s.scale.set(0.2); 
+            s.x = pPos.x; s.y = pPos.y; 
             armyContainer.addChild(s); 
-            // Если есть Лорды и есть спрайт лорда, рисуем его рядом
             if(game.player.lords.length > 0 && spriteLord) {
                 const l = new PIXI.Sprite(spriteLord);
-                l.anchor.set(0.5);
-                l.scale.set(0.1);
-                l.x = pPos.x + 30;
-                l.y = pPos.y - 25;
+                l.anchor.set(0.5); l.scale.set(0.1);
+                l.x = pPos.x + 30; l.y = pPos.y - 25;
                 armyContainer.addChild(l);
             }
-        } else {
-            renderFallback(pPos.x, pPos.y, count, 0x7a1111);
-        }
+        } else { renderFallback(pPos.x, pPos.y, count, 0x7a1111); }
     }
 
-    // Отрисовка армии Ватикана
+    // Армия Ватикана
     if (aPos) {
         if (spriteAI) { 
             const s = new PIXI.Sprite(spriteAI); 
-            s.anchor.set(0.5); 
-            s.scale.set(0.22); 
-            s.x = aPos.x; 
-            s.y = aPos.y; 
+            s.anchor.set(0.5); s.scale.set(0.22); 
+            s.x = aPos.x; s.y = aPos.y; 
             armyContainer.addChild(s);
             if(spriteAIGeneral) {
                 const g = new PIXI.Sprite(spriteAIGeneral);
-                g.anchor.set(0.5);
-                g.scale.set(0.1);
-                g.x = aPos.x + 25;
-                g.y = aPos.y - 25;
+                g.anchor.set(0.5); g.scale.set(0.1);
+                g.x = aPos.x + 25; g.y = aPos.y - 25;
                 armyContainer.addChild(g);
             }
-        } else {
-            renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
-        }
+        } else { renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0); }
     }
 
-    // Отрисовка армии Оборотней
+    // Армия Оборотней
     if (wPos) {
         if (spriteWerewolf) { 
             const s = new PIXI.Sprite(spriteWerewolf); 
-            s.anchor.set(0.5); 
-            s.scale.set(0.18); 
-            s.x = wPos.x; 
-            s.y = wPos.y; 
+            s.anchor.set(0.5); s.scale.set(0.18); 
+            s.x = wPos.x; s.y = wPos.y; 
             armyContainer.addChild(s);
             if(spriteWolfGeneral) {
                 const g = new PIXI.Sprite(spriteWolfGeneral);
-                g.anchor.set(0.5);
-                g.scale.set(0.12);
-                g.x = wPos.x + 25;
-                g.y = wPos.y - 25;
+                g.anchor.set(0.5); g.scale.set(0.12);
+                g.x = wPos.x + 25; g.y = wPos.y - 25;
                 armyContainer.addChild(g);
             }
-        } else {
-            renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
-        }
+        } else { renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d); }
     }
 }
 
@@ -357,21 +384,36 @@ function updateUI() {
     drawHexes(); drawArmies();
 }
 
-// ================= ИГРОВАЯ ЛОГИКА =================
+// ================= ИГРОВАЯ ЛОГИКА И МЕХАНИКА АТАКИ =================
 function handleHexClick(hex) {
     if (game.gameOver || game.player.ap <= 0) return log('Нет очков действий.', 'system');
     const cH = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     if (!cH) return;
-    if (!getNeighbors(cH.q, cH.r).some(n => n.q === hex.q && n.r === hex.r)) return log('Слишком далеко! Только соседи.', 'system');
+    if (!getNeighbors(cH.q, cH.r).some(n => n.q === hex.q && n.r === hex.r)) {
+        log('Слишком далеко! Чтобы атаковать или двигаться, кликайте только по соседним гексам.', 'system');
+        return;
+    }
 
     if (hex.owner === 'player') {
         game.selectedHexId = `${hex.q},${hex.r}`;
         log(`Выбрана ${hex.name} для стройки.`, 'system'); updateUI(); return;
     }
-    if (hex.owner === null) {
+    // Добавлена проверка на Оккультистов
+    if (hex.owner === null || hex.owner === 'occultist') {
         game.player.mobileArmy.hexId = `${hex.q},${hex.r}`;
-        if (getTotalTroops(game.player.mobileArmy) > 0) { hex.owner = 'player'; hex.playerGarrison.infantry += 5; log(`${hex.name} захвачена!`, 'player'); } 
-        else log(`Армия переместилась в ${hex.name}.`, 'player');
+        if (getTotalTroops(game.player.mobileArmy) > 0) {
+            hex.owner = 'player';
+            // Бонусы за захват Оккультистов
+            if (hex.resources.gold > 0 || hex.resources.blood > 0) {
+                game.player.gold += hex.resources.gold * 2;
+                game.player.blood += hex.resources.blood * 2;
+                log(`Обнаружены древние тайны! Захвачены ресурсы: +${hex.resources.gold*2}🪙, +${hex.resources.blood*2}🩸`, 'player');
+            }
+            hex.playerGarrison.infantry += 5; 
+            log(`${hex.name} захвачена!`, 'player');
+        } else {
+            log(`Армия переместилась в ${hex.name}.`, 'player');
+        }
         game.player.ap -= 1; updateUI(); return;
     }
     if (hex.owner === 'ai' || hex.owner === 'werewolf') {
@@ -419,30 +461,22 @@ function executeBattle(targetHex) {
 
 // ================= ЭКОНОМИКА И ИИ =================
 function collectIncome() {
-    let bloodBonus = 0;
-    let goldBonus = 0;
-    let isNecro = game.player.techs.necromancy;
+    let bloodBonus = 0, goldBonus = 0;
 
     game.hexGrid.forEach(h => {
         if (h.owner === 'player') {
             goldBonus += 2 + (h.resources?.gold || 0);
             bloodBonus += 1 + (h.resources?.blood || 0);
-            
             h.buildings.forEach(b => {
                 if (b.type === 'cemetery') bloodBonus += 5;
                 if (b.type === 'citadel' && game.player.hasCitadel) goldBonus += 50;
             });
-        } else if (h.owner === 'ai') {
-            game.ai.gold += 2;
-        } else if (h.owner === 'werewolf') {
-            game.werewolf.gold += 3;
-        }
+        } else if (h.owner === 'ai') game.ai.gold += 2;
+        else if (h.owner === 'werewolf') game.werewolf.gold += 3;
     });
 
     game.player.blood += bloodBonus;
     game.player.gold += goldBonus;
-    console.log(`📊 Доход: +${goldBonus}🪙, +${bloodBonus}🩸`);
-    if (isNecro) log('Некромантия активирована.', 'system');
 }
 
 function aiTurn() {
@@ -460,18 +494,15 @@ function aiTurn() {
 }
 
 function endPlayerTurn() {
-    console.log('🔄 Нажата кнопка: СЛЕД. ХОД (запускается endPlayerTurn)');
     if (game.gameOver || game.battleActive) return;
     collectIncome();
     game.player.ap = game.player.maxAp;
     game.turn++;
     if (game.turn % 2 === 1) game.day++;
-    console.log(`📅 Ход изменён на: ${game.turn}, День: ${game.day}`);
     log(`ХОД ${game.turn}. ${isNightTime() ? '🌙 НОЧЬ' : '☀️ ДЕНЬ'}.`, 'system');
     aiTurn();
     checkGameConditions();
-    saveGame(); 
-    updateUI();
+    saveGame(); updateUI();
 }
 
 // ================= ЛОР И КНОПКИ ИНТЕРФЕЙСА =================
@@ -504,10 +535,12 @@ function initGame() {
         game = getDefaultGame(); 
         game.hexGrid = initHexGrid();
         game.player.lords.push({ name: LORD_NAMES[0], battles: 0 });
+        log('Дракула пробудился! Завоюйте Европу.', 'system');
+        log('💡 Совет: Кликните по своему гексу чтобы строить, по соседнему нейтральному чтобы захватить, и по соседнему врагу чтобы атаковать.', 'system');
     }
     document.getElementById('btn-end-turn').disabled = false;
     attachLoreListeners();
-    updateUI(); log('Дракула пробудился! Завоюйте Европу.', 'system');
+    updateUI();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -565,6 +598,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-open-tech').addEventListener('click', () => { 
         document.getElementById('tech-gold').textContent = game.player.gold;
         document.getElementById('tech-modal').style.display = 'flex'; 
+    });
+    document.getElementById('btn-open-factions').addEventListener('click', () => { 
+        document.getElementById('factions-modal').style.display = 'flex'; 
+    });
+    document.getElementById('btn-factions-close').addEventListener('click', () => { 
+        document.getElementById('factions-modal').style.display = 'none'; 
     });
 
     // ===== ДИПЛОМАТИЯ (ЛОГИКА) =====
