@@ -70,14 +70,10 @@ async function loadSprites() {
         spriteAIGeneral = await PIXI.Assets.load('./assets/Knigt Vatican General.gif').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
 
-        // Проверка и вывод в консоль для отладки
         if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
         if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
         if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
-        
-    } catch (e) {
-        console.error("Ошибка загрузки спрайтов:", e);
-    }
+    } catch (e) {}
 }
 loadSprites();
 
@@ -259,15 +255,19 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // РЕЗЕРВНАЯ ОТРИСОВКА, ЕСЛИ СПРАЙТ НЕ ЗАГРУЗИЛСЯ
+    // ИСПРАВЛЕНИЕ: ОБЕРНУТЬ СОЗДАНИЕ ТЕКСТА В TRY...CATCH, ЧТОБЫ НЕ ПАДАЛА ОТРИСОВКА
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
         c.beginFill(color);
         c.drawCircle(0, 0, 14);
         c.endFill();
-        const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff });
-        t.anchor.set(0.5);
-        c.addChild(t);
+        try {
+            const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel, sans-serif', fontSize: 10, fill: 0xffffff });
+            t.anchor.set(0.5);
+            c.addChild(t);
+        } catch (e) {
+            console.warn("Не удалось отрисовать текст на кружке армии:", e);
+        }
         c.x = x; c.y = y;
         armyContainer.addChild(c);
     }
@@ -420,7 +420,6 @@ function executeBattle(targetHex) {
 function collectIncome() {
     let bloodBonus = 0;
     let goldBonus = 0;
-    let slaveGold = 0;
     let isNecro = game.player.techs.necromancy;
 
     game.hexGrid.forEach(h => {
@@ -459,6 +458,7 @@ function aiTurn() {
 }
 
 function endPlayerTurn() {
+    console.log('▶️ Кнопка СЛЕД. ХОД нажата, запускается endPlayerTurn()');
     if (game.gameOver || game.battleActive) return;
     collectIncome();
     game.player.ap = game.player.maxAp;
