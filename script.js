@@ -60,12 +60,10 @@ let spriteLord = null, spriteAIGeneral = null, spriteWolfGeneral = null;
 
 async function loadSprites() {
     try {
-        // Основные армии
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
         
-        // Дополнительные спрайты (Генералы и Лорды)
         spriteLord = await PIXI.Assets.load('./assets/Lord Vampire.jpg').catch(()=>null);
         spriteAIGeneral = await PIXI.Assets.load('./assets/Knigt Vatican General.gif').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
@@ -255,21 +253,24 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // ИСПРАВЛЕНИЕ: ОБЕРНУТЬ СОЗДАНИЕ ТЕКСТА В TRY...CATCH, ЧТОБЫ НЕ ПАДАЛА ОТРИСОВКА
+    // ФУНКЦИЯ БЕЗОПАСНОГО КРУЖКА-ЗАГЛУШКИ
     function renderFallback(x, y, count, color) {
-        const c = new PIXI.Graphics();
-        c.beginFill(color);
-        c.drawCircle(0, 0, 14);
-        c.endFill();
         try {
-            const t = new PIXI.Text(`${count}`, { fontFamily: 'Cinzel, sans-serif', fontSize: 10, fill: 0xffffff });
+            const c = new PIXI.Graphics();
+            c.beginFill(color);
+            c.drawCircle(0, 0, 14);
+            c.endFill();
+            
+            // Создание текста обёрнуто в защиту
+            const t = new PIXI.Text(`${count}`, { fontFamily: 'Arial, sans-serif', fontSize: 10, fill: 0xffffff });
             t.anchor.set(0.5);
             c.addChild(t);
+            
+            c.x = x; c.y = y;
+            armyContainer.addChild(c);
         } catch (e) {
-            console.warn("Не удалось отрисовать текст на кружке армии:", e);
+            console.warn("Ошибка отрисовки резервной армии:", e);
         }
-        c.x = x; c.y = y;
-        armyContainer.addChild(c);
     }
 
     // Отрисовка армии Дракулы (Вампиры)
@@ -278,7 +279,7 @@ function drawArmies() {
         if (spritePlayer) { 
             const s = new PIXI.Sprite(spritePlayer); 
             s.anchor.set(0.5); 
-            s.scale.set(0.25); 
+            s.scale.set(0.2); // Уменьшен масштаб
             s.x = pPos.x; 
             s.y = pPos.y; 
             armyContainer.addChild(s); 
@@ -286,7 +287,7 @@ function drawArmies() {
             if(game.player.lords.length > 0 && spriteLord) {
                 const l = new PIXI.Sprite(spriteLord);
                 l.anchor.set(0.5);
-                l.scale.set(0.12);
+                l.scale.set(0.1);
                 l.x = pPos.x + 30;
                 l.y = pPos.y - 25;
                 armyContainer.addChild(l);
@@ -301,14 +302,14 @@ function drawArmies() {
         if (spriteAI) { 
             const s = new PIXI.Sprite(spriteAI); 
             s.anchor.set(0.5); 
-            s.scale.set(0.28); 
+            s.scale.set(0.22); 
             s.x = aPos.x; 
             s.y = aPos.y; 
             armyContainer.addChild(s);
             if(spriteAIGeneral) {
                 const g = new PIXI.Sprite(spriteAIGeneral);
                 g.anchor.set(0.5);
-                g.scale.set(0.10);
+                g.scale.set(0.1);
                 g.x = aPos.x + 25;
                 g.y = aPos.y - 25;
                 armyContainer.addChild(g);
@@ -323,7 +324,7 @@ function drawArmies() {
         if (spriteWerewolf) { 
             const s = new PIXI.Sprite(spriteWerewolf); 
             s.anchor.set(0.5); 
-            s.scale.set(0.25); 
+            s.scale.set(0.18); 
             s.x = wPos.x; 
             s.y = wPos.y; 
             armyContainer.addChild(s);
@@ -440,6 +441,7 @@ function collectIncome() {
 
     game.player.blood += bloodBonus;
     game.player.gold += goldBonus;
+    console.log(`📊 Доход: +${goldBonus}🪙, +${bloodBonus}🩸`);
     if (isNecro) log('Некромантия активирована.', 'system');
 }
 
@@ -458,16 +460,18 @@ function aiTurn() {
 }
 
 function endPlayerTurn() {
-    console.log('▶️ Кнопка СЛЕД. ХОД нажата, запускается endPlayerTurn()');
+    console.log('🔄 Нажата кнопка: СЛЕД. ХОД (запускается endPlayerTurn)');
     if (game.gameOver || game.battleActive) return;
     collectIncome();
     game.player.ap = game.player.maxAp;
     game.turn++;
     if (game.turn % 2 === 1) game.day++;
+    console.log(`📅 Ход изменён на: ${game.turn}, День: ${game.day}`);
     log(`ХОД ${game.turn}. ${isNightTime() ? '🌙 НОЧЬ' : '☀️ ДЕНЬ'}.`, 'system');
     aiTurn();
     checkGameConditions();
-    saveGame(); updateUI();
+    saveGame(); 
+    updateUI();
 }
 
 // ================= ЛОР И КНОПКИ ИНТЕРФЕЙСА =================
