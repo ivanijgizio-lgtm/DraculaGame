@@ -54,7 +54,7 @@ app.stage.addChild(hexContainer);
 const armyContainer = new PIXI.Container();
 app.stage.addChild(armyContainer);
 
-// ================= ЗАГРУЗКА СПРАЙТОВ (С ВАШИМИ НОВЫМИ ФАЙЛАМИ) =================
+// ================= ЗАГРУЗКА СПРАЙТОВ =================
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 let spriteLord = null, spriteAIGeneral = null, spriteWolfGeneral = null;
 
@@ -70,8 +70,14 @@ async function loadSprites() {
         spriteAIGeneral = await PIXI.Assets.load('./assets/Knigt Vatican General.gif').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
 
-        if (!spritePlayer) console.warn('Не найден спрайт Vampire Army.png');
-    } catch (e) {}
+        // Проверка и вывод в консоль для отладки
+        if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
+        if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
+        if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
+        
+    } catch (e) {
+        console.error("Ошибка загрузки спрайтов:", e);
+    }
 }
 loadSprites();
 
@@ -253,6 +259,7 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
+    // РЕЗЕРВНАЯ ОТРИСОВКА, ЕСЛИ СПРАЙТ НЕ ЗАГРУЗИЛСЯ
     function renderFallback(x, y, count, color) {
         const c = new PIXI.Graphics();
         c.beginFill(color);
@@ -265,13 +272,13 @@ function drawArmies() {
         armyContainer.addChild(c);
     }
 
-    // Отрисовка армий с увеличенным масштабом
+    // Отрисовка армии Дракулы (Вампиры)
     if (pPos) {
         let count = getTotalTroops(game.player.mobileArmy);
         if (spritePlayer) { 
             const s = new PIXI.Sprite(spritePlayer); 
             s.anchor.set(0.5); 
-            s.scale.set(0.22); 
+            s.scale.set(0.25); 
             s.x = pPos.x; 
             s.y = pPos.y; 
             armyContainer.addChild(s); 
@@ -284,17 +291,20 @@ function drawArmies() {
                 l.y = pPos.y - 25;
                 armyContainer.addChild(l);
             }
-        } else renderFallback(pPos.x, pPos.y, count, 0x7a1111);
+        } else {
+            renderFallback(pPos.x, pPos.y, count, 0x7a1111);
+        }
     }
+
+    // Отрисовка армии Ватикана
     if (aPos) {
         if (spriteAI) { 
             const s = new PIXI.Sprite(spriteAI); 
             s.anchor.set(0.5); 
-            s.scale.set(0.26); 
+            s.scale.set(0.28); 
             s.x = aPos.x; 
             s.y = aPos.y; 
             armyContainer.addChild(s);
-            // Для AI используем генерала
             if(spriteAIGeneral) {
                 const g = new PIXI.Sprite(spriteAIGeneral);
                 g.anchor.set(0.5);
@@ -303,13 +313,17 @@ function drawArmies() {
                 g.y = aPos.y - 25;
                 armyContainer.addChild(g);
             }
-        } else renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
+        } else {
+            renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
+        }
     }
+
+    // Отрисовка армии Оборотней
     if (wPos) {
         if (spriteWerewolf) { 
             const s = new PIXI.Sprite(spriteWerewolf); 
             s.anchor.set(0.5); 
-            s.scale.set(0.22); 
+            s.scale.set(0.25); 
             s.x = wPos.x; 
             s.y = wPos.y; 
             armyContainer.addChild(s);
@@ -321,7 +335,9 @@ function drawArmies() {
                 g.y = wPos.y - 25;
                 armyContainer.addChild(g);
             }
-        } else renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
+        } else {
+            renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
+        }
     }
 }
 
