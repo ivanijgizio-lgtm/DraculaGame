@@ -90,7 +90,7 @@ body {
 .log-entry.ai { color: #8ea4c7; }
 .log-entry.system { color: #7ab4e8; }
 
-/* ИСПРАВЛЕНИЕ: КНОПКА ОЧИСТИТЬ ТЕПЕРЬ КОМПАКТНАЯ */
+/* Кнопка ОЧИСТИТЬ - фиксированный компактный размер */
 #btn-clear-log {
     width: 150px;
     height: 40px;
