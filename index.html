@@ -43,9 +43,9 @@
                 <button id="btn-music-toggle" class="action-btn" style="font-size:10px; width:50px;" data-lore="music">ЗВУК</button>
             </div>
             
-            <canvas id="fog-canvas" width="910" height="580"></canvas>
-            <div id="sunset-overlay" style="position: absolute; top: 20px; left: 0; width: 910px; height: 580px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
-            <canvas id="game-canvas" width="910" height="580"></canvas>
+            <canvas id="fog-canvas" width="1100" height="650"></canvas>
+            <div id="sunset-overlay" style="position: absolute; top: 20px; left: 0; width: 1100px; height: 650px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
+            <canvas id="game-canvas" width="1100" height="650"></canvas>
             
             <div id="ui-panel">
                 <div id="action-buttons">
@@ -93,6 +93,7 @@
                     <button id="btn-open-diplomacy" class="action-btn" data-lore="diplomacy">ДИПЛОМАТИЯ</button>
                     <button id="btn-open-market" class="action-btn" data-lore="market">РЫНОК</button>
                     <button id="btn-open-tech" class="action-btn" data-lore="tech">ТЕХНОЛОГИИ</button>
+                    <button id="btn-open-factions" class="action-btn" data-lore="factions">ФРАКЦИИ</button>
                     <button id="btn-end-turn" class="action-btn main-action" data-lore="endturn">СЛЕД. ХОД</button>
                 </div>
             </div>
@@ -174,6 +175,34 @@
                 <button id="tech-trade" class="action-btn" style="width:80%;">Торговые пути (Рынок работает 2 раза за ход)</button>
             </div>
             <p id="tech-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+        </div>
+    </div>
+
+    <div id="factions-modal" class="modal">
+        <div class="modal-content" style="width: 550px;">
+            <h2>ФРАКЦИИ ЕВРОПЫ</h2>
+            <div id="factions-content" style="text-align: left; margin: 15px 0; font-size: 14px; line-height: 1.6;">
+                <p><b>🦇 Вампиры (Клан Дракулы)</b><br>
+                Лидер: Граф Дракула.<br>
+                Мотивация: Вернуть трон Европы, погрузив континент в вечную ночь. Они черпают силу в крови и правят ночью, наводя ужас на людей. Их Лорды — бессмертные генералы, ведущие легионы мертвых.<br>
+                <i>Особенность: Имеют доступ к Лордам.</i></p>
+
+                <p><b>⛪ Ватикан (Святой Престол)</b><br>
+                Лидер: Верховный Инквизитор.<br>
+                Мотивация: Искоренить ересь и защитить человечество от вторжения Тьмы. Ватикан — оплот Света и веры, его воины закованы в сталь и не знают страха. Они готовы сжечь любого демона на костре.<br>
+                <i>Особенность: Лучшие защитники с мощными укреплениями.</i></p>
+
+                <p><b>🐺 Оборотни (Дикая Охота)</b><br>
+                Лидер: Альфа-Вожак.<br>
+                Мотивация: Распространить дикую охоту на весь мир, разорвать цивилизацию в клочья. Оборотни — жестокие и кровожадные существа, обитающие в лесах и горах. Они атакуют яростно и быстро, словно ураган.<br>
+                <i>Особенность: Быстрые и агрессивные армии.</i></p>
+
+                <p><b>🔮 Оккультисты (Древний Культ)</b><br>
+                Лидер: Пророк в Маске.<br>
+                Мотивация: Пробудить забытых богов из бездны, чтобы погрузить мир в хаос. Оккультисты — таинственная нейтральная фракция, живущая в руинах и пещерах. Они опасны для всех, но их земли хранят древние тайны и ресурсы.<br>
+                <i>Особенность: Нейтральны, при захвате дают бонусы.</i></p>
+            </div>
+            <button id="btn-factions-close" class="action-btn main-action" style="width: auto; padding: 10px 30px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
