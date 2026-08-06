@@ -38,7 +38,7 @@ const BUILD_LORE = {
     'factions': "ФРАКЦИИ: Узнайте о могущественных силах, борющихся за Европу. Каждая фракция имеет своих лидеров, мотивы и уникальные возможности. Понимание их целей поможет вам выбрать правильную стратегию."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (РАСШИРЕНА ДО 1100x650) =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
     width: 1100, height: 650, 
@@ -56,21 +56,26 @@ app.stage.addChild(hexContainer);
 const armyContainer = new PIXI.Container();
 app.stage.addChild(armyContainer);
 
-// ================= ЗАГРУЗКА СПРАЙТОВ =================
+// ================= ОБНОВЛЕННЫЕ ПУТИ К ИКОНКАМ =================
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 let spriteLord = null, spriteAIGeneral = null, spriteWolfGeneral = null;
 
 async function loadSprites() {
     try {
+        // Основные армии
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
         
+        // Генералы и Лорды (обновлено под ваши файлы)
         spriteLord = await PIXI.Assets.load('./assets/Lord Vampire.jpg').catch(()=>null);
-        spriteAIGeneral = await PIXI.Assets.load('./assets/Knigt Vatican General.gif').catch(()=>null);
+        spriteAIGeneral = await PIXI.Assets.load('./assets/Vatican Inquisitor.png').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
 
         if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
+        if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
+        if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
+        if (!spriteAIGeneral) console.warn('⚠️ Не найден спрайт Vatican Inquisitor.png');
     } catch (e) {}
 }
 loadSprites();
@@ -87,9 +92,10 @@ function getHexCorners(cx, cy) {
     return corners;
 }
 function hexToPixel(q, r) {
+    // Убрали жесткое смещение
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
-    return { x: x + 400, y: y + 300 }; // Отцентрировано для 1100x650
+    return { x, y };
 }
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
@@ -109,7 +115,7 @@ function getDefaultGame() {
         },
         ai: { gold: 100, mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '5,-3' } },
         werewolf: { gold: 50, mobileArmy: { infantry: 30, archer: 5, cavalry: 10, hexId: '-5,4' } },
-        occultist: { gold: 0 }, // Оккультисты не двигаются, но их можно захватить
+        occultist: { gold: 0 },
         hexGrid: []
     };
 }
@@ -118,16 +124,14 @@ let game = getDefaultGame();
 
 function initHexGrid() {
     const grid = [];
-    // ============ 50 ВЫМЫШЛЕНЫХ ГЕКСОВ ============
+    // 50 гексов
     const mapData = [
-        // Вампиры (Дракула) - Красные
         { q: 0, r: 0, name: 'Transilvania', owner: 'player', fort: 1, pop: 2000 },
         { q: 1, r: 0, name: 'Wallachia', owner: 'player', fort: 0, pop: 1500 },
         { q: -1, r: 0, name: 'Moldavia', owner: 'player', fort: 0, pop: 1500 },
         { q: 0, r: -1, name: 'Pannonia', owner: 'player', fort: 0, pop: 1200 },
         { q: 2, r: -1, name: 'Tatra Peaks', owner: 'player', fort: 1, pop: 1000 },
         
-        // Ватикан - Белые/Золотые
         { q: 5, r: -3, name: 'Vaticanum', owner: 'ai', fort: 3, pop: 5000 },
         { q: 6, r: -3, name: 'Roma', owner: 'ai', fort: 2, pop: 4000 },
         { q: 6, r: -4, name: 'Florentia', owner: 'ai', fort: 1, pop: 3000 },
@@ -139,7 +143,6 @@ function initHexGrid() {
         { q: 8, r: -3, name: 'Dalmatian Coast', owner: 'ai', fort: 0, pop: 1000 },
         { q: 8, r: -2, name: 'Zadar', owner: 'ai', fort: 0, pop: 1000 },
 
-        // Оборотни - Зелёные
         { q: -5, r: 4, name: 'Carpathia', owner: 'werewolf', fort: 0, pop: 2500 },
         { q: -4, r: 4, name: 'Dacia', owner: 'werewolf', fort: 0, pop: 2000 },
         { q: -3, r: 4, name: 'Moesia', owner: 'werewolf', fort: 0, pop: 1500 },
@@ -151,7 +154,6 @@ function initHexGrid() {
         { q: -2, r: 4, name: 'Amber Pass', owner: 'werewolf', fort: 0, pop: 1000 },
         { q: -5, r: 5, name: 'Mournful Plains', owner: 'werewolf', fort: 0, pop: 1000 },
 
-        // Оккультисты (Новая фракция) - Фиолетовые
         { q: 3, r: 2, name: 'The Black Citadel', owner: 'occultist', fort: 2, pop: 1000 },
         { q: 4, r: 2, name: 'Temple of Old Ones', owner: 'occultist', fort: 1, pop: 800 },
         { q: 2, r: 3, name: 'Sunken Spire', owner: 'occultist', fort: 1, pop: 500 },
@@ -161,7 +163,6 @@ function initHexGrid() {
         { q: 5, r: 2, name: 'Gilded Harbor', owner: 'occultist', fort: 0, pop: 400 },
         { q: -1, r: -4, name: 'Chasm of Echoes', owner: 'occultist', fort: 1, pop: 400 },
 
-        // Нейтральные (Ничейные) - Серые / Места для фарма
         { q: -2, r: -1, name: 'Silver Mines', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
         { q: -3, r: 2, name: 'Blood Marshes', owner: null, res: { gold: 0, blood: 20 }, fort: 0, pop: 0 },
         { q: 3, r: 1, name: 'Ruins', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
@@ -179,8 +180,28 @@ function initHexGrid() {
         { q: 3, r: -3, name: 'Lonely Plateau', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
     ];
     
-    mapData.forEach(d => {
+    // 1. Вычисляем сырые позиции
+    let rawPositions = mapData.map(d => {
         const pos = hexToPixel(d.q, d.r);
+        return { ...d, rawX: pos.x, rawY: pos.y };
+    });
+
+    // 2. Находим центр масс (bounding box)
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    rawPositions.forEach(p => {
+        minX = Math.min(minX, p.rawX); maxX = Math.max(maxX, p.rawX);
+        minY = Math.min(minY, p.rawY); maxY = Math.max(maxY, p.rawY);
+    });
+    let centerX = (minX + maxX) / 2;
+    let centerY = (minY + maxY) / 2;
+
+    // 3. Вычисляем смещение, чтобы карта идеально встала в центр окна 1100x650 (550, 325)
+    let shiftX = 550 - centerX;
+    let shiftY = 325 - centerY;
+
+    // 4. Формируем итоговую сетку
+    rawPositions.forEach(d => {
+        const pos = { x: d.rawX + shiftX, y: d.rawY + shiftY };
         let support = { player: 20, ai: 70, werewolf: 10, occultist: 0 };
         if (d.owner === 'player') support = { player: 80, ai: 10, werewolf: 10, occultist: 0 };
         else if (d.owner === 'ai') support = { player: 10, ai: 85, werewolf: 5, occultist: 0 };
@@ -252,7 +273,7 @@ function drawHexes() {
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
-        else if (hex.owner === 'occultist') color = 0x4a2e59; // Фиолетовый для Оккультистов
+        else if (hex.owner === 'occultist') color = 0x4a2e59;
 
         g.beginFill(color); 
         g.lineStyle(2, 0x333333, 0.7); 
@@ -303,7 +324,7 @@ function drawArmies() {
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАГЛУШКИ - ГАРАНТИРОВАННО РИСУЕТ КРУЖОК
+    // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАГЛУШКИ
     function renderFallback(x, y, count, color) {
         try {
             const c = new PIXI.Graphics();
@@ -318,7 +339,6 @@ function drawArmies() {
         } catch (e) { console.warn("Ошибка отрисовки резервной армии:", e); }
     }
 
-    // Армия Дракулы
     if (pPos) {
         let count = getTotalTroops(game.player.mobileArmy);
         if (spritePlayer) { 
@@ -336,13 +356,13 @@ function drawArmies() {
         } else { renderFallback(pPos.x, pPos.y, count, 0x7a1111); }
     }
 
-    // Армия Ватикана
     if (aPos) {
         if (spriteAI) { 
             const s = new PIXI.Sprite(spriteAI); 
             s.anchor.set(0.5); s.scale.set(0.22); 
             s.x = aPos.x; s.y = aPos.y; 
             armyContainer.addChild(s);
+            // Используем Инквизитора
             if(spriteAIGeneral) {
                 const g = new PIXI.Sprite(spriteAIGeneral);
                 g.anchor.set(0.5); g.scale.set(0.1);
@@ -352,7 +372,6 @@ function drawArmies() {
         } else { renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0); }
     }
 
-    // Армия Оборотней
     if (wPos) {
         if (spriteWerewolf) { 
             const s = new PIXI.Sprite(spriteWerewolf); 
@@ -398,12 +417,10 @@ function handleHexClick(hex) {
         game.selectedHexId = `${hex.q},${hex.r}`;
         log(`Выбрана ${hex.name} для стройки.`, 'system'); updateUI(); return;
     }
-    // Добавлена проверка на Оккультистов
     if (hex.owner === null || hex.owner === 'occultist') {
         game.player.mobileArmy.hexId = `${hex.q},${hex.r}`;
         if (getTotalTroops(game.player.mobileArmy) > 0) {
             hex.owner = 'player';
-            // Бонусы за захват Оккультистов
             if (hex.resources.gold > 0 || hex.resources.blood > 0) {
                 game.player.gold += hex.resources.gold * 2;
                 game.player.blood += hex.resources.blood * 2;
