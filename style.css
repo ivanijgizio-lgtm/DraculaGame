@@ -90,7 +90,6 @@ body {
 .log-entry.ai { color: #8ea4c7; }
 .log-entry.system { color: #7ab4e8; }
 
-/* Аккуратная кнопка ОЧИСТИТЬ */
 #btn-clear-log {
     width: 180px;
     height: 40px;
