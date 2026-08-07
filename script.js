@@ -56,27 +56,27 @@ app.stage.addChild(hexContainer);
 const armyContainer = new PIXI.Container();
 app.stage.addChild(armyContainer);
 
-// ================= ОБНОВЛЕННЫЕ ПУТИ К ИКОНКАМ =================
+// ================= ЗАГРУЗКА СПРАЙТОВ =================
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 let spriteLord = null, spriteAIGeneral = null, spriteWolfGeneral = null;
 
 async function loadSprites() {
     try {
-        // Основные армии
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
         spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
         spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
         
-        // Генералы и Лорды (обновлено под ваши файлы)
         spriteLord = await PIXI.Assets.load('./assets/Lord Vampire.jpg').catch(()=>null);
         spriteAIGeneral = await PIXI.Assets.load('./assets/Vatican Inquisitor.png').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
-
+        
         if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
         if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
         if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
         if (!spriteAIGeneral) console.warn('⚠️ Не найден спрайт Vatican Inquisitor.png');
-    } catch (e) {}
+    } catch (e) {
+        console.error("Ошибка загрузки спрайтов:", e);
+    }
 }
 loadSprites();
 
@@ -92,7 +92,6 @@ function getHexCorners(cx, cy) {
     return corners;
 }
 function hexToPixel(q, r) {
-    // Убрали жесткое смещение
     const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = HEX_SIZE * (3/2 * r);
     return { x, y };
@@ -124,7 +123,6 @@ let game = getDefaultGame();
 
 function initHexGrid() {
     const grid = [];
-    // 50 гексов
     const mapData = [
         { q: 0, r: 0, name: 'Transilvania', owner: 'player', fort: 1, pop: 2000 },
         { q: 1, r: 0, name: 'Wallachia', owner: 'player', fort: 0, pop: 1500 },
@@ -180,13 +178,11 @@ function initHexGrid() {
         { q: 3, r: -3, name: 'Lonely Plateau', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
     ];
     
-    // 1. Вычисляем сырые позиции
     let rawPositions = mapData.map(d => {
         const pos = hexToPixel(d.q, d.r);
         return { ...d, rawX: pos.x, rawY: pos.y };
     });
 
-    // 2. Находим центр масс (bounding box)
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     rawPositions.forEach(p => {
         minX = Math.min(minX, p.rawX); maxX = Math.max(maxX, p.rawX);
@@ -195,11 +191,9 @@ function initHexGrid() {
     let centerX = (minX + maxX) / 2;
     let centerY = (minY + maxY) / 2;
 
-    // 3. Вычисляем смещение, чтобы карта идеально встала в центр окна 1100x650 (550, 325)
     let shiftX = 550 - centerX;
     let shiftY = 325 - centerY;
 
-    // 4. Формируем итоговую сетку
     rawPositions.forEach(d => {
         const pos = { x: d.rawX + shiftX, y: d.rawY + shiftY };
         let support = { player: 20, ai: 70, werewolf: 10, occultist: 0 };
@@ -319,72 +313,82 @@ function drawHexes() {
 }
 
 function drawArmies() {
-    armyContainer.removeChildren();
-    const pPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
-    const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
-    const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
+    try {
+        armyContainer.removeChildren();
+        const pPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
+        const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
+        const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-    // БЕЗОПАСНАЯ ФУНКЦИЯ ЗАГЛУШКИ
-    function renderFallback(x, y, count, color) {
-        try {
-            const c = new PIXI.Graphics();
-            c.beginFill(color);
-            c.drawCircle(0, 0, 14);
-            c.endFill();
-            const t = new PIXI.Text(`${count}`, { fontFamily: 'Arial', fontSize: 10, fill: 0xffffff });
-            t.anchor.set(0.5);
-            c.addChild(t);
-            c.x = x; c.y = y;
-            armyContainer.addChild(c);
-        } catch (e) { console.warn("Ошибка отрисовки резервной армии:", e); }
-    }
-
-    if (pPos) {
-        let count = getTotalTroops(game.player.mobileArmy);
-        if (spritePlayer) { 
-            const s = new PIXI.Sprite(spritePlayer); 
-            s.anchor.set(0.5); 
-            s.scale.set(0.2); 
-            s.x = pPos.x; s.y = pPos.y; 
-            armyContainer.addChild(s); 
-            if(game.player.lords.length > 0 && spriteLord) {
-                const l = new PIXI.Sprite(spriteLord);
-                l.anchor.set(0.5); l.scale.set(0.1);
-                l.x = pPos.x + 30; l.y = pPos.y - 25;
-                armyContainer.addChild(l);
+        function renderFallback(x, y, count, color) {
+            if (!x || !y || isNaN(x) || isNaN(y)) return;
+            try {
+                const c = new PIXI.Graphics();
+                c.beginFill(color);
+                c.drawCircle(0, 0, 14);
+                c.endFill();
+                const t = new PIXI.Text(`${count}`, { fontFamily: 'Arial', fontSize: 10, fill: 0xffffff });
+                t.anchor.set(0.5);
+                c.addChild(t);
+                c.x = x; c.y = y;
+                armyContainer.addChild(c);
+            } catch (e) {
+                console.warn("Ошибка фоллбэк-отрисовки:", e);
             }
-        } else { renderFallback(pPos.x, pPos.y, count, 0x7a1111); }
-    }
+        }
 
-    if (aPos) {
-        if (spriteAI) { 
-            const s = new PIXI.Sprite(spriteAI); 
-            s.anchor.set(0.5); s.scale.set(0.22); 
-            s.x = aPos.x; s.y = aPos.y; 
-            armyContainer.addChild(s);
-            // Используем Инквизитора
-            if(spriteAIGeneral) {
-                const g = new PIXI.Sprite(spriteAIGeneral);
-                g.anchor.set(0.5); g.scale.set(0.1);
-                g.x = aPos.x + 25; g.y = aPos.y - 25;
-                armyContainer.addChild(g);
+        if (pPos) {
+            if (spritePlayer) {
+                const s = new PIXI.Sprite(spritePlayer);
+                s.anchor.set(0.5); 
+                s.scale.set(0.15); // Немного уменьшил, чтобы не закрывать текст
+                s.x = pPos.x; s.y = pPos.y;
+                armyContainer.addChild(s);
+                if(game.player.lords.length > 0 && spriteLord) {
+                    const l = new PIXI.Sprite(spriteLord);
+                    l.anchor.set(0.5); l.scale.set(0.08);
+                    l.x = pPos.x + 25; l.y = pPos.y - 20;
+                    armyContainer.addChild(l);
+                }
+            } else {
+                renderFallback(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111);
             }
-        } else { renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0); }
-    }
+        }
 
-    if (wPos) {
-        if (spriteWerewolf) { 
-            const s = new PIXI.Sprite(spriteWerewolf); 
-            s.anchor.set(0.5); s.scale.set(0.18); 
-            s.x = wPos.x; s.y = wPos.y; 
-            armyContainer.addChild(s);
-            if(spriteWolfGeneral) {
-                const g = new PIXI.Sprite(spriteWolfGeneral);
-                g.anchor.set(0.5); g.scale.set(0.12);
-                g.x = wPos.x + 25; g.y = wPos.y - 25;
-                armyContainer.addChild(g);
+        if (aPos) {
+            if (spriteAI) {
+                const s = new PIXI.Sprite(spriteAI);
+                s.anchor.set(0.5); s.scale.set(0.18);
+                s.x = aPos.x; s.y = aPos.y;
+                armyContainer.addChild(s);
+                if(spriteAIGeneral) {
+                    const g = new PIXI.Sprite(spriteAIGeneral);
+                    g.anchor.set(0.5); g.scale.set(0.08);
+                    g.x = aPos.x + 25; g.y = aPos.y - 20;
+                    armyContainer.addChild(g);
+                }
+            } else {
+                renderFallback(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0);
             }
-        } else { renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d); }
+        }
+
+        if (wPos) {
+            if (spriteWerewolf) {
+                const s = new PIXI.Sprite(spriteWerewolf);
+                s.anchor.set(0.5); s.scale.set(0.15);
+                s.x = wPos.x; s.y = wPos.y;
+                armyContainer.addChild(s);
+                if(spriteWolfGeneral) {
+                    const g = new PIXI.Sprite(spriteWolfGeneral);
+                    g.anchor.set(0.5); g.scale.set(0.08);
+                    g.x = wPos.x + 25; g.y = wPos.y - 20;
+                    armyContainer.addChild(g);
+                }
+            } else {
+                renderFallback(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d);
+            }
+        }
+    } catch (e) {
+        console.error("Критическая ошибка в drawArmies:", e);
     }
 }
 
@@ -602,21 +606,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-clear-log').addEventListener('click', () => document.getElementById('log-container').innerHTML = '');
     document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
-    // === ДИПЛОМАТИЯ, РЫНОК, ТЕХНОЛОГИИ (ОТКРЫТИЕ) ===
+    // === ДИПЛОМАТИЯ, РЫНОК, ТЕХНОЛОГИИ, ФРАКЦИИ (ОТКРЫТИЕ И ЛОГИ) ===
     document.getElementById('btn-open-diplomacy').addEventListener('click', () => { 
+        console.log("▶️ Нажата кнопка ДИПЛОМАТИЯ");
         document.getElementById('dip-gold').textContent = game.player.gold;
         document.getElementById('diplomacy-modal').style.display = 'flex'; 
     });
     document.getElementById('btn-open-market').addEventListener('click', () => { 
+        console.log("▶️ Нажата кнопка РЫНОК");
         document.getElementById('mkt-gold').textContent = game.player.gold;
         document.getElementById('mkt-blood').textContent = game.player.blood;
         document.getElementById('market-modal').style.display = 'flex'; 
     });
     document.getElementById('btn-open-tech').addEventListener('click', () => { 
+        console.log("▶️ Нажата кнопка ТЕХНОЛОГИИ");
         document.getElementById('tech-gold').textContent = game.player.gold;
         document.getElementById('tech-modal').style.display = 'flex'; 
     });
     document.getElementById('btn-open-factions').addEventListener('click', () => { 
+        console.log("▶️ Нажата кнопка ФРАКЦИИ");
         document.getElementById('factions-modal').style.display = 'flex'; 
     });
     document.getElementById('btn-factions-close').addEventListener('click', () => { 
