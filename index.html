@@ -109,7 +109,7 @@
     <div id="tooltip"></div>
     <div id="lore-tooltip"></div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <!-- МОДАЛЬНЫЕ ОКНА С КНОПКАМИ ЗАКРЫТЬ -->
     <div id="action-modal" class="modal">
         <div class="modal-content">
             <h2>ВАРВАРЫ У ВОРОТ!</h2>
@@ -118,6 +118,7 @@
                 <button id="btn-siege" class="action-btn" style="border-color: #4a5b9a;">ОСАДИТЬ (1 AP)</button>
                 <button id="btn-assault-now" class="action-btn main-action">АТАКОВАТЬ (1 AP)</button>
             </div>
+            <button id="btn-action-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
     <div id="surrender-modal" class="modal">
@@ -130,6 +131,7 @@
                 <button id="btn-convert" class="action-btn" style="background:#0f0d18; border-color:#4a5b9a;">ОБРАТИТЬ</button>
             </div>
             <p id="surrender-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-surrender-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
     <div id="gameover-modal" class="modal">
@@ -152,6 +154,7 @@
                 <button id="dip-alliance" class="action-btn" style="width:80%;">Союз против Оборотней (50🪙)</button>
             </div>
             <p id="diplomacy-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-diplomacy-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
     <div id="market-modal" class="modal">
@@ -163,6 +166,7 @@
                 <button id="mkt-blood-to-gold" class="action-btn" style="width:80%;">10 Крови → 8 Золота</button>
             </div>
             <p id="market-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-market-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
     <div id="tech-modal" class="modal">
@@ -175,6 +179,7 @@
                 <button id="tech-trade" class="action-btn" style="width:80%;">Торговые пути (Рынок работает 2 раза за ход)</button>
             </div>
             <p id="tech-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-tech-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -202,7 +207,7 @@
                 Мотивация: Пробудить забытых богов из бездны, чтобы погрузить мир в хаос. Оккультисты — таинственная нейтральная фракция, живущая в руинах и пещерах. Они опасны для всех, но их земли хранят древние тайны и ресурсы.<br>
                 <i>Особенность: Нейтральны, при захвате дают бонусы.</i></p>
             </div>
-            <button id="btn-factions-close" class="action-btn main-action" style="width: auto; padding: 10px 30px;">ЗАКРЫТЬ</button>
+            <button id="btn-factions-close" class="action-btn main-action" style="margin: 10px auto 0; width: auto; padding: 10px 30px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
