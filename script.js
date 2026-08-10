@@ -1,4 +1,4 @@
-// ================= РАСШИРЕННЫЙ ЛОР (5 ПРЕДЛОЖЕНИЙ) =================
+// ================= РАСШИРЕННЫЙ ЛОР =================
 const BUILD_LORE = {
     'build': "СТРОИТЬ: Возводите тёмные сооружения, чтобы укрепить свою власть в захваченных землях. Каждое здание тратит 1 Очко Действия (AP) и требует золота. Стройте Казармы, чтобы пополнять армию, и Храмы, чтобы призывать Лордов. Возводите Стены и Замки для защиты провинций от вражеских вторжений. Тщательно планируйте цепочку построек, так как они открывают доступ к элитным юнитам.",
     'recruit': "ПРИЗВАТЬ: Найдите подходящих солдат и слуг среди покорённого населения или с помощью древних ритуалов. Каждый призыв тратит 1 Очко Действия (AP) и требует золота, а также наличия необходимых зданий. Базовые подразделения, такие как пехота и лучники, набираются в провинциях с Казармами Lv1. Элитные бойцы, вроде Рыцарей Тьмы и Сборщиков душ, требуют более продвинутых построек.",
@@ -69,20 +69,13 @@ async function loadSprites() {
         spriteLord = await PIXI.Assets.load('./assets/Lord Vampire.jpg').catch(()=>null);
         spriteAIGeneral = await PIXI.Assets.load('./assets/Vatican Inquisitor.png').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
-        
-        if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
-        if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
-        if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
-        if (!spriteAIGeneral) console.warn('⚠️ Не найден спрайт Vatican Inquisitor.png');
-    } catch (e) {
-        console.error("Ошибка загрузки спрайтов:", e);
-    }
+    } catch (e) {}
 }
 loadSprites();
 
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
-const HEX_SIZE = 50; 
+const HEX_SIZE = 45; 
 function getHexCorners(cx, cy) {
     const corners = [];
     for (let i = 0; i < 6; i++) {
@@ -320,7 +313,6 @@ function drawArmies() {
         const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
         function renderFallback(x, y, count, color) {
-            if (!x || !y || isNaN(x) || isNaN(y)) return;
             try {
                 const c = new PIXI.Graphics();
                 c.beginFill(color);
@@ -331,16 +323,14 @@ function drawArmies() {
                 c.addChild(t);
                 c.x = x; c.y = y;
                 armyContainer.addChild(c);
-            } catch (e) {
-                console.warn("Ошибка фоллбэк-отрисовки:", e);
-            }
+            } catch (e) { console.warn("Ошибка фоллбэк-отрисовки:", e); }
         }
 
         if (pPos) {
             if (spritePlayer) {
                 const s = new PIXI.Sprite(spritePlayer);
                 s.anchor.set(0.5); 
-                s.scale.set(0.15); // Немного уменьшил, чтобы не закрывать текст
+                s.scale.set(0.15);
                 s.x = pPos.x; s.y = pPos.y;
                 armyContainer.addChild(s);
                 if(game.player.lords.length > 0 && spriteLord) {
@@ -392,17 +382,43 @@ function drawArmies() {
     }
 }
 
+// ================= ГЛАВНОЕ ОБНОВЛЕНИЕ UI (ИСПРАВЛЕНА ОШИБКА NULL) =================
 function updateUI() {
-    document.getElementById('turn-counter').textContent = game.turn;
-    document.getElementById('day-counter').textContent = game.day;
-    document.getElementById('ap-counter').textContent = `${game.player.ap}/${game.player.maxAp}`;
-    document.getElementById('blood-counter').textContent = game.player.blood;
-    document.getElementById('gold-counter').textContent = game.player.gold;
-    document.getElementById('elite-counter').textContent = game.player.lords.length;
+    try {
+        // Проверяем каждый элемент перед установкой textContent, чтобы не падать
+        const elTurn = document.getElementById('turn-counter');
+        if (elTurn) elTurn.textContent = game.turn;
+
+        const elDay = document.getElementById('day-counter');
+        if (elDay) elDay.textContent = game.day;
+
+        const elAp = document.getElementById('ap-counter');
+        if (elAp) elAp.textContent = `${game.player.ap}/${game.player.maxAp}`;
+
+        const elBlood = document.getElementById('blood-counter');
+        if (elBlood) elBlood.textContent = game.player.blood;
+
+        const elGold = document.getElementById('gold-counter');
+        if (elGold) elGold.textContent = game.player.gold;
+
+        const elElite = document.getElementById('elite-counter');
+        if (elElite) elElite.textContent = game.player.lords.length;
+
+        // Вера Ватикана
+        const faithFill = document.getElementById('faith-bar-fill');
+        if (faithFill) faithFill.style.width = '0%';
+        
+        const faithText = document.getElementById('faith-text');
+        if (faithText) faithText.textContent = '0 / 100';
+        
+    } catch (e) {
+        console.warn("Не удалось обновить UI:", e);
+    }
     
     const cH = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     const isReadyToAssault = (cH && cH.siegeBy === 'player' && game.player.ap > 0 && isNightTime() && !game.gameOver);
-    document.getElementById('btn-assault').disabled = !isReadyToAssault;
+    const assaultBtn = document.getElementById('btn-assault');
+    if (assaultBtn) assaultBtn.disabled = !isReadyToAssault;
     
     drawHexes(); drawArmies();
 }
@@ -606,85 +622,94 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-clear-log').addEventListener('click', () => document.getElementById('log-container').innerHTML = '');
     document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
-    // === ДИПЛОМАТИЯ, РЫНОК, ТЕХНОЛОГИИ, ФРАКЦИИ (ОТКРЫТИЕ И ЛОГИ) ===
-    document.getElementById('btn-open-diplomacy').addEventListener('click', () => { 
-        console.log("▶️ Нажата кнопка ДИПЛОМАТИЯ");
-        document.getElementById('dip-gold').textContent = game.player.gold;
-        document.getElementById('diplomacy-modal').style.display = 'flex'; 
+    // === ИСПРАВЛЕНИЕ: ДИПЛОМАТИЯ, РЫНОК, ТЕХНОЛОГИИ (С ЗАЩИТОЙ ОТ NULL) ===
+    document.getElementById('btn-open-diplomacy').addEventListener('click', () => {
+        const infoEl = document.getElementById('diplomacy-info');
+        if (infoEl) infoEl.textContent = `Ваше золото: ${game.player.gold} 🪙.`;
+        const modal = document.getElementById('diplomacy-modal');
+        if (modal) modal.style.display = 'flex';
     });
-    document.getElementById('btn-open-market').addEventListener('click', () => { 
-        console.log("▶️ Нажата кнопка РЫНОК");
-        document.getElementById('mkt-gold').textContent = game.player.gold;
-        document.getElementById('mkt-blood').textContent = game.player.blood;
-        document.getElementById('market-modal').style.display = 'flex'; 
+    document.getElementById('btn-open-market').addEventListener('click', () => {
+        const infoEl = document.getElementById('market-info');
+        if (infoEl) infoEl.textContent = `🪙 ${game.player.gold} | 🩸 ${game.player.blood}. (1 раз за ход)`;
+        const modal = document.getElementById('market-modal');
+        if (modal) modal.style.display = 'flex';
     });
-    document.getElementById('btn-open-tech').addEventListener('click', () => { 
-        console.log("▶️ Нажата кнопка ТЕХНОЛОГИИ");
-        document.getElementById('tech-gold').textContent = game.player.gold;
-        document.getElementById('tech-modal').style.display = 'flex'; 
+    document.getElementById('btn-open-tech').addEventListener('click', () => {
+        const infoEl = document.getElementById('tech-info');
+        if (infoEl) infoEl.textContent = `Ваше золото: ${game.player.gold} 🪙.`;
+        const modal = document.getElementById('tech-modal');
+        if (modal) modal.style.display = 'flex';
     });
-    document.getElementById('btn-open-factions').addEventListener('click', () => { 
-        console.log("▶️ Нажата кнопка ФРАКЦИИ");
-        document.getElementById('factions-modal').style.display = 'flex'; 
+    document.getElementById('btn-open-factions').addEventListener('click', () => {
+        const modal = document.getElementById('factions-modal');
+        if (modal) modal.style.display = 'flex';
     });
-    document.getElementById('btn-factions-close').addEventListener('click', () => { 
-        document.getElementById('factions-modal').style.display = 'none'; 
+    document.getElementById('btn-factions-close').addEventListener('click', () => {
+        const modal = document.getElementById('factions-modal');
+        if (modal) modal.style.display = 'none';
     });
 
-    // ===== ДИПЛОМАТИЯ (ЛОГИКА) =====
+    // ===== ДИПЛОМАТИЯ (ЛОГИКА СОЮЗОВ И ПЕРЕМИРИЙ) =====
     document.getElementById('dip-truce-ai').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота для перемирия.', 'system');
         if (game.player.truceTurnsAI > 0) return log('Перемирие с Ватиканом уже активно.', 'system');
         game.player.gold -= 30; game.player.truceTurnsAI = 2;
         log('Заключено перемирие с Ватиканом на 2 хода!', 'player');
-        document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
+        const modal = document.getElementById('diplomacy-modal');
+        if (modal) modal.style.display = 'none'; updateUI();
     });
     document.getElementById('dip-truce-wolf').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота для перемирия.', 'system');
         if (game.player.truceTurnsWolf > 0) return log('Перемирие с Оборотнями уже активно.', 'system');
         game.player.gold -= 30; game.player.truceTurnsWolf = 2;
         log('Заключено перемирие с Оборотнями на 2 хода!', 'player');
-        document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
+        const modal = document.getElementById('diplomacy-modal');
+        if (modal) modal.style.display = 'none'; updateUI();
     });
     document.getElementById('dip-alliance').addEventListener('click', () => {
         if (game.player.gold < 50) return log('Не хватает золота для союза.', 'system');
         if (game.player.allianceWithAI) return log('Союз против Оборотней уже активен.', 'system');
         game.player.gold -= 50; game.player.allianceWithAI = true;
         log('Заключен союз с Ватиканом против Оборотней!', 'player');
-        document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
+        const modal = document.getElementById('diplomacy-modal');
+        if (modal) modal.style.display = 'none'; updateUI();
     });
 
-    // ===== РЫНОК (ЛОГИКА) =====
+    // ===== РЫНОК (ЛОГИКА ПОКУПКИ РЕСУРСОВ) =====
     document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
-        if(game.player.gold >= 10) { game.player.gold -= 10; game.player.blood += 8; log('Обмен: 10🪙 -> 8🩸', 'player'); document.getElementById('market-modal').style.display = 'none'; updateUI(); }
+        if(game.player.gold >= 10) { game.player.gold -= 10; game.player.blood += 8; log('Обмен: 10🪙 -> 8🩸', 'player'); const modal = document.getElementById('market-modal'); if (modal) modal.style.display = 'none'; updateUI(); }
         else log('Недостаточно золота!', 'system');
     });
     document.getElementById('mkt-blood-to-gold').addEventListener('click', () => {
-        if(game.player.blood >= 10) { game.player.blood -= 10; game.player.gold += 8; log('Обмен: 10🩸 -> 8🪙', 'player'); document.getElementById('market-modal').style.display = 'none'; updateUI(); }
+        if(game.player.blood >= 10) { game.player.blood -= 10; game.player.gold += 8; log('Обмен: 10🩸 -> 8🪙', 'player'); const modal = document.getElementById('market-modal'); if (modal) modal.style.display = 'none'; updateUI(); }
         else log('Недостаточно крови!', 'system');
     });
 
-    // ===== ТЕХНОЛОГИИ (ЛОГИКА) =====
+    // ===== ТЕХНОЛОГИИ (ЛОГИКА УЛУЧШЕНИЙ) =====
     document.getElementById('tech-reform').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота для Военной реформы.', 'system');
         if (game.player.techs.militaryReform) return log('Военная реформа уже изучена.', 'system');
         game.player.gold -= 30; game.player.techs.militaryReform = true;
         log('Изучена Военная реформа! Мощь армии увеличена на 10%.', 'player');
-        document.getElementById('tech-modal').style.display = 'none'; updateUI();
+        const modal = document.getElementById('tech-modal');
+        if (modal) modal.style.display = 'none'; updateUI();
     });
     document.getElementById('tech-necro').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота для Некромантии.', 'system');
         if (game.player.techs.necromancy) return log('Некромантия уже изучена.', 'system');
         game.player.gold -= 30; game.player.techs.necromancy = true;
         log('Изучена Некромантия! Убитые враги приносят дополнительную кровь.', 'player');
-        document.getElementById('tech-modal').style.display = 'none'; updateUI();
+        const modal = document.getElementById('tech-modal');
+        if (modal) modal.style.display = 'none'; updateUI();
     });
     document.getElementById('tech-trade').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота для Торговых путей.', 'system');
         if (game.player.techs.tradeRoutes) return log('Торговые пути уже изучены.', 'system');
         game.player.gold -= 30; game.player.techs.tradeRoutes = true;
         log('Изучены Торговые пути! Рынком можно пользоваться 2 раза за ход.', 'player');
-        document.getElementById('tech-modal').style.display = 'none'; updateUI();
+        const modal = document.getElementById('tech-modal');
+        if (modal) modal.style.display = 'none'; updateUI();
     });
 
     // ===== СТРОИТЕЛЬСТВО =====
