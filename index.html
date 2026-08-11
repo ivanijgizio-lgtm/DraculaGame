@@ -10,7 +10,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.12/pixi.min.js"></script>
 </head>
 <body>
+    <!-- СТАРТОВОЕ МЕНЮ (С АНИМАЦИЯМИ) -->
     <div id="start-menu" class="start-overlay">
+        <div class="fog-overlay"></div> <!-- Дымка на фоне -->
+        <div class="bat bat-1">🦇</div> <!-- Летучие мыши -->
+        <div class="bat bat-2">🦇</div>
+        
         <div class="start-content">
             <h1 class="gothic-title">
                 <span class="gothic-main">DRACULA</span><br>
@@ -23,6 +28,35 @@
         </div>
     </div>
 
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН (ЛОАДЕР) -->
+    <div id="loading-modal" class="modal" style="display:none; cursor:default;">
+        <div class="modal-content" style="border-color:#8a2be2; width: 350px;">
+            <h2>ПРОБУЖДЕНИЕ ТЬМЫ</h2>
+            <div class="loader-spinner"></div>
+            <p id="loading-text" style="margin-top: 20px; color: #b8c0d0;">Призыв легионов...</p>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ПРОЛОГА (ПРЕДЫСТОРИЯ) -->
+    <div id="prologue-modal" class="modal" style="display:none; background: #000000; cursor:default;">
+        <div class="prologue-content">
+            <h1 class="gothic-title" style="margin-top: 20px;">
+                <span class="gothic-main" style="font-size: 48px; animation: bloodPulse 3s ease-in-out infinite;">ВОЗВРАЩЕНИЕ ПОВЕЛИТЕЛЯ ТЬМЫ</span>
+            </h1>
+            <div class="prologue-text">
+                <p><b>Внутренняя мотивация.</b> Граф Дракула, последний из древнего рода, пробуждается спустя столетия. Им движет не только жажда крови, но и пылающая, неутолимая любовь к прекрасной Кассальдии — дочери его самого могущественного врага. Он хочет подарить ей мир, где она будет в безопасности, но его собственная вампирская сущность жаждет власти и хаоса.</p>
+                
+                <p><b>Внешняя мотивация.</b> Святой Престол во главе с <b>Папой Эмиретиусом Клавдием II</b> объявил крестовый поход против вампиров. Эмиретиус держит свою дочь Кассальдию в строгой изоляции, используя её как пешку для укрепления своей власти. Дракула должен объединить и завоевать все земли Европы, чтобы сокрушить Ватикан и освободить её.</p>
+                
+                <p><b>Внутренний конфликт.</b> Каждое убийство делает Дракулу сильнее, но оно же отдаляет его от человечности, которую он пытается сохранить ради Кассальдии. Он боится, что, достигнув цели, он станет чудовищем, которое она не сможет полюбить.</p>
+                
+                <p><b>Внешний конфликт.</b> Ватикан не остановится ни перед чем. Им противостоят дикие Оборотни, жаждущие крови. Но даже объединившись, они не смогут противостоять Армии Тьмы, которую ведёт Дракула. Европа — это поле боя, а судьба Кассальдии — главный приз.</p>
+            </div>
+            <button id="btn-prologue-start" class="action-btn main-action" style="font-size: 18px; padding: 15px 40px; margin-top: 20px;">НАЧАТЬ ЗАВОЕВАНИЕ</button>
+        </div>
+    </div>
+
+    <!-- ИГРОВОЙ КОНТЕЙНЕР -->
     <div id="game-container">
         <div id="bg-layer"></div>
         
@@ -109,16 +143,18 @@
     <div id="tooltip"></div>
     <div id="lore-tooltip"></div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА С КНОПКАМИ ЗАКРЫТЬ -->
+    <!-- ОСТАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА -->
     <div id="action-modal" class="modal">
         <div class="modal-content">
             <h2>ВАРВАРЫ У ВОРОТ!</h2>
             <p id="action-desc">Ваша армия вошла в провинцию. Что делать?</p>
-            <div id="action-options">
-                <button id="btn-siege" class="action-btn" style="border-color: #4a5b9a;">ОСАДИТЬ (1 AP)</button>
-                <button id="btn-assault-now" class="action-btn main-action">АТАКОВАТЬ (1 AP)</button>
+            <div id="action-options" style="display:flex; flex-direction:column; gap:10px; align-items:center; margin: 15px 0;">
+                <button id="btn-siege" class="action-btn" style="width:80%; border-color: #4a5b9a;">🚩 ОСАДИТЬ (1 AP)</button>
+                <button id="btn-assault-now" class="action-btn main-action" style="width:80%;">⚔️ АТАКОВАТЬ (1 AP)</button>
+                <button id="btn-curse" class="action-btn" style="width:80%; border-color: #8a2be2;">🔮 ПРОКЛЯНУТЬ (1 AP + 15 🩸)</button>
+                <button id="btn-bribe" class="action-btn" style="width:80%; border-color: #daa520;">💰 ПОДКУПИТЬ (1 AP + 100 🪙)</button>
             </div>
-            <button id="btn-action-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
+            <button id="btn-action-close" class="action-btn" style="margin-top:10px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
     <div id="surrender-modal" class="modal">
@@ -143,7 +179,6 @@
             </div>
         </div>
     </div>
-
     <div id="diplomacy-modal" class="modal">
         <div class="modal-content">
             <h2>ДИПЛОМАТИЯ</h2>
@@ -182,7 +217,6 @@
             <button id="btn-tech-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
-
     <div id="factions-modal" class="modal">
         <div class="modal-content" style="width: 550px;">
             <h2>ФРАКЦИИ ЕВРОПЫ</h2>
