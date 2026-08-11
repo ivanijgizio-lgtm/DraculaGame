@@ -1,109 +1,251 @@
-:root {
-    --bg-dark: #07070b;
-    --ui-bg: rgba(8, 8, 14, 0.95);
-    --ui-border: #4a5b9a;
-    --metal-blue: #4a5b9a;
-    --silver: #e0e5f0;
-    --text-light: #c8cfe0;
-}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dracula: Conquest!</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.12/pixi.min.js"></script>
+</head>
+<body>
+    <!-- СТАРТОВОЕ МЕНЮ (С АНИМАЦИЯМИ) -->
+    <div id="start-menu" class="start-overlay">
+        <div class="fog-overlay"></div> <!-- Дымка на фоне -->
+        <div class="bat bat-1">🦇</div> <!-- Летучие мыши -->
+        <div class="bat bat-2">🦇</div>
+        
+        <div class="start-content">
+            <h1 class="gothic-title">
+                <span class="gothic-main">DRACULA</span><br>
+                <span class="gothic-sub">CONQUEST</span>
+            </h1>
+            <div class="start-buttons">
+                <button id="btn-new-game" class="action-btn main-action" data-lore="newgame">НОВАЯ ИГРА</button>
+                <button id="btn-load-game" class="action-btn" data-lore="load">ЗАГРУЗИТЬ</button>
+            </div>
+        </div>
+    </div>
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН (ЛОАДЕР) -->
+    <div id="loading-modal" class="modal" style="display:none; cursor:default;">
+        <div class="modal-content" style="border-color:#8a2be2; width: 350px;">
+            <h2>ПРОБУЖДЕНИЕ ТЬМЫ</h2>
+            <div class="loader-spinner"></div>
+            <p id="loading-text" style="margin-top: 20px; color: #b8c0d0;">Призыв легионов...</p>
+        </div>
+    </div>
 
-body {
-    background-color: var(--bg-dark); font-family: 'Cinzel', serif;
-    color: var(--text-light); display: flex; justify-content: center; align-items: center;
-    height: 100vh; overflow: hidden;
-}
+    <!-- ЭКРАН ПРОЛОГА (ПРЕДЫСТОРИЯ) -->
+    <div id="prologue-modal" class="modal" style="display:none; background: #000000; cursor:default;">
+        <div class="prologue-content">
+            <h1 class="gothic-title" style="margin-top: 20px;">
+                <span class="gothic-main" style="font-size: 48px; animation: bloodPulse 3s ease-in-out infinite;">ВОЗВРАЩЕНИЕ ПОВЕЛИТЕЛЯ ТЬМЫ</span>
+            </h1>
+            <div class="prologue-text">
+                <p><b>Внутренняя мотивация.</b> Граф Дракула, последний из древнего рода, пробуждается спустя столетия. Им движет не только жажда крови, но и пылающая, неутолимая любовь к прекрасной Кассальдии — дочери его самого могущественного врага. Он хочет подарить ей мир, где она будет в безопасности, но его собственная вампирская сущность жаждет власти и хаоса.</p>
+                
+                <p><b>Внешняя мотивация.</b> Святой Престол во главе с <b>Папой Эмиретиусом Клавдием II</b> объявил крестовый поход против вампиров. Эмиретиус держит свою дочь Кассальдию в строгой изоляции, используя её как пешку для укрепления своей власти. Дракула должен объединить и завоевать все земли Европы, чтобы сокрушить Ватикан и освободить её.</p>
+                
+                <p><b>Внутренний конфликт.</b> Каждое убийство делает Дракулу сильнее, но оно же отдаляет его от человечности, которую он пытается сохранить ради Кассальдии. Он боится, что, достигнув цели, он станет чудовищем, которое она не сможет полюбить.</p>
+                
+                <p><b>Внешний конфликт.</b> Ватикан не остановится ни перед чем. Им противостоят дикие Оборотни, жаждущие крови. Но даже объединившись, они не смогут противостоять Армии Тьмы, которую ведёт Дракула. Европа — это поле боя, а судьба Кассальдии — главный приз.</p>
+            </div>
+            <button id="btn-prologue-start" class="action-btn main-action" style="font-size: 18px; padding: 15px 40px; margin-top: 20px;">НАЧАТЬ ЗАВОЕВАНИЕ</button>
+        </div>
+    </div>
 
-.start-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat;
-    z-index: 999; display: flex; justify-content: center; align-items: center;
-}
-.start-content { background: transparent; padding: 40px; text-align: center; }
-.gothic-title { font-family: 'Grenze Gotisch', serif; margin-bottom: 40px; }
-.gothic-main { font-size: 72px; color: #fff; text-shadow: 0 0 40px rgba(74, 91, 154, 0.6); letter-spacing: 6px; }
-.gothic-sub { font-size: 36px; color: var(--metal-blue); text-shadow: 0 0 20px rgba(74, 91, 154, 0.4); letter-spacing: 8px; }
+    <!-- ИГРОВОЙ КОНТЕЙНЕР -->
+    <div id="game-container">
+        <div id="bg-layer"></div>
+        
+        <div id="main-area">
+            <div id="top-bar">
+                <div class="stat">ХОД: <span id="turn-counter">1</span></div>
+                <div class="stat">ДЕНЬ: <span id="day-counter">1</span></div>
+                <div class="stat">Действия: <span id="ap-counter">2/2</span></div>
+                <div class="stat">Кровь: <span id="blood-counter">10</span></div>
+                <div class="stat">Золото: <span id="gold-counter">100</span></div>
+                <div class="stat">Лорды: <span id="elite-counter">0</span></div>
+                <div id="faith-container">
+                    <span>ВЕРА ВАТИКАНА</span>
+                    <div id="faith-bar-bg"><div id="faith-bar-fill"></div></div>
+                    <span id="faith-text">0 / 100</span>
+                </div>
+                <button id="btn-mnu-restart" class="action-btn" style="background:#111; border-color:#4a5b9a; font-size:10px; width:60px;" data-lore="menu">МЕНЮ</button>
+                <button id="btn-music-toggle" class="action-btn" style="font-size:10px; width:50px;" data-lore="music">ЗВУК</button>
+            </div>
+            
+            <canvas id="fog-canvas" width="1100" height="650"></canvas>
+            <div id="sunset-overlay" style="position: absolute; top: 20px; left: 0; width: 1100px; height: 650px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
+            <canvas id="game-canvas" width="1100" height="650"></canvas>
+            
+            <div id="ui-panel">
+                <div id="action-buttons">
+                    <button id="btn-assault" class="action-btn" data-lore="assault" disabled>ШТУРМ</button>
+                    
+                    <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" data-lore="build">СТРОИТЬ</button>
+                        <div class="dropdown-content">
+                            <button id="build-cemetery" class="sub-btn" data-lore="cemetery">Кладбище (30🪙)</button>
+                            <button id="build-barracks" class="sub-btn" data-lore="barracks">Казармы Lv1 (20🪙)</button>
+                            <button id="build-barracks-2" class="sub-btn" data-lore="barracks_lv2">Казармы Lv2 (50🪙)</button>
+                            <button id="build-ritual" class="sub-btn" data-lore="ritual">Храм Тьмы (20🪙)</button>
+                            <button id="build-dungeon" class="sub-btn" data-lore="dungeon">Тюрьма (15🪙)</button>
+                            <button id="build-executions" class="sub-btn" data-lore="executions">Казни (10🪙)</button>
+                            <button id="build-ball" class="sub-btn" data-lore="ball">Бал Вампиров (30🪙)</button>
+                            <button id="build-center" class="sub-btn" data-lore="center">Центр Обращения (25🪙)</button>
+                            <button id="build-citadel" class="sub-btn" data-lore="citadel">Цитадель (40🪙)</button>
+                            <button id="build-wall" class="sub-btn" data-lore="wall">Стены (10🪙)</button>
+                            <button id="build-castle" class="sub-btn" data-lore="castle">Замок (40🪙)</button>
+                            <button id="build-market" class="sub-btn" data-lore="market">Рынок (20🪙)</button>
+                        </div>
+                    </div>
 
-.start-buttons { display: flex; flex-direction: column; gap: 20px; align-items: center; }
-.start-buttons button {
-    background: transparent; border: none; font-family: 'Cinzel', serif; font-size: 22px; color: #fff;
-    text-shadow: 0 0 20px rgba(74, 91, 154, 0.3); cursor: pointer; transition: 0.3s; padding: 5px 15px; width: 200px;
-}
-.start-buttons button:hover { color: var(--metal-blue); transform: scale(1.05); text-shadow: 0 0 40px rgba(74, 91, 154, 0.8); }
+                    <div class="dropdown">
+                        <button class="action-btn dropdown-toggle" data-lore="recruit">ПРИЗВАТЬ</button>
+                        <div class="dropdown-content">
+                            <button id="recruit-inf" class="sub-btn" data-lore="infantry">5 Пехоты (10🪙)</button>
+                            <button id="recruit-arch" class="sub-btn" data-lore="archer">5 Лучников (15🪙)</button>
+                            <button id="recruit-cav" class="sub-btn" data-lore="cavalry">3 Кавалерии (20🪙)</button>
+                            <button id="recruit-knights" class="sub-btn" data-lore="knights">Рыцари Тьмы (30🪙)</button>
+                            <button id="recruit-lord" class="sub-btn" data-lore="lord">Призвать Лорда (10🪙)</button>
+                            <button id="recruit-soul" class="sub-btn" data-lore="soul_collector">Сборщик душ (25🪙)</button>
+                        </div>
+                    </div>
 
-#game-container {
-    display: none; position: relative; width: 1410px; height: 900px; background: var(--bg-dark);
-    display: flex; flex-direction: row; gap: 20px; padding: 10px; border-radius: 8px;
-}
+                    <div class="dropdown">
+                        <button class="action-btn garrison-btn dropdown-toggle" data-lore="garrison">ГАРНИЗОН</button>
+                        <div class="dropdown-content">
+                            <button id="btn-garrison-add" class="sub-btn" data-lore="garrison_add">ОСТАВИТЬ (10 бойцов)</button>
+                            <button id="btn-garrison-take" class="sub-btn" data-lore="garrison_take">ПРИЗВАТЬ (10 бойцов)</button>
+                        </div>
+                    </div>
 
-#main-area { 
-    display: flex; flex-direction: column; width: 1100px; height: 100%; position: relative; 
-    background: rgba(0, 0, 0, 0.85); border: 2px solid var(--metal-blue);
-    border-radius: 8px; box-shadow: 0 0 30px rgba(74, 91, 154, 0.2);
-}
-#bg-layer {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat;
-    opacity: 0.15; z-index: 0; pointer-events: none; border-radius: 8px;
-}
-#top-bar {
-    display: flex; justify-content: space-around; align-items: center; height: 50px;
-    background: rgba(0, 0, 0, 0.7); border-bottom: 1px solid var(--metal-blue); font-size: 14px; z-index: 2;
-    border-radius: 8px 8px 0 0; padding: 0 10px;
-}
-.stat { color: #e0e5f0; letter-spacing: 1px; }
-#faith-container { display: flex; align-items: center; gap: 5px; font-size: 10px; }
-#faith-bar-bg { width: 50px; height: 6px; background: #222; border: 1px solid #4a5b9a; }
-#faith-bar-fill { width: 0%; height: 100%; background: #4a5b9a; transition: 0.3s; }
+                    <button id="btn-cancel-siege" class="action-btn" data-lore="cancelsiege">СНЯТЬ ОСАДУ</button>
+                    <button id="btn-open-diplomacy" class="action-btn" data-lore="diplomacy">ДИПЛОМАТИЯ</button>
+                    <button id="btn-open-market" class="action-btn" data-lore="market">РЫНОК</button>
+                    <button id="btn-open-tech" class="action-btn" data-lore="tech">ТЕХНОЛОГИИ</button>
+                    <button id="btn-open-factions" class="action-btn" data-lore="factions">ФРАКЦИИ</button>
+                    <button id="btn-end-turn" class="action-btn main-action" data-lore="endturn">СЛЕД. ХОД</button>
+                </div>
+            </div>
+        </div>
 
-#ui-panel { z-index: 3; background: rgba(0, 0, 0, 0.9); padding: 8px 12px; height: 120px; border-top: 1px solid var(--metal-blue); display: flex; align-items: center; border-radius: 0 0 8px 8px; }
-#action-buttons { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 100%; height: 100%; align-items: stretch; }
-.action-btn {
-    background: rgba(15, 13, 24, 0.9); border: 1px solid #3a4b6a; color: var(--text-light);
-    font-family: 'Cinzel', serif; font-size: 11px; border-radius: 4px; cursor: pointer; transition: 0.2s; 
-    text-align: center; padding: 6px 2px;
-    width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
-    white-space: nowrap; box-sizing: border-box;
-}
-.action-btn:hover:not(:disabled) { background: rgba(42, 52, 80, 0.9); border-color: var(--metal-blue); }
-.action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.main-action { border-color: #6a8bda; }
-.dropdown { position: relative; display: inline-block; width: 100%; height: 100%; }
-.dropdown-content {
-    display: none; position: absolute; bottom: 40px; left: 0;
-    background: rgba(11, 12, 20, 0.95); min-width: 160px; border: 1px solid var(--metal-blue);
-    border-radius: 6px; padding: 4px 0; z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.9);
-}
-.dropdown-content.open { display: block; }
-.sub-btn { background: transparent; border: none; color: var(--text-light); padding: 6px 12px; width: 100%; text-align: left; cursor: pointer; border-bottom: 1px solid #2a3450; font-size: 12px; transition: 0.2s; }
-.sub-btn:hover { background: rgba(28, 34, 48, 0.9); color: #ffffff; }
+        <div id="log-sidebar">
+            <h3>ХРОНИКИ ТЬМЫ</h3>
+            <div id="log-container"></div>
+            <button id="btn-clear-log" class="action-btn" data-lore="clearlog">ОЧИСТИТЬ</button>
+        </div>
+    </div>
 
-#log-sidebar { 
-    width: 280px; height: 100%; padding: 12px;
-    background: rgba(0, 0, 0, 0.85); border: 2px solid var(--metal-blue); border-radius: 8px; box-shadow: 0 0 30px rgba(74, 91, 154, 0.2); display: flex; flex-direction: column; flex-shrink: 0;
-}
-#log-sidebar h3 { color: #fff; font-size: 16px; border-bottom: 2px solid var(--metal-blue); padding-bottom: 8px; text-align: center; letter-spacing: 2px; margin-bottom: 12px; }
-#log-container { flex: 1; overflow-y: auto; font-size: 13px; color: #b0b8c8; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; }
-.log-entry { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 4px 0; line-height: 1.4; }
-.log-entry.player { color: #ffffff; }
-.log-entry.ai { color: #8ea4c7; }
-.log-entry.system { color: #7ab4e8; }
+    <div id="tooltip"></div>
+    <div id="lore-tooltip"></div>
 
-#btn-clear-log {
-    width: 180px;
-    height: 40px;
-    margin: 15px auto 0;
-}
+    <!-- ОСТАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА -->
+    <div id="action-modal" class="modal">
+        <div class="modal-content">
+            <h2>ВАРВАРЫ У ВОРОТ!</h2>
+            <p id="action-desc">Ваша армия вошла в провинцию. Что делать?</p>
+            <div id="action-options" style="display:flex; flex-direction:column; gap:10px; align-items:center; margin: 15px 0;">
+                <button id="btn-siege" class="action-btn" style="width:80%; border-color: #4a5b9a;">🚩 ОСАДИТЬ (1 AP)</button>
+                <button id="btn-assault-now" class="action-btn main-action" style="width:80%;">⚔️ АТАКОВАТЬ (1 AP)</button>
+                <button id="btn-curse" class="action-btn" style="width:80%; border-color: #8a2be2;">🔮 ПРОКЛЯНУТЬ (1 AP + 15 🩸)</button>
+                <button id="btn-bribe" class="action-btn" style="width:80%; border-color: #daa520;">💰 ПОДКУПИТЬ (1 AP + 100 🪙)</button>
+            </div>
+            <button id="btn-action-close" class="action-btn" style="margin-top:10px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+    <div id="surrender-modal" class="modal">
+        <div class="modal-content">
+            <h2>ПРОВИНЦИЯ ЗАХВАЧЕНА!</h2>
+            <p>Население побеждено. Какова ваша воля?</p>
+            <div id="surrender-options">
+                <button id="btn-exterminate" class="action-btn main-action" style="background:#2a2040;">ИСТРЕБИТЬ</button>
+                <button id="btn-enslave" class="action-btn" style="background:#1a1828; border-color:#4a5b9a;">ПОРАБОТИТЬ</button>
+                <button id="btn-convert" class="action-btn" style="background:#0f0d18; border-color:#4a5b9a;">ОБРАТИТЬ</button>
+            </div>
+            <p id="surrender-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-surrender-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+    <div id="gameover-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="gameover-title">ИГРА ЗАВЕРШЕНА!</h2>
+            <p id="gameover-desc" style="margin: 15px 0; font-size: 16px;"></p>
+            <div id="gameover-options">
+                <button id="btn-gameover-restart" class="btn-restart-game main-action" style="width: 80%;">НАЧАТЬ ЗАНОВО</button>
+            </div>
+        </div>
+    </div>
+    <div id="diplomacy-modal" class="modal">
+        <div class="modal-content">
+            <h2>ДИПЛОМАТИЯ</h2>
+            <p id="diplomacy-info">Выберите действие.</p>
+            <div id="diplomacy-options" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button id="dip-truce-ai" class="action-btn" style="width:80%;">Перемирие с Ватиканом (30🪙, 2 хода)</button>
+                <button id="dip-truce-wolf" class="action-btn" style="width:80%;">Перемирие с Оборотнями (30🪙, 2 хода)</button>
+                <button id="dip-alliance" class="action-btn" style="width:80%;">Союз против Оборотней (50🪙)</button>
+            </div>
+            <p id="diplomacy-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-diplomacy-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+    <div id="market-modal" class="modal">
+        <div class="modal-content">
+            <h2>РЫНОК ТЬМЫ</h2>
+            <p id="market-info">Обмен ресурсов. (1 раз за ход)</p>
+            <div id="market-options" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button id="mkt-gold-to-blood" class="action-btn" style="width:80%;">10 Золота → 8 Крови</button>
+                <button id="mkt-blood-to-gold" class="action-btn" style="width:80%;">10 Крови → 8 Золота</button>
+            </div>
+            <p id="market-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-market-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+    <div id="tech-modal" class="modal">
+        <div class="modal-content">
+            <h2>ДРЕВО ТЕХНОЛОГИЙ</h2>
+            <p id="tech-info">Исследуйте технологии для усиления армии. (30🪙 за штуку)</p>
+            <div id="tech-options" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                <button id="tech-reform" class="action-btn" style="width:80%;">Военная реформа (+10% к мощи армии)</button>
+                <button id="tech-necro" class="action-btn" style="width:80%;">Некромантия (Убитые враги дают +1 крови)</button>
+                <button id="tech-trade" class="action-btn" style="width:80%;">Торговые пути (Рынок работает 2 раза за ход)</button>
+            </div>
+            <p id="tech-result" style="margin-top:10px; font-size:14px; color:#b8c0d0;"></p>
+            <button id="btn-tech-close" class="action-btn" style="margin-top:15px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+    <div id="factions-modal" class="modal">
+        <div class="modal-content" style="width: 550px;">
+            <h2>ФРАКЦИИ ЕВРОПЫ</h2>
+            <div id="factions-content" style="text-align: left; margin: 15px 0; font-size: 14px; line-height: 1.6;">
+                <p><b>🦇 Вампиры (Клан Дракулы)</b><br>
+                Лидер: Граф Дракула.<br>
+                Мотивация: Вернуть трон Европы, погрузив континент в вечную ночь. Они черпают силу в крови и правят ночью, наводя ужас на людей. Их Лорды — бессмертные генералы, ведущие легионы мертвых.<br>
+                <i>Особенность: Имеют доступ к Лордам.</i></p>
 
-.modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); justify-content: center; align-items: center; cursor: pointer; }
-.modal-content { background: rgba(5, 5, 8, 0.95); border: 2px solid var(--metal-blue); border-radius: 16px; padding: 25px; width: 420px; text-align: center; box-shadow: 0 0 80px rgba(74, 91, 154, 0.4); backdrop-filter: blur(8px); cursor: default;}
-.modal-content h2 { color: #fff; margin-bottom: 10px; font-weight: 400; }
+                <p><b>⛪ Ватикан (Святой Престол)</b><br>
+                Лидер: Верховный Инквизитор.<br>
+                Мотивация: Искоренить ересь и защитить человечество от вторжения Тьмы. Ватикан — оплот Света и веры, его воины закованы в сталь и не знают страха. Они готовы сжечь любого демона на костре.<br>
+                <i>Особенность: Лучшие защитники с мощными укреплениями.</i></p>
 
-#tooltip, #lore-tooltip {
-    display: none; position: fixed; z-index: 20; border-radius: 8px;
-    font-size: 13px; color: #e0e5f0; pointer-events: none;
-    backdrop-filter: blur(8px); border: 1px solid var(--metal-blue); box-shadow: 0 4px 30px rgba(0,0,0,0.8);
-    padding: 12px 16px; background: rgba(10, 11, 16, 0.9);
-}
-#lore-tooltip { max-width: 280px; }
+                <p><b>🐺 Оборотни (Дикая Охота)</b><br>
+                Лидер: Альфа-Вожак.<br>
+                Мотивация: Распространить дикую охоту на весь мир, разорвать цивилизацию в клочья. Оборотни — жестокие и кровожадные существа, обитающие в лесах и горах. Они атакуют яростно и быстро, словно ураган.<br>
+                <i>Особенность: Быстрые и агрессивные армии.</i></p>
+
+                <p><b>🔮 Оккультисты (Древний Культ)</b><br>
+                Лидер: Пророк в Маске.<br>
+                Мотивация: Пробудить забытых богов из бездны, чтобы погрузить мир в хаос. Оккультисты — таинственная нейтральная фракция, живущая в руинах и пещерах. Они опасны для всех, но их земли хранят древние тайны и ресурсы.<br>
+                <i>Особенность: Нейтральны, при захвате дают бонусы.</i></p>
+            </div>
+            <button id="btn-factions-close" class="action-btn main-action" style="margin: 10px auto 0; width: auto; padding: 10px 30px;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <audio id="bgm" src="./assets/bgm.mp3" loop></audio>
+    <script src="script.js"></script>
+</body>
+</html>
