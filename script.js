@@ -69,11 +69,6 @@ async function loadSprites() {
         spriteLord = await PIXI.Assets.load('./assets/Lord Vampire.jpg').catch(()=>null);
         spriteAIGeneral = await PIXI.Assets.load('./assets/Vatican Inquisitor.png').catch(()=>null);
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
-
-        if (!spritePlayer) console.warn('⚠️ Не найден спрайт Vampire Army.png (будет отрисован кружок)');
-        if (!spriteAI) console.warn('⚠️ Не найден спрайт Knight Vatican.jpg');
-        if (!spriteWerewolf) console.warn('⚠️ Не найден спрайт Werewolf Army.webp');
-        if (!spriteAIGeneral) console.warn('⚠️ Не найден спрайт Vatican Inquisitor.png');
     } catch (e) {}
 }
 loadSprites();
@@ -712,7 +707,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('factions-modal').style.display = 'none';
     });
 
-    // Закрытие модальных окон
+    // КНОПКИ ЗАКРЫТИЯ ВСЕХ МОДАЛЬНЫХ ОКОН
     document.getElementById('btn-action-close').addEventListener('click', () => document.getElementById('action-modal').style.display = 'none');
     document.getElementById('btn-surrender-close').addEventListener('click', () => document.getElementById('surrender-modal').style.display = 'none');
     document.getElementById('btn-diplomacy-close').addEventListener('click', () => document.getElementById('diplomacy-modal').style.display = 'none');
@@ -888,7 +883,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         game.player.ap -= 1; updateUI();
     });
 
-    // ===== ОСАДЫ И БИТВЫ (ОСНОВНАЯ МЕХАНИКА) =====
+    // ===== ОСАДЫ И БИТВЫ =====
     document.getElementById('btn-siege').addEventListener('click', () => {
         if (!game.pendingActionHexId || game.player.ap <= 0) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
