@@ -8,21 +8,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.12/pixi.min.js"></script>
-    <!-- РЕЗЕРВНЫЙ CSS (Защита от сбоев загрузки style.css) -->
-    <style>
-        body { background-color: #07070b; color: #c8cfe0; font-family: 'Cinzel', serif; margin: 0; overflow: hidden; }
-        .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
-        .modal-content { background: rgba(5, 5, 8, 0.95); border: 2px solid #4a5b9a; border-radius: 16px; padding: 25px; width: 420px; text-align: center; box-shadow: 0 0 80px rgba(74, 91, 154, 0.4); }
-        #game-container { display: none; }
-        .start-overlay { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 999; background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat; }
-    </style>
 </head>
 <body>
     <!-- СТАРТОВОЕ МЕНЮ -->
     <div id="start-menu" class="start-overlay">
         <div class="fog-overlay"></div>
-        <div class="bat bat-1">🦇</div>
-        <div class="bat bat-2">🦇</div>
         
         <div class="start-content">
             <h1 class="gothic-title">
@@ -45,19 +35,20 @@
         </div>
     </div>
 
-    <!-- ЭКРАН ПРОЛОГА -->
+    <!-- ЭКРАН ПРОЛОГА (ПОЯВЛЕНИЕ БУКВ + ЗВЁЗДНЫЕ ВОЙНЫ) -->
     <div id="prologue-modal" class="modal" style="display:none; background: #000000; cursor:default;">
-        <div class="prologue-content">
-            <h1 class="gothic-title" style="margin-top: 20px;">
-                <span class="gothic-main" style="font-size: 48px; animation: bloodPulse 3s ease-in-out infinite;">ВОЗВРАЩЕНИЕ ПОВЕЛИТЕЛЯ ТЬМЫ</span>
-            </h1>
-            <div class="prologue-text">
-                <p><b>Внутренняя мотивация.</b> Граф Дракула, последний из древнего рода, пробуждается спустя столетия. Им движет не только жажда крови, но и пылающая, неутолимая любовь к прекрасной Кассальдии — дочери его самого могущественного врага. Он хочет подарить ей мир, где она будет в безопасности, но его собственная вампирская сущность жаждет власти и хаоса.</p>
-                <p><b>Внешняя мотивация.</b> Святой Престол во главе с <b>Папой Эмиретиусом Клавдием II</b> объявил крестовый поход против вампиров. Эмиретиус держит свою дочь Кассальдию в строгой изоляции, используя её как пешку для укрепления своей власти. Дракула должен объединить и завоевать все земли Европы, чтобы сокрушить Ватикан и освободить её.</p>
-                <p><b>Внутренний конфликт.</b> Каждое убийство делает Дракулу сильнее, но оно же отдаляет его от человечности, которую он пытается сохранить ради Кассальдии. Он боится, что, достигнув цели, он станет чудовищем, которое она не сможет полюбить.</p>
-                <p><b>Внешний конфликт.</b> Ватикан не остановится ни перед чем. Им противостоят дикие Оборотни, жаждущие крови. Но даже объединившись, они не смогут противостоять Армии Тьмы, которую ведёт Дракула. Европа — это поле боя, а судьба Кассальдии — главный приз.</p>
+        <div class="prologue-container">
+            <div class="prologue-content">
+                <h1 style="color: #fff; font-size: 42px; margin-bottom: 30px; letter-spacing: 4px; text-shadow: 0 0 20px rgba(74, 91, 154, 0.8);">
+                    ВОЗВРАЩЕНИЕ ПОВЕЛИТЕЛЯ ТЬМЫ
+                </h1>
+                <div id="prologue-text-container" class="prologue-text-crawl">
+                    <!-- Текст будет генерироваться через JS -->
+                </div>
+                <div id="prologue-btn-wrapper" style="display:none; margin-top: 30px;">
+                    <button id="btn-prologue-start" class="action-btn main-action" style="padding: 12px 30px; font-size: 18px;">НАЧАТЬ ЗАВОЕВАНИЕ</button>
+                </div>
             </div>
-            <button id="btn-prologue-start" class="action-btn main-action" style="font-size: 18px; padding: 15px 40px; margin-top: 20px;">НАЧАТЬ ЗАВОЕВАНИЕ</button>
         </div>
     </div>
 
