@@ -15,6 +15,7 @@ body {
     height: 100vh; overflow: hidden;
 }
 
+/* ================= СТАРТОВОЕ МЕНЮ ================= */
 .start-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat;
@@ -29,18 +30,6 @@ body {
 @keyframes fogFloat {
     0% { transform: translate(-5%, -5%) scale(1); opacity: 0.4; }
     100% { transform: translate(5%, 5%) scale(1.1); opacity: 0.7; }
-}
-.bat {
-    position: absolute; font-size: 30px; color: rgba(0,0,0,0.6);
-    pointer-events: none; animation: flyBat 15s linear infinite; z-index: 1;
-}
-.bat-1 { top: 10%; left: -50px; animation-duration: 18s; }
-.bat-2 { top: 60%; left: -50px; animation-duration: 14s; animation-delay: 3s; }
-@keyframes flyBat {
-    0% { transform: translateX(0) translateY(0) scale(1); }
-    25% { transform: translateX(30vw) translateY(-50px) scale(1.1); }
-    50% { transform: translateX(60vw) translateY(30px) scale(0.9); }
-    100% { transform: translateX(120vw) translateY(0) scale(1); }
 }
 
 .start-content { background: transparent; padding: 40px; text-align: center; position: relative; z-index: 2; }
@@ -68,16 +57,55 @@ body {
 }
 .start-buttons button:hover { color: var(--metal-blue); transform: scale(1.05); text-shadow: 0 0 40px rgba(74, 91, 154, 0.8); }
 
+/* ================= ЗАГРУЗОЧНЫЙ ЭКРАН ================= */
 .loader-spinner { margin: 30px auto; width: 50px; height: 50px; border: 4px solid #4a5b9a; border-top: 4px solid #8a2be2; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
+/* ================= ЭКРАН ПРОЛОГА (ЭФФЕКТ ЗВЁЗДНЫХ ВОЙН) ================= */
 #prologue-modal { background: #000000 !important; }
-.prologue-content { width: 100%; max-width: 750px; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; box-sizing: border-box; }
-.prologue-text {
-    font-family: 'Cinzel', serif; font-size: 16px; color: #c8cfe0; text-align: justify; line-height: 1.8;
-    max-height: 55vh; overflow-y: auto; padding: 10px 20px; border-top: 2px solid #4a5b9a; border-bottom: 2px solid #4a5b9a; margin: 20px 0; width: 100%;
+
+.prologue-container {
+    width: 100vw; height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+    overflow: hidden;
+    perspective: 400px;
 }
 
+.prologue-content {
+    width: 80%; max-width: 700px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    transform: rotateX(20deg) translateY(0);
+    animation: starWarsScroll 60s linear infinite; /* Замедленный скроллинг для эффекта */
+}
+
+/* Останавливаем анимацию, когда нажимают кнопку, через JS */
+.prologue-content.paused { animation-play-state: paused; }
+
+@keyframes starWarsScroll {
+    0% { transform: rotateX(20deg) translateY(200px); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: rotateX(20deg) translateY(-400px); opacity: 0; }
+}
+
+#prologue-text-container {
+    color: #e0e5f0;
+    font-size: 18px;
+    line-height: 1.8;
+    font-family: 'Cinzel', serif;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    width: 100%;
+}
+
+#prologue-text-container p { margin-bottom: 20px; opacity: 0; transition: opacity 1s ease-in-out; }
+#prologue-text-container p.visible { opacity: 1; }
+
+#prologue-btn-wrapper { display: flex; justify-content: center; width: 100%; }
+#btn-prologue-start { padding: 12px 40px; font-size: 20px; }
+
+/* ================= ОСНОВНОЙ UI ИГРЫ ================= */
 #game-container { display: none; position: relative; width: 1410px; height: 900px; background: var(--bg-dark); display: flex; flex-direction: row; gap: 20px; padding: 10px; border-radius: 8px; }
 #main-area { display: flex; flex-direction: column; width: 1100px; height: 100%; position: relative; background: rgba(0, 0, 0, 0.85); border: 2px solid var(--metal-blue); border-radius: 8px; box-shadow: 0 0 30px rgba(74, 91, 154, 0.2); }
 #bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat; opacity: 0.15; z-index: 0; pointer-events: none; border-radius: 8px; }
