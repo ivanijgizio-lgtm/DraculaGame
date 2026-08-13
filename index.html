@@ -8,12 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/5.3.12/pixi.min.js"></script>
+    <!-- РЕЗЕРВНЫЙ CSS (Защита от сбоев загрузки style.css) -->
+    <style>
+        body { background-color: #07070b; color: #c8cfe0; font-family: 'Cinzel', serif; margin: 0; overflow: hidden; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+        .modal-content { background: rgba(5, 5, 8, 0.95); border: 2px solid #4a5b9a; border-radius: 16px; padding: 25px; width: 420px; text-align: center; box-shadow: 0 0 80px rgba(74, 91, 154, 0.4); }
+        #game-container { display: none; }
+        .start-overlay { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 999; background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat; }
+    </style>
 </head>
 <body>
-    <!-- СТАРТОВОЕ МЕНЮ (С АНИМАЦИЯМИ) -->
+    <!-- СТАРТОВОЕ МЕНЮ -->
     <div id="start-menu" class="start-overlay">
-        <div class="fog-overlay"></div> <!-- Дымка на фоне -->
-        <div class="bat bat-1">🦇</div> <!-- Летучие мыши -->
+        <div class="fog-overlay"></div>
+        <div class="bat bat-1">🦇</div>
         <div class="bat bat-2">🦇</div>
         
         <div class="start-content">
@@ -28,7 +36,7 @@
         </div>
     </div>
 
-    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН (ЛОАДЕР) -->
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН -->
     <div id="loading-modal" class="modal" style="display:none; cursor:default;">
         <div class="modal-content" style="border-color:#8a2be2; width: 350px;">
             <h2>ПРОБУЖДЕНИЕ ТЬМЫ</h2>
@@ -37,7 +45,7 @@
         </div>
     </div>
 
-    <!-- ЭКРАН ПРОЛОГА (ПРЕДЫСТОРИЯ) -->
+    <!-- ЭКРАН ПРОЛОГА -->
     <div id="prologue-modal" class="modal" style="display:none; background: #000000; cursor:default;">
         <div class="prologue-content">
             <h1 class="gothic-title" style="margin-top: 20px;">
@@ -45,11 +53,8 @@
             </h1>
             <div class="prologue-text">
                 <p><b>Внутренняя мотивация.</b> Граф Дракула, последний из древнего рода, пробуждается спустя столетия. Им движет не только жажда крови, но и пылающая, неутолимая любовь к прекрасной Кассальдии — дочери его самого могущественного врага. Он хочет подарить ей мир, где она будет в безопасности, но его собственная вампирская сущность жаждет власти и хаоса.</p>
-                
                 <p><b>Внешняя мотивация.</b> Святой Престол во главе с <b>Папой Эмиретиусом Клавдием II</b> объявил крестовый поход против вампиров. Эмиретиус держит свою дочь Кассальдию в строгой изоляции, используя её как пешку для укрепления своей власти. Дракула должен объединить и завоевать все земли Европы, чтобы сокрушить Ватикан и освободить её.</p>
-                
                 <p><b>Внутренний конфликт.</b> Каждое убийство делает Дракулу сильнее, но оно же отдаляет его от человечности, которую он пытается сохранить ради Кассальдии. Он боится, что, достигнув цели, он станет чудовищем, которое она не сможет полюбить.</p>
-                
                 <p><b>Внешний конфликт.</b> Ватикан не остановится ни перед чем. Им противостоят дикие Оборотни, жаждущие крови. Но даже объединившись, они не смогут противостоять Армии Тьмы, которую ведёт Дракула. Европа — это поле боя, а судьба Кассальдии — главный приз.</p>
             </div>
             <button id="btn-prologue-start" class="action-btn main-action" style="font-size: 18px; padding: 15px 40px; margin-top: 20px;">НАЧАТЬ ЗАВОЕВАНИЕ</button>
@@ -78,7 +83,6 @@
             </div>
             
             <canvas id="fog-canvas" width="1100" height="650"></canvas>
-            <div id="sunset-overlay" style="position: absolute; top: 20px; left: 0; width: 1100px; height: 650px; background: radial-gradient(circle, rgba(200,150,50,0.1), rgba(20,0,40,0.7)); pointer-events: none; display: none; z-index: 2; transition: opacity 2s;"></div>
             <canvas id="game-canvas" width="1100" height="650"></canvas>
             
             <div id="ui-panel">
@@ -143,7 +147,7 @@
     <div id="tooltip"></div>
     <div id="lore-tooltip"></div>
 
-    <!-- ОСТАЛЬНЫЕ МОДАЛЬНЫЕ ОКНА -->
+    <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="action-modal" class="modal">
         <div class="modal-content">
             <h2>ВАРВАРЫ У ВОРОТ!</h2>
@@ -221,25 +225,10 @@
         <div class="modal-content" style="width: 550px;">
             <h2>ФРАКЦИИ ЕВРОПЫ</h2>
             <div id="factions-content" style="text-align: left; margin: 15px 0; font-size: 14px; line-height: 1.6;">
-                <p><b>🦇 Вампиры (Клан Дракулы)</b><br>
-                Лидер: Граф Дракула.<br>
-                Мотивация: Вернуть трон Европы, погрузив континент в вечную ночь. Они черпают силу в крови и правят ночью, наводя ужас на людей. Их Лорды — бессмертные генералы, ведущие легионы мертвых.<br>
-                <i>Особенность: Имеют доступ к Лордам.</i></p>
-
-                <p><b>⛪ Ватикан (Святой Престол)</b><br>
-                Лидер: Верховный Инквизитор.<br>
-                Мотивация: Искоренить ересь и защитить человечество от вторжения Тьмы. Ватикан — оплот Света и веры, его воины закованы в сталь и не знают страха. Они готовы сжечь любого демона на костре.<br>
-                <i>Особенность: Лучшие защитники с мощными укреплениями.</i></p>
-
-                <p><b>🐺 Оборотни (Дикая Охота)</b><br>
-                Лидер: Альфа-Вожак.<br>
-                Мотивация: Распространить дикую охоту на весь мир, разорвать цивилизацию в клочья. Оборотни — жестокие и кровожадные существа, обитающие в лесах и горах. Они атакуют яростно и быстро, словно ураган.<br>
-                <i>Особенность: Быстрые и агрессивные армии.</i></p>
-
-                <p><b>🔮 Оккультисты (Древний Культ)</b><br>
-                Лидер: Пророк в Маске.<br>
-                Мотивация: Пробудить забытых богов из бездны, чтобы погрузить мир в хаос. Оккультисты — таинственная нейтральная фракция, живущая в руинах и пещерах. Они опасны для всех, но их земли хранят древние тайны и ресурсы.<br>
-                <i>Особенность: Нейтральны, при захвате дают бонусы.</i></p>
+                <p><b>🦇 Вампиры (Клан Дракулы)</b><br>Лидер: Граф Дракула.<br>Мотивация: Вернуть трон Европы, погрузив континент в вечную ночь.<br><i>Особенность: Имеют доступ к Лордам.</i></p>
+                <p><b>⛪ Ватикан (Святой Престол)</b><br>Лидер: Верховный Инквизитор.<br>Мотивация: Искоренить ересь и защитить человечество от вторжения Тьмы.<br><i>Особенность: Лучшие защитники с мощными укреплениями.</i></p>
+                <p><b>🐺 Оборотни (Дикая Охота)</b><br>Лидер: Альфа-Вожак.<br>Мотивация: Распространить дикую охоту на весь мир.<br><i>Особенность: Быстрые и агрессивные армии.</i></p>
+                <p><b>🔮 Оккультисты (Древний Культ)</b><br>Лидер: Пророк в Маске.<br>Мотивация: Пробудить забытых богов из бездны.<br><i>Особенность: Нейтральны, при захвате дают бонусы.</i></p>
             </div>
             <button id="btn-factions-close" class="action-btn main-action" style="margin: 10px auto 0; width: auto; padding: 10px 30px;">ЗАКРЫТЬ</button>
         </div>
