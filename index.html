@@ -13,7 +13,6 @@
     <!-- СТАРТОВОЕ МЕНЮ -->
     <div id="start-menu" class="start-overlay">
         <div class="fog-overlay"></div>
-        
         <div class="start-content">
             <h1 class="gothic-title">
                 <span class="gothic-main">DRACULA</span><br>
@@ -35,17 +34,13 @@
         </div>
     </div>
 
-    <!-- ЭКРАН ПРОЛОГА (ПОЯВЛЕНИЕ БУКВ + ЗВЁЗДНЫЕ ВОЙНЫ) -->
+    <!-- ЭКРАН ПРОЛОГА -->
     <div id="prologue-modal" class="modal" style="display:none; background: #000000; cursor:default;">
         <div class="prologue-container">
             <div class="prologue-content">
-                <h1 style="color: #fff; font-size: 42px; margin-bottom: 30px; letter-spacing: 4px; text-shadow: 0 0 20px rgba(74, 91, 154, 0.8);">
-                    ВОЗВРАЩЕНИЕ ПОВЕЛИТЕЛЯ ТЬМЫ
-                </h1>
-                <div id="prologue-text-container" class="prologue-text-crawl">
-                    <!-- Текст будет генерироваться через JS -->
-                </div>
-                <div id="prologue-btn-wrapper" style="display:none; margin-top: 30px;">
+                <h1>ВОЗВРАЩЕНИЕ ПОВЕЛИТЕЛЯ ТЬМЫ</h1>
+                <div id="prologue-text-container" class="prologue-text-crawl"></div>
+                <div id="prologue-btn-wrapper" style="display:none; margin-top: 20px;">
                     <button id="btn-prologue-start" class="action-btn main-action" style="padding: 12px 30px; font-size: 18px;">НАЧАТЬ ЗАВОЕВАНИЕ</button>
                 </div>
             </div>
@@ -55,9 +50,17 @@
     <!-- ИГРОВОЙ КОНТЕЙНЕР -->
     <div id="game-container">
         <div id="bg-layer"></div>
-        
-        <div id="main-area">
-            <div id="top-bar">
+
+        <!-- КАРТА (Основной блок) -->
+        <div id="map-area">
+            <div id="pixi-container"></div>
+            <button id="btn-toggle-log" class="action-btn main-action" data-lore="factions">📜 ХРОНИКИ</button>
+        </div>
+
+        <!-- НИЖНЯЯ ПАНЕЛЬ КОМАНД (Массивная) -->
+        <div id="command-panel">
+            <!-- Строка ресурсов -->
+            <div id="resource-row">
                 <div class="stat">ХОД: <span id="turn-counter">1</span></div>
                 <div class="stat">ДЕНЬ: <span id="day-counter">1</span></div>
                 <div class="stat">Действия: <span id="ap-counter">2/2</span></div>
@@ -72,11 +75,9 @@
                 <button id="btn-mnu-restart" class="action-btn" style="background:#111; border-color:#4a5b9a; font-size:10px; width:60px;" data-lore="menu">МЕНЮ</button>
                 <button id="btn-music-toggle" class="action-btn" style="font-size:10px; width:50px;" data-lore="music">ЗВУК</button>
             </div>
-            
-            <canvas id="fog-canvas" width="1100" height="650"></canvas>
-            <canvas id="game-canvas" width="1100" height="650"></canvas>
-            
-            <div id="ui-panel">
+
+            <!-- Строка действий -->
+            <div id="action-row">
                 <div id="action-buttons">
                     <button id="btn-assault" class="action-btn" data-lore="assault" disabled>ШТУРМ</button>
                     
@@ -127,12 +128,16 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <div id="log-sidebar">
-            <h3>ХРОНИКИ ТЬМЫ</h3>
-            <div id="log-container"></div>
-            <button id="btn-clear-log" class="action-btn" data-lore="clearlog">ОЧИСТИТЬ</button>
+    <!-- ВСПЛЫВАЮЩЕЕ ОКНО ХРОНИК -->
+    <div id="log-overlay" class="log-overlay">
+        <div class="log-header">
+            <h3>📜 ХРОНИКИ ТЬМЫ</h3>
+            <button id="btn-close-log" class="action-btn" style="background:#1a1828; border-color:#4a5b9a;">✖</button>
         </div>
+        <div id="log-container"></div>
+        <button id="btn-clear-log" class="action-btn" data-lore="clearlog" style="margin-top: 15px;">ОЧИСТИТЬ</button>
     </div>
 
     <div id="tooltip"></div>
@@ -152,6 +157,7 @@
             <button id="btn-action-close" class="action-btn" style="margin-top:10px; width:80px; background:#1a1828;">ЗАКРЫТЬ</button>
         </div>
     </div>
+
     <div id="surrender-modal" class="modal">
         <div class="modal-content">
             <h2>ПРОВИНЦИЯ ЗАХВАЧЕНА!</h2>
