@@ -61,86 +61,122 @@ body {
 .loader-spinner { margin: 30px auto; width: 50px; height: 50px; border: 4px solid #4a5b9a; border-top: 4px solid #8a2be2; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* ================= ЭКРАН ПРОЛОГА (ЭФФЕКТ ЗВЁЗДНЫХ ВОЙН) ================= */
+/* ================= ЭКРАН ПРОЛОГА ================= */
 #prologue-modal { background: #000000 !important; }
-
 .prologue-container {
     width: 100vw; height: 100vh;
     display: flex; justify-content: center; align-items: center;
     overflow: hidden;
     perspective: 400px;
 }
-
 .prologue-content {
     width: 80%; max-width: 700px;
     display: flex; flex-direction: column; align-items: center;
     text-align: center;
     transform: rotateX(20deg) translateY(0);
-    animation: starWarsScroll 60s linear infinite; /* Замедленный скроллинг для эффекта */
+    animation: starWarsScroll 60s linear infinite;
 }
-
-/* Останавливаем анимацию, когда нажимают кнопку, через JS */
 .prologue-content.paused { animation-play-state: paused; }
-
 @keyframes starWarsScroll {
     0% { transform: rotateX(20deg) translateY(200px); opacity: 0; }
     10% { opacity: 1; }
     90% { opacity: 1; }
     100% { transform: rotateX(20deg) translateY(-400px); opacity: 0; }
 }
-
 #prologue-text-container {
-    color: #e0e5f0;
-    font-size: 18px;
-    line-height: 1.8;
-    font-family: 'Cinzel', serif;
-    margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(255,255,255,0.3);
-    width: 100%;
+    color: #e0e5f0; font-size: 18px; line-height: 1.8; font-family: 'Cinzel', serif;
+    margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.3);
+    width: 100%; white-space: pre-wrap; /* ИСПРАВЛЕНИЕ: корректные переносы строк */
+}
+#prologue-btn-wrapper { display: flex; justify-content: center; width: 100%; }
+
+/* ================= ИГРОВОЙ БЛОК (Без сайдбара) ================= */
+#game-container {
+    display: none; position: relative; width: 100vw; height: 100vh;
+    background: var(--bg-dark); display: flex; flex-direction: column;
+}
+#bg-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat;
+    opacity: 0.15; z-index: 0; pointer-events: none;
+}
+#map-area {
+    position: relative; width: 100%; height: calc(100% - 180px); /* Карта занимает почти весь экран */
+    overflow: hidden; background: rgba(0, 0, 0, 0.85);
+    border-bottom: 1px solid var(--metal-blue);
+}
+#pixi-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+/* Кнопка открытия Хроник на карте */
+#btn-toggle-log {
+    position: absolute; top: 15px; right: 20px; z-index: 5;
+    width: auto; padding: 8px 15px; font-size: 12px;
+    background: rgba(0,0,0,0.8); border: 1px solid var(--metal-blue); border-radius: 4px;
 }
 
-#prologue-text-container p { margin-bottom: 20px; opacity: 0; transition: opacity 1s ease-in-out; }
-#prologue-text-container p.visible { opacity: 1; }
-
-#prologue-btn-wrapper { display: flex; justify-content: center; width: 100%; }
-#btn-prologue-start { padding: 12px 40px; font-size: 20px; }
-
-/* ================= ОСНОВНОЙ UI ИГРЫ ================= */
-#game-container { display: none; position: relative; width: 1410px; height: 900px; background: var(--bg-dark); display: flex; flex-direction: row; gap: 20px; padding: 10px; border-radius: 8px; }
-#main-area { display: flex; flex-direction: column; width: 1100px; height: 100%; position: relative; background: rgba(0, 0, 0, 0.85); border: 2px solid var(--metal-blue); border-radius: 8px; box-shadow: 0 0 30px rgba(74, 91, 154, 0.2); }
-#bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat; opacity: 0.15; z-index: 0; pointer-events: none; border-radius: 8px; }
-#top-bar { display: flex; justify-content: space-around; align-items: center; height: 50px; background: rgba(0, 0, 0, 0.7); border-bottom: 1px solid var(--metal-blue); font-size: 14px; z-index: 2; border-radius: 8px 8px 0 0; padding: 0 10px; }
+/* ================= НИЖНЯЯ ПАНЕЛЬ КОМАНД ================= */
+#command-panel {
+    z-index: 3; width: 100%; height: 180px;
+    background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column;
+}
+#resource-row {
+    display: flex; justify-content: space-around; align-items: center; height: 45px;
+    background: rgba(0, 0, 0, 0.7); border-bottom: 1px solid #2a3450;
+    font-size: 14px; padding: 0 10px; flex-shrink: 0;
+}
 .stat { color: #e0e5f0; letter-spacing: 1px; }
 #faith-container { display: flex; align-items: center; gap: 5px; font-size: 10px; }
 #faith-bar-bg { width: 50px; height: 6px; background: #222; border: 1px solid #4a5b9a; }
 #faith-bar-fill { width: 0%; height: 100%; background: #4a5b9a; transition: 0.3s; }
 
-#ui-panel { z-index: 3; background: rgba(0, 0, 0, 0.9); padding: 8px 12px; height: 120px; border-top: 1px solid var(--metal-blue); display: flex; align-items: center; border-radius: 0 0 8px 8px; }
-#action-buttons { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 100%; height: 100%; align-items: stretch; }
+#action-row {
+    display: flex; justify-content: center; align-items: center;
+    height: 135px; padding: 10px; flex-grow: 1;
+}
+#action-buttons {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+    width: 100%; height: 100%; align-items: stretch;
+}
 .action-btn {
     background: rgba(15, 13, 24, 0.9); border: 1px solid #3a4b6a; color: var(--text-light);
     font-family: 'Cinzel', serif; font-size: 11px; border-radius: 4px; cursor: pointer; transition: 0.2s; 
-    text-align: center; padding: 6px 2px; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
-    white-space: nowrap; box-sizing: border-box;
+    text-align: center; padding: 4px 2px; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center; white-space: nowrap; box-sizing: border-box;
 }
 .action-btn:hover:not(:disabled) { background: rgba(42, 52, 80, 0.9); border-color: var(--metal-blue); }
 .action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .main-action { border-color: #6a8bda; }
 .dropdown { position: relative; display: inline-block; width: 100%; height: 100%; }
-.dropdown-content { display: none; position: absolute; bottom: 40px; left: 0; background: rgba(11, 12, 20, 0.95); min-width: 160px; border: 1px solid var(--metal-blue); border-radius: 6px; padding: 4px 0; z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.9); }
+.dropdown-content {
+    display: none; position: absolute; bottom: 40px; left: 0;
+    background: rgba(11, 12, 20, 0.95); min-width: 160px; border: 1px solid var(--metal-blue);
+    border-radius: 6px; padding: 4px 0; z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.9);
+}
 .dropdown-content.open { display: block; }
 .sub-btn { background: transparent; border: none; color: var(--text-light); padding: 6px 12px; width: 100%; text-align: left; cursor: pointer; border-bottom: 1px solid #2a3450; font-size: 12px; transition: 0.2s; }
 .sub-btn:hover { background: rgba(28, 34, 48, 0.9); color: #ffffff; }
 
-#log-sidebar { width: 280px; height: 100%; padding: 12px; background: rgba(0, 0, 0, 0.85); border: 2px solid var(--metal-blue); border-radius: 8px; box-shadow: 0 0 30px rgba(74, 91, 154, 0.2); display: flex; flex-direction: column; flex-shrink: 0; }
-#log-sidebar h3 { color: #fff; font-size: 16px; border-bottom: 2px solid var(--metal-blue); padding-bottom: 8px; text-align: center; letter-spacing: 2px; margin-bottom: 12px; }
-#log-container { flex: 1; overflow-y: auto; font-size: 13px; color: #b0b8c8; background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; }
+/* ================= ВСПЛЫВАЮЩЕЕ ОКНО ЛОГА ================= */
+.log-overlay {
+    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 99;
+    flex-direction: column; justify-content: center; align-items: center;
+}
+.log-header {
+    width: 450px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding: 10px; border-bottom: 2px solid var(--metal-blue);
+}
+#log-container {
+    width: 450px; height: 60vh; overflow-y: auto; font-size: 13px; color: #b0b8c8;
+    background: rgba(0,0,0,0.4); padding: 8px; border-radius: 6px; display: flex; flex-direction: column; gap: 4px;
+}
 .log-entry { border-bottom: 1px solid rgba(255,255,255,0.04); padding: 4px 0; line-height: 1.4; }
 .log-entry.player { color: #ffffff; }
 .log-entry.ai { color: #8ea4c7; }
 .log-entry.system { color: #7ab4e8; }
+#btn-clear-log { width: 150px; height: 40px; margin: 15px 0; }
 
-#btn-clear-log { width: 180px; height: 40px; margin: 15px auto 0; }
+/* ================= ОБЩИЕ МОДАЛЬНЫЕ ОКНА ================= */
 .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); justify-content: center; align-items: center; cursor: pointer; }
 .modal-content { background: rgba(5, 5, 8, 0.95); border: 2px solid var(--metal-blue); border-radius: 16px; padding: 25px; width: 420px; text-align: center; box-shadow: 0 0 80px rgba(74, 91, 154, 0.4); backdrop-filter: blur(8px); cursor: default;}
 .modal-content h2 { color: #fff; margin-bottom: 10px; font-weight: 400; }
