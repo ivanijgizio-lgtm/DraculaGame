@@ -38,15 +38,12 @@ const BUILD_LORE = {
     'factions': "ФРАКЦИИ: Узнайте о могущественных силах, борющихся за Европу. Каждая фракция имеет своих лидеров, мотивы и уникальные возможности. Понимание их целей поможет вам выбрать правильную стратегию."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (ИСПРАВЛЕНИЕ КРИТИЧЕСКОЙ ОШИБКИ) =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
     width: 1100, height: 650, 
     backgroundColor: 0x0a0a0e, transparent: false, resolution: window.devicePixelRatio || 1,
 });
-
-// ИСПРАВЛЕНИЕ: УДАЛЕНА ОШИБКА СТРОКИ 'game-canvas', так как этого элемента больше нет в HTML!
-// document.getElementById('game-canvas').style.display = 'none'; 
 
 const pixiContainer = document.getElementById('pixi-container');
 pixiContainer.appendChild(app.view);
@@ -255,16 +252,24 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (С ПОДСВЕТКОЙ СОСЕДЕЙ) =================
 function drawHexes() {
     hexContainer.removeChildren();
+    
+    const currentHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
+    let movableHexIds = [];
+    if (currentHex && game.player.ap > 0 && getTotalTroops(game.player.mobileArmy) > 0) {
+        const neighbors = getNeighbors(Number(currentHex.q), Number(currentHex.r));
+        movableHexIds = neighbors.map(n => `${n.q},${n.r}`);
+    }
+
     game.hexGrid.forEach(hex => {
         const container = new PIXI.Container();
         container.x = hex.x;
         container.y = hex.y;
 
         const g = new PIXI.Graphics();
-        let color = 0x222222;
+        let color = 0x1c1c24; // Нейтральный цвет (светлее фона)
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
@@ -274,6 +279,13 @@ function drawHexes() {
         g.lineStyle(2, 0x333333, 0.7); 
         g.drawPolygon(...getHexCorners(0, 0));
         g.endFill();
+
+        // ===== ПОДСВЕТКА ДОСТУПНЫХ ГЕКСОВ =====
+        const hexId = `${hex.q},${hex.r}`;
+        if (movableHexIds.includes(hexId) && hex.owner !== 'player') {
+            g.lineStyle(2, 0x88aadd, 0.8); // Голубая окантовка для соседних гексов
+            g.drawPolygon(...getHexCorners(0, 0));
+        }
 
         g.interactive = true; g.cursor = 'pointer'; g.hexData = hex;
         g.on('mouseover', (e) => {
@@ -645,7 +657,6 @@ function startTypeWriter() {
             if (charIndex < paragraphText.length) {
                 currentParagraphElement.textContent += paragraphText.charAt(charIndex);
                 charIndex++;
-                // Скорость 6мс (x3)
                 setTimeout(typeNextChar, 6); 
             } else {
                 charIndex = 0;
