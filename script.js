@@ -38,13 +38,16 @@ const BUILD_LORE = {
     'factions': "ФРАКЦИИ: Узнайте о могущественных силах, борющихся за Европу. Каждая фракция имеет своих лидеров, мотивы и уникальные возможности. Понимание их целей поможет вам выбрать правильную стратегию."
 };
 
-// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (АДАПТИВНЫЙ РАЗМЕР) =================
+// ================= ИНИЦИАЛИЗАЦИЯ PIXIJS (ИСПРАВЛЕНИЕ КРИТИЧЕСКОЙ ОШИБКИ) =================
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
     width: 1100, height: 650, 
     backgroundColor: 0x0a0a0e, transparent: false, resolution: window.devicePixelRatio || 1,
 });
-document.getElementById('game-canvas').style.display = 'none';
+
+// ИСПРАВЛЕНИЕ: УДАЛЕНА ОШИБКА СТРОКИ 'game-canvas', так как этого элемента больше нет в HTML!
+// document.getElementById('game-canvas').style.display = 'none'; 
+
 const pixiContainer = document.getElementById('pixi-container');
 pixiContainer.appendChild(app.view);
 
@@ -642,7 +645,7 @@ function startTypeWriter() {
             if (charIndex < paragraphText.length) {
                 currentParagraphElement.textContent += paragraphText.charAt(charIndex);
                 charIndex++;
-                // ИСПРАВЛЕНИЕ: Скорость 6мс (вместо 12мс) для 3x ускорения
+                // Скорость 6мс (x3)
                 setTimeout(typeNextChar, 6); 
             } else {
                 charIndex = 0;
