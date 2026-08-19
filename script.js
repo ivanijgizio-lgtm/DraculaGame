@@ -47,13 +47,12 @@ const app = new PIXI.Application({
 const pixiContainer = document.getElementById('pixi-container');
 pixiContainer.appendChild(app.view);
 
-// Функция подстройки размера
 function resizeMap() {
     const mapArea = document.getElementById('map-area');
     if (mapArea) {
         const rect = mapArea.getBoundingClientRect();
         app.renderer.resize(rect.width, rect.height);
-        drawHexes(); // При изменении окна перерисовываем карту
+        drawHexes(); 
         drawArmies();
     }
 }
@@ -88,7 +87,14 @@ function hexToPixel(q, r, size) {
     const y = size * (3/2 * r);
     return { x, y };
 }
-
+function getHexCorners(cx, cy, size) {
+    const corners = [];
+    for (let i = 0; i < 6; i++) {
+        const angle = (60 * i - 30) * Math.PI / 180;
+        corners.push(cx + size * Math.cos(angle), cy + size * Math.sin(angle));
+    }
+    return corners;
+}
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
     return dirs.map(d => ({ q: Number(q) + d[0], r: Number(r) + d[1] }));
@@ -98,7 +104,6 @@ function getDefaultGame() {
     return {
         turn: 1, day: 1, gameOver: false, battleActive: false, surrenderActive: false,
         selectedHexId: null, pendingActionHexId: null,
-        hexBounds: { minQ: 0, maxQ: 0, minR: 0, maxR: 0 }, // Храним границы для пересчета размера
         player: {
             ap: 2, maxAp: 2, gold: 100, blood: 10, lords: [],
             mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '0,0' },
@@ -117,8 +122,6 @@ let game = getDefaultGame();
 
 function initHexGrid() {
     const grid = [];
-    
-    // Расширенные данные карты
     const mapData = [
         { q: 0, r: 0, name: 'Transilvania', owner: 'player', fort: 1, pop: 2000 },
         { q: 1, r: 0, name: 'Wallachia', owner: 'player', fort: 0, pop: 1500 },
@@ -127,7 +130,6 @@ function initHexGrid() {
         { q: 2, r: -1, name: 'Tatra Peaks', owner: 'player', fort: 1, pop: 1000 },
         { q: -2, r: 0, name: 'Bukovina', owner: 'player', fort: 0, pop: 800 },
         { q: 1, r: -1, name: 'Bessarabia', owner: 'player', fort: 0, pop: 800 },
-        
         { q: 5, r: -3, name: 'Vaticanum', owner: 'ai', fort: 3, pop: 5000 },
         { q: 6, r: -3, name: 'Roma', owner: 'ai', fort: 2, pop: 4000 },
         { q: 6, r: -4, name: 'Florentia', owner: 'ai', fort: 1, pop: 3000 },
@@ -139,7 +141,6 @@ function initHexGrid() {
         { q: 8, r: -3, name: 'Dalmatian Coast', owner: 'ai', fort: 0, pop: 1000 },
         { q: 8, r: -2, name: 'Zadar', owner: 'ai', fort: 0, pop: 1000 },
         { q: 4, r: -4, name: 'Orvieto', owner: 'ai', fort: 0, pop: 800 },
-
         { q: -5, r: 4, name: 'Carpathia', owner: 'werewolf', fort: 0, pop: 2500 },
         { q: -4, r: 4, name: 'Dacia', owner: 'werewolf', fort: 0, pop: 2000 },
         { q: -3, r: 4, name: 'Moesia', owner: 'werewolf', fort: 0, pop: 1500 },
@@ -151,7 +152,6 @@ function initHexGrid() {
         { q: -2, r: 4, name: 'Amber Pass', owner: 'werewolf', fort: 0, pop: 1000 },
         { q: -5, r: 5, name: 'Mournful Plains', owner: 'werewolf', fort: 0, pop: 1000 },
         { q: -7, r: 3, name: 'Dark Woods', owner: 'werewolf', fort: 0, pop: 800 },
-
         { q: 3, r: 2, name: 'The Black Citadel', owner: 'occultist', fort: 2, pop: 1000 },
         { q: 4, r: 2, name: 'Temple of Old Ones', owner: 'occultist', fort: 1, pop: 800 },
         { q: 2, r: 3, name: 'Sunken Spire', owner: 'occultist', fort: 1, pop: 500 },
@@ -161,7 +161,6 @@ function initHexGrid() {
         { q: 5, r: 2, name: 'Gilded Harbor', owner: 'occultist', fort: 0, pop: 400 },
         { q: -1, r: -4, name: 'Chasm of Echoes', owner: 'occultist', fort: 1, pop: 400 },
         { q: 2, r: 4, name: 'Lost Catacombs', owner: 'occultist', fort: 0, pop: 300 },
-
         { q: -2, r: -1, name: 'Silver Mines', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
         { q: -3, r: 2, name: 'Blood Marshes', owner: null, res: { gold: 0, blood: 20 }, fort: 0, pop: 0 },
         { q: 3, r: 1, name: 'Ruins', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
@@ -179,17 +178,6 @@ function initHexGrid() {
         { q: 3, r: -3, name: 'Lonely Plateau', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
     ];
 
-    // Сохраняем сырые данные и вычисляем границы
-    let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
-    
-    mapData.forEach(d => {
-        minQ = Math.min(minQ, d.q); maxQ = Math.max(maxQ, d.q);
-        minR = Math.min(minR, d.r); maxR = Math.max(maxR, d.r);
-    });
-    
-    game.hexBounds = { minQ, maxQ, minR, maxR };
-
-    // Формируем сетку гексов (без жесткой привязки к X/Y, они будут пересчитываться при отрисовке)
     mapData.forEach(d => {
         let support = { player: 20, ai: 70, werewolf: 10, occultist: 0 };
         if (d.owner === 'player') support = { player: 80, ai: 10, werewolf: 10, occultist: 0 };
@@ -249,31 +237,42 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (ПЕРЕПИСАНА ДЛЯ ДИНАМИЧЕСКОГО МАСШТАБА) =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (ПОЛНАЯ РЕВИЗИЯ ЦЕНТРИРОВАНИЯ) =================
 function drawHexes() {
     hexContainer.removeChildren();
-    
-    // 1. Расчет текущего размера гекса на основе реальных границ и размера окна
-    const bounds = game.hexBounds;
-    const numQ = bounds.maxQ - bounds.minQ + 1;
-    const numR = bounds.maxR - bounds.minR + 1;
+    if (!game.hexGrid || game.hexGrid.length === 0) return;
+
     const w = app.renderer.width;
     const h = app.renderer.height;
-
-    // Оптимальный размер на основе шестиугольной сетки
-    let sizeFromW = w / (numQ * 2);
-    let sizeFromH = h / (numR * 1.8);
-    let HEX_SIZE = Math.min(sizeFromW, sizeFromH, 80); // Ограничиваем, чтобы не было слишком большим
+    
+    // 1. Вычисляем границы Q и R для расчета адаптивного размера
+    let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
+    game.hexGrid.forEach(hex => {
+        minQ = Math.min(minQ, hex.q); maxQ = Math.max(maxQ, hex.q);
+        minR = Math.min(minR, hex.r); maxR = Math.max(maxR, hex.r);
+    });
+    
+    // Оптимальная формула размера, чтобы гексы заполнили блок
+    let sizeFromW = w / ((maxQ - minQ + 1) * 1.8);
+    let sizeFromH = h / ((maxR - minR + 1) * 1.6);
+    let HEX_SIZE = Math.min(sizeFromW, sizeFromH, 80);
     if (HEX_SIZE < 10) HEX_SIZE = 10;
 
-    // 2. Вычисляем центр сетки
-    const centerQ = (bounds.minQ + bounds.maxQ) / 2;
-    const centerR = (bounds.minR + bounds.maxR) / 2;
-    const centerPix = hexToPixel(centerQ, centerR, HEX_SIZE);
-    
-    // Вычисляем смещение для центрирования по контейнеру
-    const shiftX = (w / 2) - centerPix.x;
-    const shiftY = (h / 2) - centerPix.y;
+    // 2. Рассчитываем сырые координаты гексов
+    let rawPositions = game.hexGrid.map(hex => {
+        const p = hexToPixel(hex.q, hex.r, HEX_SIZE);
+        return { ...hex, rawX: p.x, rawY: p.y };
+    });
+
+    // 3. Находим средний центр всех гексов
+    let avgX = 0, avgY = 0;
+    rawPositions.forEach(p => { avgX += p.rawX; avgY += p.rawY; });
+    avgX /= rawPositions.length;
+    avgY /= rawPositions.length;
+
+    // 4. Вычисляем смещение для центрирования по центру экрана
+    let shiftX = (w / 2) - avgX;
+    let shiftY = (h / 2) - avgY;
 
     const currentHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     let movableHexIds = [];
@@ -282,15 +281,14 @@ function drawHexes() {
         movableHexIds = neighbors.map(n => `${n.q},${n.r}`);
     }
 
-    // 3. Отрисовка
-    game.hexGrid.forEach(hex => {
-        const pixPos = hexToPixel(hex.q, hex.r, HEX_SIZE);
+    // 5. Отрисовка с применением смещения
+    rawPositions.forEach(hex => {
         const container = new PIXI.Container();
-        container.x = pixPos.x + shiftX;
-        container.y = pixPos.y + shiftY;
+        container.x = hex.rawX + shiftX;
+        container.y = hex.rawY + shiftY;
 
         const g = new PIXI.Graphics();
-        let color = 0x24242d; // Нейтральный
+        let color = 0x24242d;
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
@@ -301,7 +299,6 @@ function drawHexes() {
         g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE));
         g.endFill();
 
-        // Подсветка соседних доступных гексов
         const hexId = `${hex.q},${hex.r}`;
         if (movableHexIds.includes(hexId) && hex.owner !== 'player') {
             g.lineStyle(2, 0x88aadd, 0.8); 
@@ -346,7 +343,6 @@ function drawHexes() {
     });
 }
 
-// Остальной код отрисовки армий (с фоллбэк-артами)
 function drawArmies() {
     try {
         armyContainer.removeChildren();
@@ -354,89 +350,80 @@ function drawArmies() {
         const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
         const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
+        // Пересчет координат для расстановки армий (чтобы они совпадали с новым HEX_SIZE)
+        if (pPos) {
+            let pPix = hexToPixel(pPos.q, pPos.r, HEX_SIZE);
+            if (spritePlayer) {
+                const s = new PIXI.Sprite(spritePlayer);
+                s.anchor.set(0.5); s.scale.set(0.12);
+                s.x = pPix.x + shiftX; s.y = pPix.y + shiftY;
+                armyContainer.addChild(s);
+                if(game.player.lords.length > 0 && spriteLord) {
+                    const l = new PIXI.Sprite(spriteLord);
+                    l.anchor.set(0.5); l.scale.set(0.07);
+                    l.x = pPix.x + shiftX + 25; l.y = pPix.y + shiftY - 20;
+                    armyContainer.addChild(l);
+                }
+            } else {
+                renderFallbackArmy(pPix.x + shiftX, pPix.y + shiftY, getTotalTroops(game.player.mobileArmy), 0x7a1111, '🦇', 0xffffff);
+            }
+        }
+        // ... аналогично для aPos и wPos с hexToPixel ...
+        // (код для aPos и wPos опущен для краткости, он не меняется, только координаты пересчитываются)
+    } catch (e) { console.error("Ошибка в drawArmies:", e); }
+}
+
+// Полная функция drawArmies (включая резервные арты и расстановку по новой логике центрирования)
+function drawArmies() {
+    try {
+        armyContainer.removeChildren();
+        const pPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
+        const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
+        const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
+
+        // Вспомогательный пересчет координат с текущим shiftX/shiftY
+        let currentShiftX = 0, currentShiftY = 0;
+        if (game.hexGrid && game.hexGrid.length > 0) {
+            let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
+            game.hexGrid.forEach(h => { minQ = Math.min(minQ, h.q); maxQ = Math.max(maxQ, h.q); minR = Math.min(minR, h.r); maxR = Math.max(maxR, h.r); });
+            let w = app.renderer.width, h = app.renderer.height;
+            let sizeFromW = w / ((maxQ - minQ + 1) * 1.8);
+            let sizeFromH = h / ((maxR - minR + 1) * 1.6);
+            let hSize = Math.min(sizeFromW, sizeFromH, 80);
+            if (hSize < 10) hSize = 10;
+            let rP = game.hexGrid.map(hex => { const p = hexToPixel(hex.q, hex.r, hSize); return { ...hex, rawX: p.x, rawY: p.y }; });
+            let avgX = 0, avgY = 0;
+            rP.forEach(p => { avgX += p.rawX; avgY += p.rawY; });
+            avgX /= rP.length; avgY /= rP.length;
+            currentShiftX = (w / 2) - avgX; currentShiftY = (h / 2) - avgY;
+        }
+
         function renderFallbackArmy(x, y, count, color, symbol, symbolColor) {
             try {
                 const c = new PIXI.Graphics();
-                c.beginFill(color);
-                c.drawCircle(0, 0, 16);
-                c.endFill();
-                c.lineStyle(2, 0x000000, 0.5);
-                c.drawCircle(0, 0, 16);
+                c.beginFill(color); c.drawCircle(0, 0, 16); c.endFill();
+                c.lineStyle(2, 0x000000, 0.5); c.drawCircle(0, 0, 16);
                 const t = new PIXI.Text(symbol, { fontFamily: 'Cinzel', fontSize: 12, fill: symbolColor || 0xffffff, fontWeight: 'bold' });
-                t.anchor.set(0.5);
-                c.addChild(t);
+                t.anchor.set(0.5); c.addChild(t);
                 const countText = new PIXI.Text(`${count}`, { fontFamily: 'Arial', fontSize: 8, fill: 0xffffff });
-                countText.anchor.set(0.5);
-                countText.y = 14;
-                c.addChild(countText);
+                countText.anchor.set(0.5); countText.y = 14; c.addChild(countText);
                 c.x = x; c.y = y;
                 armyContainer.addChild(c);
             } catch (e) {}
         }
 
-        if (pPos) {
-            if (spritePlayer) {
-                const s = new PIXI.Sprite(spritePlayer);
-                s.anchor.set(0.5); s.scale.set(0.12);
-                s.x = pPos.x; s.y = pPos.y;
-                armyContainer.addChild(s);
-                if(game.player.lords.length > 0 && spriteLord) {
-                    const l = new PIXI.Sprite(spriteLord);
-                    l.anchor.set(0.5); l.scale.set(0.07);
-                    l.x = pPos.x + 25; l.y = pPos.y - 20;
-                    armyContainer.addChild(l);
-                }
-            } else {
-                renderFallbackArmy(pPos.x, pPos.y, getTotalTroops(game.player.mobileArmy), 0x7a1111, '🦇', 0xffffff);
-            }
-        }
-
-        if (aPos) {
-            if (spriteAI) {
-                const s = new PIXI.Sprite(spriteAI);
-                s.anchor.set(0.5); s.scale.set(0.14);
-                s.x = aPos.x; s.y = aPos.y;
-                armyContainer.addChild(s);
-                if(spriteAIGeneral) {
-                    const g = new PIXI.Sprite(spriteAIGeneral);
-                    g.anchor.set(0.5); g.scale.set(0.07);
-                    g.x = aPos.x + 25; g.y = aPos.y - 20;
-                    armyContainer.addChild(g);
-                }
-            } else {
-                renderFallbackArmy(aPos.x, aPos.y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0, '✝', 0x000000);
-            }
-        }
-
-        if (wPos) {
-            if (spriteWerewolf) {
-                const s = new PIXI.Sprite(spriteWerewolf);
-                s.anchor.set(0.5); s.scale.set(0.12);
-                s.x = wPos.x; s.y = wPos.y;
-                armyContainer.addChild(s);
-                if(spriteWolfGeneral) {
-                    const g = new PIXI.Sprite(spriteWolfGeneral);
-                    g.anchor.set(0.5); g.scale.set(0.07);
-                    g.x = wPos.x + 25; g.y = wPos.y - 20;
-                    armyContainer.addChild(g);
-                }
-            } else {
-                renderFallbackArmy(wPos.x, wPos.y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d, '👹', 0xffffff);
-            }
-        }
-    } catch (e) {
-        console.error("Ошибка в drawArmies:", e);
-    }
+        if (pPos) { let p = hexToPixel(pPos.q, pPos.r, HEX_SIZE); let x = p.x + currentShiftX, y = p.y + currentShiftY; if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.12); s.x = x; s.y = y; armyContainer.addChild(s); if(game.player.lords.length > 0 && spriteLord) { const l = new PIXI.Sprite(spriteLord); l.anchor.set(0.5); l.scale.set(0.07); l.x = x + 25; l.y = y - 20; armyContainer.addChild(l); } } else renderFallbackArmy(x, y, getTotalTroops(game.player.mobileArmy), 0x7a1111, '🦇', 0xffffff); }
+        if (aPos) { let p = hexToPixel(aPos.q, aPos.r, HEX_SIZE); let x = p.x + currentShiftX, y = p.y + currentShiftY; if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.14); s.x = x; s.y = y; armyContainer.addChild(s); if(spriteAIGeneral) { const g = new PIXI.Sprite(spriteAIGeneral); g.anchor.set(0.5); g.scale.set(0.07); g.x = x + 25; g.y = y - 20; armyContainer.addChild(g); } } else renderFallbackArmy(x, y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0, '✝', 0x000000); }
+        if (wPos) { let p = hexToPixel(wPos.q, wPos.r, HEX_SIZE); let x = p.x + currentShiftX, y = p.y + currentShiftY; if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.12); s.x = x; s.y = y; armyContainer.addChild(s); if(spriteWolfGeneral) { const g = new PIXI.Sprite(spriteWolfGeneral); g.anchor.set(0.5); g.scale.set(0.07); g.x = x + 25; g.y = y - 20; armyContainer.addChild(g); } } else renderFallbackArmy(x, y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d, '👹', 0xffffff); }
+    } catch (e) { console.error("Ошибка в drawArmies:", e); }
 }
 
 function updateUI() {
     try {
         document.getElementById('turn-counter').textContent = game.turn;
         document.getElementById('day-counter').textContent = game.day;
-        // ИСПРАВЛЕНИЕ: Обновляем иконку дня/ночи
         const icon = document.getElementById('day-night-icon');
         if (icon) icon.textContent = isNightTime() ? '🌙' : '☀️';
-
         document.getElementById('ap-counter').textContent = `${game.player.ap}/${game.player.maxAp}`;
         document.getElementById('blood-counter').textContent = game.player.blood;
         document.getElementById('gold-counter').textContent = game.player.gold;
@@ -651,15 +638,7 @@ function startTypeWriter() {
         if (!container) return;
         container.innerHTML = '';
 
-        const storyText = `
-            Граф Дракула, последний из древнего рода, пробуждается спустя столетия. Им движет не только жажда крови, но и пылающая, неутолимая любовь к прекрасной Кассальдии — дочери его самого могущественного врага. Он хочет подарить ей мир, где она будет в безопасности, но его собственная вампирская сущность жаждет власти и хаоса.
-            
-            Святой Престол во главе с Папой Эмиретиусом Клавдием II объявил крестовый поход против вампиров. Эмиретиус держит свою дочь Кассальдию в строгой изоляции, используя её как пешку для укрепления своей власти. Дракула должен объединить и завоевать все земли Европы, чтобы сокрушить Ватикан и освободить её.
-            
-            Каждое убийство делает Дракулу сильнее, но оно же отдаляет его от человечности, которую он пытается сохранить ради Кассальдии. Он боится, что, достигнув цели, он станет чудовищем, которое она не сможет полюбить.
-            
-            Ватикан не остановится ни перед чем. Им противостоят дикие Оборотни, жаждущие крови. Но даже объединившись, они не смогут противостоять Армии Тьмы, которую ведёт Дракула. Европа — это поле боя, а судьба Кассальдии — главный приз. Сделайте правильный выбор, Повелитель Тьмы!
-        `;
+        const storyText = `Граф Дракула, последний из древнего рода, пробуждается спустя столетия. Им движет не только жажда крови, но и пылающая, неутолимая любовь к прекрасной Кассальдии — дочери его самого могущественного врага. Он хочет подарить ей мир, где она будет в безопасности, но его собственная вампирская сущность жаждет власти и хаоса. Святой Престол во главе с Папой Эмиретиусом Клавдием II объявил крестовый поход против вампиров. Эмиретиус держит свою дочь Кассальдию в строгой изоляции, используя её как пешку для укрепления своей власти. Дракула должен объединить и завоевать все земли Европы, чтобы сокрушить Ватикан и освободить её. Каждое убийство делает Дракулу сильнее, но оно же отдаляет его от человечности, которую он пытается сохранить ради Кассальдии. Он боится, что, достигнув цели, он станет чудовищем, которое она не сможет полюбить. Ватикан не остановится ни перед чем. Им противостоят дикие Оборотни, жаждущие крови. Но даже объединившись, они не смогут противостоять Армии Тьмы, которую ведёт Дракула. Европа — это поле боя, а судьба Кассальдии — главный приз. Сделайте правильный выбор, Повелитель Тьмы!`;
 
         const paragraphs = storyText.split('\n').filter(p => p.trim() !== '');
         let paragraphIndex = 0;
@@ -672,12 +651,10 @@ function startTypeWriter() {
                 btnWrapper.style.display = 'flex';
                 return;
             }
-
             if (charIndex === 0) {
                 currentParagraphElement = document.createElement('p');
                 container.appendChild(currentParagraphElement);
             }
-
             const paragraphText = paragraphs[paragraphIndex].trim();
             if (charIndex < paragraphText.length) {
                 currentParagraphElement.textContent += paragraphText.charAt(charIndex);
@@ -706,7 +683,7 @@ function startGameMap() {
     }
     document.getElementById('btn-end-turn').disabled = false;
     attachLoreListeners();
-    resizeMap(); // Принудительно пересчитываем размеры при запуске карты
+    resizeMap(); 
     updateUI();
     log('Дракула пробудился! Завоюйте Европу.', 'system');
 }
@@ -754,12 +731,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
-    document.getElementById('btn-toggle-log').addEventListener('click', () => {
-        document.getElementById('log-overlay').style.display = 'flex';
-    });
-    document.getElementById('btn-close-log').addEventListener('click', () => {
-        document.getElementById('log-overlay').style.display = 'none';
-    });
+    document.getElementById('btn-toggle-log').addEventListener('click', () => { document.getElementById('log-overlay').style.display = 'flex'; });
+    document.getElementById('btn-close-log').addEventListener('click', () => { document.getElementById('log-overlay').style.display = 'none'; });
     document.getElementById('btn-clear-log').addEventListener('click', () => document.getElementById('log-container').innerHTML = '');
 
     document.querySelectorAll('.dropdown-toggle').forEach(btn => {
