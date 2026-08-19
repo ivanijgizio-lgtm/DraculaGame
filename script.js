@@ -53,6 +53,8 @@ function resizeMap() {
     if (mapArea) {
         const rect = mapArea.getBoundingClientRect();
         app.renderer.resize(rect.width, rect.height);
+        drawHexes(); // При изменении окна перерисовываем карту
+        drawArmies();
     }
 }
 window.addEventListener('resize', resizeMap);
@@ -80,18 +82,8 @@ loadSprites();
 
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
-let HEX_SIZE = 50; // Будет пересчитано динамически в initHexGrid
 
-function getHexCorners(cx, cy) {
-    const corners = [];
-    for (let i = 0; i < 6; i++) {
-        const angle = (60 * i - 30) * Math.PI / 180;
-        corners.push(cx + HEX_SIZE * Math.cos(angle), cy + HEX_SIZE * Math.sin(angle));
-    }
-    return corners;
-}
-
-function hexToPixel(q, r, size = HEX_SIZE) {
+function hexToPixel(q, r, size) {
     const x = size * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
     const y = size * (3/2 * r);
     return { x, y };
@@ -106,6 +98,7 @@ function getDefaultGame() {
     return {
         turn: 1, day: 1, gameOver: false, battleActive: false, surrenderActive: false,
         selectedHexId: null, pendingActionHexId: null,
+        hexBounds: { minQ: 0, maxQ: 0, minR: 0, maxR: 0 }, // Храним границы для пересчета размера
         player: {
             ap: 2, maxAp: 2, gold: 100, blood: 10, lords: [],
             mobileArmy: { infantry: 50, archer: 10, cavalry: 10, hexId: '0,0' },
@@ -125,9 +118,8 @@ let game = getDefaultGame();
 function initHexGrid() {
     const grid = [];
     
-    // Расширенные данные карты с пропорциональными фракциями и нейтральными ресурсами
+    // Расширенные данные карты
     const mapData = [
-        // Вампиры (Красные)
         { q: 0, r: 0, name: 'Transilvania', owner: 'player', fort: 1, pop: 2000 },
         { q: 1, r: 0, name: 'Wallachia', owner: 'player', fort: 0, pop: 1500 },
         { q: -1, r: 0, name: 'Moldavia', owner: 'player', fort: 0, pop: 1500 },
@@ -136,7 +128,6 @@ function initHexGrid() {
         { q: -2, r: 0, name: 'Bukovina', owner: 'player', fort: 0, pop: 800 },
         { q: 1, r: -1, name: 'Bessarabia', owner: 'player', fort: 0, pop: 800 },
         
-        // Ватикан (Бело-золотые)
         { q: 5, r: -3, name: 'Vaticanum', owner: 'ai', fort: 3, pop: 5000 },
         { q: 6, r: -3, name: 'Roma', owner: 'ai', fort: 2, pop: 4000 },
         { q: 6, r: -4, name: 'Florentia', owner: 'ai', fort: 1, pop: 3000 },
@@ -149,7 +140,6 @@ function initHexGrid() {
         { q: 8, r: -2, name: 'Zadar', owner: 'ai', fort: 0, pop: 1000 },
         { q: 4, r: -4, name: 'Orvieto', owner: 'ai', fort: 0, pop: 800 },
 
-        // Оборотни (Зелёные)
         { q: -5, r: 4, name: 'Carpathia', owner: 'werewolf', fort: 0, pop: 2500 },
         { q: -4, r: 4, name: 'Dacia', owner: 'werewolf', fort: 0, pop: 2000 },
         { q: -3, r: 4, name: 'Moesia', owner: 'werewolf', fort: 0, pop: 1500 },
@@ -162,7 +152,6 @@ function initHexGrid() {
         { q: -5, r: 5, name: 'Mournful Plains', owner: 'werewolf', fort: 0, pop: 1000 },
         { q: -7, r: 3, name: 'Dark Woods', owner: 'werewolf', fort: 0, pop: 800 },
 
-        // Оккультисты (Фиолетовые)
         { q: 3, r: 2, name: 'The Black Citadel', owner: 'occultist', fort: 2, pop: 1000 },
         { q: 4, r: 2, name: 'Temple of Old Ones', owner: 'occultist', fort: 1, pop: 800 },
         { q: 2, r: 3, name: 'Sunken Spire', owner: 'occultist', fort: 1, pop: 500 },
@@ -173,7 +162,6 @@ function initHexGrid() {
         { q: -1, r: -4, name: 'Chasm of Echoes', owner: 'occultist', fort: 1, pop: 400 },
         { q: 2, r: 4, name: 'Lost Catacombs', owner: 'occultist', fort: 0, pop: 300 },
 
-        // Нейтральные земли с ресурсами (При захвате дают бонус)
         { q: -2, r: -1, name: 'Silver Mines', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
         { q: -3, r: 2, name: 'Blood Marshes', owner: null, res: { gold: 0, blood: 20 }, fort: 0, pop: 0 },
         { q: 3, r: 1, name: 'Ruins', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
@@ -191,54 +179,18 @@ function initHexGrid() {
         { q: 3, r: -3, name: 'Lonely Plateau', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
     ];
 
-    // Шаг 1: Рассчитываем "сырые" координаты с размером 1, чтобы найти идеальный масштаб
-    let rawPositions = mapData.map(d => {
-        const pos = hexToPixel(d.q, d.r, 1);
-        return { ...d, rawX: pos.x, rawY: pos.y };
+    // Сохраняем сырые данные и вычисляем границы
+    let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
+    
+    mapData.forEach(d => {
+        minQ = Math.min(minQ, d.q); maxQ = Math.max(maxQ, d.q);
+        minR = Math.min(minR, d.r); maxR = Math.max(maxR, d.r);
     });
+    
+    game.hexBounds = { minQ, maxQ, minR, maxR };
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    rawPositions.forEach(p => {
-        minX = Math.min(minX, p.rawX);
-        maxX = Math.max(maxX, p.rawX);
-        minY = Math.min(minY, p.rawY);
-        maxY = Math.max(maxY, p.rawY);
-    });
-
-    let rawWidth = maxX - minX + 2;
-    let rawHeight = maxY - minY + 2;
-
-    let containerWidth = app.renderer.width;
-    let containerHeight = app.renderer.height;
-
-    // Шаг 2: Вычисляем идеальный размер гекса, заполняющий весь контейнер (с небольшим запасом 0.8)
-    let scaleX = containerWidth / rawWidth;
-    let scaleY = containerHeight / rawHeight;
-    HEX_SIZE = Math.min(scaleX, scaleY) * 0.85;
-
-    // Шаг 3: Пересчитываем реальные координаты на основе вычисленного HEX_SIZE
-    let actualPositions = mapData.map(d => {
-        const pos = hexToPixel(d.q, d.r, HEX_SIZE);
-        return { ...d, rawX: pos.x, rawY: pos.y };
-    });
-
-    // Шаг 4: Находим новые границы (с учетом радиуса гекса) для центрирования
-    minX = Infinity; maxX = -Infinity; minY = Infinity; maxY = -Infinity;
-    actualPositions.forEach(p => {
-        minX = Math.min(minX, p.rawX - HEX_SIZE);
-        maxX = Math.max(maxX, p.rawX + HEX_SIZE);
-        minY = Math.min(minY, p.rawY - HEX_SIZE);
-        maxY = Math.max(maxY, p.rawY + HEX_SIZE);
-    });
-
-    let centerX = (minX + maxX) / 2;
-    let centerY = (minY + maxY) / 2;
-    let shiftX = (containerWidth / 2) - centerX;
-    let shiftY = (containerHeight / 2) - centerY;
-
-    // Шаг 5: Сборка финальной сетки
-    actualPositions.forEach(d => {
-        const pos = { x: d.rawX + shiftX, y: d.rawY + shiftY };
+    // Формируем сетку гексов (без жесткой привязки к X/Y, они будут пересчитываться при отрисовке)
+    mapData.forEach(d => {
         let support = { player: 20, ai: 70, werewolf: 10, occultist: 0 };
         if (d.owner === 'player') support = { player: 80, ai: 10, werewolf: 10, occultist: 0 };
         else if (d.owner === 'ai') support = { player: 10, ai: 85, werewolf: 5, occultist: 0 };
@@ -246,7 +198,7 @@ function initHexGrid() {
         else if (d.owner === 'occultist') support = { player: 0, ai: 0, werewolf: 0, occultist: 100 };
 
         grid.push({
-            q: d.q, r: d.r, x: pos.x, y: pos.y, name: d.name, owner: d.owner, resources: d.res || { gold: 0, blood: 0 },
+            q: d.q, r: d.r, name: d.name, owner: d.owner, resources: d.res || { gold: 0, blood: 0 },
             fortification: d.fort || 0, population: d.pop || 0, support: support,
             playerGarrison: { infantry: d.owner === 'player' ? 20 : 0, archer: 0, cavalry: 0 },
             aiGarrison: { infantry: d.owner === 'ai' ? 20 : 0, archer: 0, cavalry: 0 },
@@ -297,10 +249,32 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ =================
+// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (ПЕРЕПИСАНА ДЛЯ ДИНАМИЧЕСКОГО МАСШТАБА) =================
 function drawHexes() {
     hexContainer.removeChildren();
     
+    // 1. Расчет текущего размера гекса на основе реальных границ и размера окна
+    const bounds = game.hexBounds;
+    const numQ = bounds.maxQ - bounds.minQ + 1;
+    const numR = bounds.maxR - bounds.minR + 1;
+    const w = app.renderer.width;
+    const h = app.renderer.height;
+
+    // Оптимальный размер на основе шестиугольной сетки
+    let sizeFromW = w / (numQ * 2);
+    let sizeFromH = h / (numR * 1.8);
+    let HEX_SIZE = Math.min(sizeFromW, sizeFromH, 80); // Ограничиваем, чтобы не было слишком большим
+    if (HEX_SIZE < 10) HEX_SIZE = 10;
+
+    // 2. Вычисляем центр сетки
+    const centerQ = (bounds.minQ + bounds.maxQ) / 2;
+    const centerR = (bounds.minR + bounds.maxR) / 2;
+    const centerPix = hexToPixel(centerQ, centerR, HEX_SIZE);
+    
+    // Вычисляем смещение для центрирования по контейнеру
+    const shiftX = (w / 2) - centerPix.x;
+    const shiftY = (h / 2) - centerPix.y;
+
     const currentHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     let movableHexIds = [];
     if (currentHex && game.player.ap > 0 && getTotalTroops(game.player.mobileArmy) > 0) {
@@ -308,14 +282,15 @@ function drawHexes() {
         movableHexIds = neighbors.map(n => `${n.q},${n.r}`);
     }
 
+    // 3. Отрисовка
     game.hexGrid.forEach(hex => {
+        const pixPos = hexToPixel(hex.q, hex.r, HEX_SIZE);
         const container = new PIXI.Container();
-        container.x = hex.x;
-        container.y = hex.y;
+        container.x = pixPos.x + shiftX;
+        container.y = pixPos.y + shiftY;
 
         const g = new PIXI.Graphics();
-        // ИСПРАВЛЕНИЕ: Делаем нейтральные гексы немного светлее, чтобы они не сливались с фоном
-        let color = 0x24242d; 
+        let color = 0x24242d; // Нейтральный
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
@@ -323,14 +298,14 @@ function drawHexes() {
 
         g.beginFill(color); 
         g.lineStyle(2, 0x333333, 0.7); 
-        g.drawPolygon(...getHexCorners(0, 0));
+        g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE));
         g.endFill();
 
         // Подсветка соседних доступных гексов
         const hexId = `${hex.q},${hex.r}`;
         if (movableHexIds.includes(hexId) && hex.owner !== 'player') {
             g.lineStyle(2, 0x88aadd, 0.8); 
-            g.drawPolygon(...getHexCorners(0, 0));
+            g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE));
         }
 
         g.interactive = true; g.cursor = 'pointer'; g.hexData = hex;
@@ -371,6 +346,7 @@ function drawHexes() {
     });
 }
 
+// Остальной код отрисовки армий (с фоллбэк-артами)
 function drawArmies() {
     try {
         armyContainer.removeChildren();
@@ -457,6 +433,10 @@ function updateUI() {
     try {
         document.getElementById('turn-counter').textContent = game.turn;
         document.getElementById('day-counter').textContent = game.day;
+        // ИСПРАВЛЕНИЕ: Обновляем иконку дня/ночи
+        const icon = document.getElementById('day-night-icon');
+        if (icon) icon.textContent = isNightTime() ? '🌙' : '☀️';
+
         document.getElementById('ap-counter').textContent = `${game.player.ap}/${game.player.maxAp}`;
         document.getElementById('blood-counter').textContent = game.player.blood;
         document.getElementById('gold-counter').textContent = game.player.gold;
@@ -483,10 +463,8 @@ function handleHexClick(hex) {
         log(`Выбрана ${hex.name} для стройки.`, 'system'); updateUI(); return;
     }
 
-    // ИСПРАВЛЕНИЕ: Строгое сравнение строковых ID для проверки соседей
     const currentHexId = `${cH.q},${cH.r}`;
     const clickedHexId = `${hex.q},${hex.r}`;
-    
     const neighbors = getNeighbors(Number(cH.q), Number(cH.r));
     const isNeighbor = neighbors.some(n => `${n.q},${n.r}` === clickedHexId);
 
@@ -728,7 +706,7 @@ function startGameMap() {
     }
     document.getElementById('btn-end-turn').disabled = false;
     attachLoreListeners();
-    resizeMap();
+    resizeMap(); // Принудительно пересчитываем размеры при запуске карты
     updateUI();
     log('Дракула пробудился! Завоюйте Европу.', 'system');
 }
