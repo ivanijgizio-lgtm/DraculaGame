@@ -15,7 +15,6 @@ body {
     height: 100vh; overflow: hidden;
 }
 
-/* ================= СТАРТОВОЕ МЕНЮ ================= */
 .start-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     background: url('./assets/MAIN BACKGROUND.jpg') center/cover no-repeat;
@@ -57,11 +56,9 @@ body {
 }
 .start-buttons button:hover { color: var(--metal-blue); transform: scale(1.05); text-shadow: 0 0 40px rgba(74, 91, 154, 0.8); }
 
-/* ================= ЗАГРУЗОЧНЫЙ ЭКРАН ================= */
 .loader-spinner { margin: 30px auto; width: 50px; height: 50px; border: 4px solid #4a5b9a; border-top: 4px solid #8a2be2; border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
-/* ================= ЭКРАН ПРОЛОГА ================= */
 #prologue-modal { background: #000000 !important; }
 .prologue-container {
     width: 100vw; height: 100vh;
@@ -90,7 +87,6 @@ body {
 }
 #prologue-btn-wrapper { display: flex; justify-content: center; width: 100%; }
 
-/* ================= ИГРОВОЙ БЛОК ================= */
 #game-container {
     display: none; position: relative; width: 100vw; height: 100vh;
     background: var(--bg-dark); display: flex; flex-direction: column;
@@ -113,7 +109,6 @@ body {
     background: rgba(0,0,0,0.8); border: 1px solid var(--metal-blue); border-radius: 4px;
 }
 
-/* ================= НИЖНЯЯ ПАНЕЛЬ КОМАНД ================= */
 #command-panel {
     z-index: 3; width: 100%; height: 180px;
     background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column;
@@ -155,7 +150,6 @@ body {
 .sub-btn { background: transparent; border: none; color: var(--text-light); padding: 6px 12px; width: 100%; text-align: left; cursor: pointer; border-bottom: 1px solid #2a3450; font-size: 12px; transition: 0.2s; }
 .sub-btn:hover { background: rgba(28, 34, 48, 0.9); color: #ffffff; }
 
-/* ================= ВСПЛЫВАЮЩЕЕ ОКНО ЛОГА ================= */
 .log-overlay {
     display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.9); z-index: 99;
@@ -174,16 +168,8 @@ body {
 .log-entry.ai { color: #8ea4c7; }
 .log-entry.system { color: #7ab4e8; }
 
-/* ИСПРАВЛЕНИЕ: Аккуратная кнопка */
-#btn-clear-log {
-    padding: 6px 20px;
-    font-size: 11px;
-    width: auto;
-    height: auto;
-    margin: 10px auto 0;
-}
+#btn-clear-log { padding: 6px 20px; font-size: 11px; width: auto; height: auto; margin: 10px auto 0; }
 
-/* ================= ОБЩИЕ МОДАЛЬНЫЕ ОКНА ================= */
 .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); justify-content: center; align-items: center; cursor: pointer; }
 .modal-content { background: rgba(5, 5, 8, 0.95); border: 2px solid var(--metal-blue); border-radius: 16px; padding: 25px; width: 420px; text-align: center; box-shadow: 0 0 80px rgba(74, 91, 154, 0.4); backdrop-filter: blur(8px); cursor: default;}
 .modal-content h2 { color: #fff; margin-bottom: 10px; font-weight: 400; }
