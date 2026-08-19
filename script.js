@@ -91,14 +91,14 @@ function getHexCorners(cx, cy) {
     return corners;
 }
 
-function hexToPixel(q, r) {
-    const x = HEX_SIZE * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
-    const y = HEX_SIZE * (3/2 * r);
+function hexToPixel(q, r, size = HEX_SIZE) {
+    const x = size * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
+    const y = size * (3/2 * r);
     return { x, y };
 }
+
 function getNeighbors(q, r) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]];
-    // Явно приводим к числу для безопасности
     return dirs.map(d => ({ q: Number(q) + d[0], r: Number(r) + d[1] }));
 }
 
@@ -191,42 +191,38 @@ function initHexGrid() {
         { q: 3, r: -3, name: 'Lonely Plateau', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
     ];
 
-    // 1. Сначала рассчитываем "сырые" координаты, используя временную константу (например 50) для покрытия
-    const tempSize = 50;
+    // Шаг 1: Рассчитываем "сырые" координаты с размером 1, чтобы найти идеальный масштаб
     let rawPositions = mapData.map(d => {
-        const pos = hexToPixelTemp(d.q, d.r, tempSize);
+        const pos = hexToPixel(d.q, d.r, 1);
         return { ...d, rawX: pos.x, rawY: pos.y };
     });
 
-    // 2. Находим границы (bounding box) с учетом размера гекса
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     rawPositions.forEach(p => {
-        minX = Math.min(minX, p.rawX - tempSize);
-        maxX = Math.max(maxX, p.rawX + tempSize);
-        minY = Math.min(minY, p.rawY - tempSize);
-        maxY = Math.max(maxY, p.rawY + tempSize);
+        minX = Math.min(minX, p.rawX);
+        maxX = Math.max(maxX, p.rawX);
+        minY = Math.min(minY, p.rawY);
+        maxY = Math.max(maxY, p.rawY);
     });
 
-    // 3. Получаем размеры bounding box
-    let rawWidth = maxX - minX;
-    let rawHeight = maxY - minY;
-    
-    // Получаем реальные размеры контейнера Pixi
+    let rawWidth = maxX - minX + 2;
+    let rawHeight = maxY - minY + 2;
+
     let containerWidth = app.renderer.width;
     let containerHeight = app.renderer.height;
 
-    // 4. Вычисляем динамический размер гекса (с небольшим отступом 15%)
-    let scaleX = containerWidth / (rawWidth + tempSize);
-    let scaleY = containerHeight / (rawHeight + tempSize);
-    HEX_SIZE = Math.min(scaleX, scaleY) * tempSize * 0.8; // 0.8 для небольшого отступа
+    // Шаг 2: Вычисляем идеальный размер гекса, заполняющий весь контейнер (с небольшим запасом 0.8)
+    let scaleX = containerWidth / rawWidth;
+    let scaleY = containerHeight / rawHeight;
+    HEX_SIZE = Math.min(scaleX, scaleY) * 0.85;
 
-    // 5. Пересчитываем реальные координаты на основе нового HEX_SIZE
+    // Шаг 3: Пересчитываем реальные координаты на основе вычисленного HEX_SIZE
     let actualPositions = mapData.map(d => {
-        const pos = hexToPixel(d.q, d.r);
+        const pos = hexToPixel(d.q, d.r, HEX_SIZE);
         return { ...d, rawX: pos.x, rawY: pos.y };
     });
 
-    // 6. Находим новые границы с новым HEX_SIZE
+    // Шаг 4: Находим новые границы (с учетом радиуса гекса) для центрирования
     minX = Infinity; maxX = -Infinity; minY = Infinity; maxY = -Infinity;
     actualPositions.forEach(p => {
         minX = Math.min(minX, p.rawX - HEX_SIZE);
@@ -235,13 +231,12 @@ function initHexGrid() {
         maxY = Math.max(maxY, p.rawY + HEX_SIZE);
     });
 
-    // 7. Вычисляем смещение (shift) для центрирования по контейнеру
     let centerX = (minX + maxX) / 2;
     let centerY = (minY + maxY) / 2;
     let shiftX = (containerWidth / 2) - centerX;
     let shiftY = (containerHeight / 2) - centerY;
 
-    // 8. Сборка финальной сетки
+    // Шаг 5: Сборка финальной сетки
     actualPositions.forEach(d => {
         const pos = { x: d.rawX + shiftX, y: d.rawY + shiftY };
         let support = { player: 20, ai: 70, werewolf: 10, occultist: 0 };
@@ -259,13 +254,6 @@ function initHexGrid() {
         });
     });
     return grid;
-}
-
-// Вспомогательная функция для начального расчета
-function hexToPixelTemp(q, r, size) {
-    const x = size * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
-    const y = size * (3/2 * r);
-    return { x, y };
 }
 
 // ================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =================
@@ -326,7 +314,8 @@ function drawHexes() {
         container.y = hex.y;
 
         const g = new PIXI.Graphics();
-        let color = 0x1c1c24; // Нейтральный
+        // ИСПРАВЛЕНИЕ: Делаем нейтральные гексы немного светлее, чтобы они не сливались с фоном
+        let color = 0x24242d; 
         if (hex.owner === 'player') color = 0x7a1111;
         else if (hex.owner === 'ai') color = 0xe0e0c0;
         else if (hex.owner === 'werewolf') color = 0x2d4a2d;
