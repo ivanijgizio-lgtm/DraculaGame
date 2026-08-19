@@ -86,11 +86,11 @@ body {
 #prologue-text-container {
     color: #e0e5f0; font-size: 18px; line-height: 1.8; font-family: 'Cinzel', serif;
     margin-bottom: 20px; text-shadow: 0 0 10px rgba(255,255,255,0.3);
-    width: 100%; white-space: pre-wrap; /* ИСПРАВЛЕНИЕ: корректные переносы строк */
+    width: 100%; white-space: pre-wrap;
 }
 #prologue-btn-wrapper { display: flex; justify-content: center; width: 100%; }
 
-/* ================= ИГРОВОЙ БЛОК (Без сайдбара) ================= */
+/* ================= ИГРОВОЙ БЛОК ================= */
 #game-container {
     display: none; position: relative; width: 100vw; height: 100vh;
     background: var(--bg-dark); display: flex; flex-direction: column;
@@ -101,13 +101,12 @@ body {
     opacity: 0.15; z-index: 0; pointer-events: none;
 }
 #map-area {
-    position: relative; width: 100%; height: calc(100% - 180px); /* Карта занимает почти весь экран */
+    position: relative; width: 100%; height: calc(100% - 180px);
     overflow: hidden; background: rgba(0, 0, 0, 0.85);
     border-bottom: 1px solid var(--metal-blue);
 }
 #pixi-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
-/* Кнопка открытия Хроник на карте */
 #btn-toggle-log {
     position: absolute; top: 15px; right: 20px; z-index: 5;
     width: auto; padding: 8px 15px; font-size: 12px;
@@ -174,7 +173,15 @@ body {
 .log-entry.player { color: #ffffff; }
 .log-entry.ai { color: #8ea4c7; }
 .log-entry.system { color: #7ab4e8; }
-#btn-clear-log { width: 150px; height: 40px; margin: 15px 0; }
+
+/* ИСПРАВЛЕНИЕ: Аккуратная кнопка */
+#btn-clear-log {
+    padding: 6px 20px;
+    font-size: 11px;
+    width: auto;
+    height: auto;
+    margin: 10px auto 0;
+}
 
 /* ================= ОБЩИЕ МОДАЛЬНЫЕ ОКНА ================= */
 .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); justify-content: center; align-items: center; cursor: pointer; }
