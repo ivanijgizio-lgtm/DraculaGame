@@ -52,8 +52,7 @@ function resizeMap() {
     if (mapArea) {
         const rect = mapArea.getBoundingClientRect();
         app.renderer.resize(rect.width, rect.height);
-        drawHexes(); 
-        drawArmies();
+        updateUI(); // Перерисовываем гексы при изменении размера
     }
 }
 window.addEventListener('resize', resizeMap);
@@ -237,25 +236,24 @@ function gameOver(winner) {
     document.getElementById('gameover-modal').style.display = 'flex';
 }
 
-// ================= ОТРИСОВКА ГЕКСОВ И АРМИЙ (ПОЛНАЯ РЕВИЗИЯ ЦЕНТРИРОВАНИЯ) =================
+// ================= ДИНАМИЧЕСКАЯ ОТРИСОВКА ГЕКСОВ (ИСПРАВЛЕНИЕ ЦЕНТРИРОВАНИЯ) =================
 function drawHexes() {
     hexContainer.removeChildren();
     if (!game.hexGrid || game.hexGrid.length === 0) return;
 
-    const w = app.renderer.width;
-    const h = app.renderer.height;
+    const w = app.renderer.view.width;
+    const h = app.renderer.view.height;
     
-    // 1. Вычисляем границы Q и R для расчета адаптивного размера
+    // 1. Вычисляем адаптивный размер гекса, чтобы он умещался в пределах карты
     let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
     game.hexGrid.forEach(hex => {
         minQ = Math.min(minQ, hex.q); maxQ = Math.max(maxQ, hex.q);
         minR = Math.min(minR, hex.r); maxR = Math.max(maxR, hex.r);
     });
     
-    // Оптимальная формула размера, чтобы гексы заполнили блок
     let sizeFromW = w / ((maxQ - minQ + 1) * 1.8);
     let sizeFromH = h / ((maxR - minR + 1) * 1.6);
-    let HEX_SIZE = Math.min(sizeFromW, sizeFromH, 80);
+    let HEX_SIZE = Math.min(sizeFromW, sizeFromH, 80) * 0.85; // Добавил небольшой отступ 0.85
     if (HEX_SIZE < 10) HEX_SIZE = 10;
 
     // 2. Рассчитываем сырые координаты гексов
@@ -264,15 +262,18 @@ function drawHexes() {
         return { ...hex, rawX: p.x, rawY: p.y };
     });
 
-    // 3. Находим средний центр всех гексов
-    let avgX = 0, avgY = 0;
-    rawPositions.forEach(p => { avgX += p.rawX; avgY += p.rawY; });
-    avgX /= rawPositions.length;
-    avgY /= rawPositions.length;
+    // 3. Находим геометрический центр всей сетки гексов (bounding box)
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    rawPositions.forEach(p => {
+        minX = Math.min(minX, p.rawX); maxX = Math.max(maxX, p.rawX);
+        minY = Math.min(minY, p.rawY); maxY = Math.max(maxY, p.rawY);
+    });
+    let centerX = (minX + maxX) / 2;
+    let centerY = (minY + maxY) / 2;
 
-    // 4. Вычисляем смещение для центрирования по центру экрана
-    let shiftX = (w / 2) - avgX;
-    let shiftY = (h / 2) - avgY;
+    // 4. Вычисляем смещение для центрирования по контейнеру
+    let shiftX = (w / 2) - centerX;
+    let shiftY = (h / 2) - centerY;
 
     const currentHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     let movableHexIds = [];
@@ -343,6 +344,7 @@ function drawHexes() {
     });
 }
 
+// ================= ОТРИСОВКА АРМИЙ (С ДИНАМИЧЕСКИМИ КООРДИНАТАМИ) =================
 function drawArmies() {
     try {
         armyContainer.removeChildren();
@@ -350,53 +352,32 @@ function drawArmies() {
         const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
         const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
 
-        // Пересчет координат для расстановки армий (чтобы они совпадали с новым HEX_SIZE)
-        if (pPos) {
-            let pPix = hexToPixel(pPos.q, pPos.r, HEX_SIZE);
-            if (spritePlayer) {
-                const s = new PIXI.Sprite(spritePlayer);
-                s.anchor.set(0.5); s.scale.set(0.12);
-                s.x = pPix.x + shiftX; s.y = pPix.y + shiftY;
-                armyContainer.addChild(s);
-                if(game.player.lords.length > 0 && spriteLord) {
-                    const l = new PIXI.Sprite(spriteLord);
-                    l.anchor.set(0.5); l.scale.set(0.07);
-                    l.x = pPix.x + shiftX + 25; l.y = pPix.y + shiftY - 20;
-                    armyContainer.addChild(l);
-                }
-            } else {
-                renderFallbackArmy(pPix.x + shiftX, pPix.y + shiftY, getTotalTroops(game.player.mobileArmy), 0x7a1111, '🦇', 0xffffff);
-            }
-        }
-        // ... аналогично для aPos и wPos с hexToPixel ...
-        // (код для aPos и wPos опущен для краткости, он не меняется, только координаты пересчитываются)
-    } catch (e) { console.error("Ошибка в drawArmies:", e); }
-}
+        // Пересчитываем текущие смещения и размер гексов для синхронизации с картой
+        const w = app.renderer.view.width;
+        const h = app.renderer.view.height;
+        let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
+        game.hexGrid.forEach(hex => {
+            minQ = Math.min(minQ, hex.q); maxQ = Math.max(maxQ, hex.q);
+            minR = Math.min(minR, hex.r); maxR = Math.max(maxR, hex.r);
+        });
+        let sizeFromW = w / ((maxQ - minQ + 1) * 1.8);
+        let sizeFromH = h / ((maxR - minR + 1) * 1.6);
+        let HEX_SIZE = Math.min(sizeFromW, sizeFromH, 80) * 0.85;
+        if (HEX_SIZE < 10) HEX_SIZE = 10;
 
-// Полная функция drawArmies (включая резервные арты и расстановку по новой логике центрирования)
-function drawArmies() {
-    try {
-        armyContainer.removeChildren();
-        const pPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
-        const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
-        const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
-
-        // Вспомогательный пересчет координат с текущим shiftX/shiftY
-        let currentShiftX = 0, currentShiftY = 0;
-        if (game.hexGrid && game.hexGrid.length > 0) {
-            let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
-            game.hexGrid.forEach(h => { minQ = Math.min(minQ, h.q); maxQ = Math.max(maxQ, h.q); minR = Math.min(minR, h.r); maxR = Math.max(maxR, h.r); });
-            let w = app.renderer.width, h = app.renderer.height;
-            let sizeFromW = w / ((maxQ - minQ + 1) * 1.8);
-            let sizeFromH = h / ((maxR - minR + 1) * 1.6);
-            let hSize = Math.min(sizeFromW, sizeFromH, 80);
-            if (hSize < 10) hSize = 10;
-            let rP = game.hexGrid.map(hex => { const p = hexToPixel(hex.q, hex.r, hSize); return { ...hex, rawX: p.x, rawY: p.y }; });
-            let avgX = 0, avgY = 0;
-            rP.forEach(p => { avgX += p.rawX; avgY += p.rawY; });
-            avgX /= rP.length; avgY /= rP.length;
-            currentShiftX = (w / 2) - avgX; currentShiftY = (h / 2) - avgY;
-        }
+        let rawPositions = game.hexGrid.map(hex => {
+            const p = hexToPixel(hex.q, hex.r, HEX_SIZE);
+            return { ...hex, rawX: p.x, rawY: p.y };
+        });
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        rawPositions.forEach(p => {
+            minX = Math.min(minX, p.rawX); maxX = Math.max(maxX, p.rawX);
+            minY = Math.min(minY, p.rawY); maxY = Math.max(maxY, p.rawY);
+        });
+        let centerX = (minX + maxX) / 2;
+        let centerY = (minY + maxY) / 2;
+        let shiftX = (w / 2) - centerX;
+        let shiftY = (h / 2) - centerY;
 
         function renderFallbackArmy(x, y, count, color, symbol, symbolColor) {
             try {
@@ -412,9 +393,9 @@ function drawArmies() {
             } catch (e) {}
         }
 
-        if (pPos) { let p = hexToPixel(pPos.q, pPos.r, HEX_SIZE); let x = p.x + currentShiftX, y = p.y + currentShiftY; if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.12); s.x = x; s.y = y; armyContainer.addChild(s); if(game.player.lords.length > 0 && spriteLord) { const l = new PIXI.Sprite(spriteLord); l.anchor.set(0.5); l.scale.set(0.07); l.x = x + 25; l.y = y - 20; armyContainer.addChild(l); } } else renderFallbackArmy(x, y, getTotalTroops(game.player.mobileArmy), 0x7a1111, '🦇', 0xffffff); }
-        if (aPos) { let p = hexToPixel(aPos.q, aPos.r, HEX_SIZE); let x = p.x + currentShiftX, y = p.y + currentShiftY; if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.14); s.x = x; s.y = y; armyContainer.addChild(s); if(spriteAIGeneral) { const g = new PIXI.Sprite(spriteAIGeneral); g.anchor.set(0.5); g.scale.set(0.07); g.x = x + 25; g.y = y - 20; armyContainer.addChild(g); } } else renderFallbackArmy(x, y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0, '✝', 0x000000); }
-        if (wPos) { let p = hexToPixel(wPos.q, wPos.r, HEX_SIZE); let x = p.x + currentShiftX, y = p.y + currentShiftY; if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.12); s.x = x; s.y = y; armyContainer.addChild(s); if(spriteWolfGeneral) { const g = new PIXI.Sprite(spriteWolfGeneral); g.anchor.set(0.5); g.scale.set(0.07); g.x = x + 25; g.y = y - 20; armyContainer.addChild(g); } } else renderFallbackArmy(x, y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d, '👹', 0xffffff); }
+        if (pPos) { let p = hexToPixel(pPos.q, pPos.r, HEX_SIZE); let x = p.x + shiftX, y = p.y + shiftY; if (spritePlayer) { const s = new PIXI.Sprite(spritePlayer); s.anchor.set(0.5); s.scale.set(0.12); s.x = x; s.y = y; armyContainer.addChild(s); if(game.player.lords.length > 0 && spriteLord) { const l = new PIXI.Sprite(spriteLord); l.anchor.set(0.5); l.scale.set(0.07); l.x = x + 25; l.y = y - 20; armyContainer.addChild(l); } } else renderFallbackArmy(x, y, getTotalTroops(game.player.mobileArmy), 0x7a1111, '🦇', 0xffffff); }
+        if (aPos) { let p = hexToPixel(aPos.q, aPos.r, HEX_SIZE); let x = p.x + shiftX, y = p.y + shiftY; if (spriteAI) { const s = new PIXI.Sprite(spriteAI); s.anchor.set(0.5); s.scale.set(0.14); s.x = x; s.y = y; armyContainer.addChild(s); if(spriteAIGeneral) { const g = new PIXI.Sprite(spriteAIGeneral); g.anchor.set(0.5); g.scale.set(0.07); g.x = x + 25; g.y = y - 20; armyContainer.addChild(g); } } else renderFallbackArmy(x, y, getTotalTroops(game.ai.mobileArmy), 0xe0e0c0, '✝', 0x000000); }
+        if (wPos) { let p = hexToPixel(wPos.q, wPos.r, HEX_SIZE); let x = p.x + shiftX, y = p.y + shiftY; if (spriteWerewolf) { const s = new PIXI.Sprite(spriteWerewolf); s.anchor.set(0.5); s.scale.set(0.12); s.x = x; s.y = y; armyContainer.addChild(s); if(spriteWolfGeneral) { const g = new PIXI.Sprite(spriteWolfGeneral); g.anchor.set(0.5); g.scale.set(0.07); g.x = x + 25; g.y = y - 20; armyContainer.addChild(g); } } else renderFallbackArmy(x, y, getTotalTroops(game.werewolf.mobileArmy), 0x2d4a2d, '👹', 0xffffff); }
     } catch (e) { console.error("Ошибка в drawArmies:", e); }
 }
 
