@@ -1,4 +1,4 @@
-// ================= РАСШИРЕННЫЙ ЛОР ПОДДЕРЖКИ КНОПОК =================
+// ================= РАСШИРЕННЫЙ ЛОР =================
 const BUILD_LORE = {
     'build': "СТРОИТЬ: Возводите тёмные сооружения. Каждое здание тратит 1 Очко Действия (AP) и требует золота. Стройте Казармы для пополнения легионов и Замки для обороны.",
     'recruit': "ПРИЗВАТЬ: Соберите армию. Каждый призыв тратит 1 AP и требует золота. Базовые подразделения обучаются в Казармах.",
@@ -27,12 +27,12 @@ const BUILD_LORE = {
     'garrison_take': "ПРИЗВАТЬ: Забрать 10 пехотинцев из гарнизона в мобильный отряд."
 };
 
-// Глобальные переменные движка PixiJS
+// ================= ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ PIXI =================
 let app = null, hexContainer = null, armyContainer = null;
 let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
 let spriteLord = null, spriteAIGeneral = null, spriteWolfGeneral = null;
 
-// ================= ВЕБ-АУДИО СИНТЕЗАТОР ЗВУКОВ =================
+// ================= ВЕБ-АУДИО СИНТЕЗАТОР =================
 const SoundEngine = {
     ctx: null,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
@@ -71,30 +71,26 @@ const SoundEngine = {
     }
 };
 
-// Инициализация PixiJS приложения
+// ================= ИНИЦИАЛИЗАЦИЯ PIXI =================
 function initPixi() {
     const pixiContainer = document.getElementById('pixi-container');
     if (!pixiContainer) return;
-
     app = new PIXI.Application({
         width: pixiContainer.clientWidth || 1100,
         height: pixiContainer.clientHeight || 650,
-        backgroundColor: 0x0a0a0e,
+        backgroundColor: 0x0a0a0a,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true
     });
     pixiContainer.appendChild(app.view);
-
     hexContainer = new PIXI.Container();
     armyContainer = new PIXI.Container();
     app.stage.addChild(hexContainer);
     app.stage.addChild(armyContainer);
-
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
     window.addEventListener('resize', resizeMap);
 }
 
-// Загрузка графических ассетов
 async function loadSprites() {
     try {
         spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
@@ -105,9 +101,8 @@ async function loadSprites() {
         spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
     } catch (e) {}
 }
-loadSprites();
 
-// ================= МЕХАНИКА ДАННЫХ И СЕТКИ КАРТЫ =================
+// ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос", "Леди Сильвана", "Барон Ноктюрн", "Принц Теней", "Леди Вэйн"];
 
 function hexToPixel(q, r, size) {
@@ -192,7 +187,7 @@ function initHexGrid() {
     return grid;
 }
 
-// ================= ВСПОМОГАТЕЛЬНЫЕ СИСТЕМНЫЕ ФУНКЦИИ =================
+// ================= ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =================
 function getTotalTroops(army) {
     return (army?.infantry || 0) + (army?.archer || 0) + (army?.cavalry || 0) + (army?.gargoyle || 0) + (army?.noble || 0);
 }
@@ -244,7 +239,7 @@ function checkStoryConditions() {
     }
 }
 
-// ================= ОТРИСОВКА КАРТЫ С ЛАНДШАФТАМИ И ИКОНКАМИ =================
+// ================= ОТРИСОВКА КАРТЫ =================
 function resizeMap() {
     const mapArea = document.getElementById('map-area');
     if (mapArea && app) {
@@ -279,35 +274,35 @@ function drawHexes() {
         container.x = hex.rawX + shiftX; container.y = hex.rawY + shiftY;
         const g = new PIXI.Graphics();
 
-        // Цвет фона в зависимости от рельефа
-        let terrainColor = 0x24242d;
-        if (hex.terrain === 'mountain') terrainColor = 0x3d3d47;
-        else if (hex.terrain === 'forest') terrainColor = 0x142b14;
-        else if (hex.terrain === 'swamp') terrainColor = 0x252b12;
+        // Цвет фона (черный с оттенками)
+        let terrainColor = 0x1a1a1a;
+        if (hex.terrain === 'mountain') terrainColor = 0x2a2a2a;
+        else if (hex.terrain === 'forest') terrainColor = 0x0d1f0d;
+        else if (hex.terrain === 'swamp') terrainColor = 0x1a1f0d;
         g.beginFill(terrainColor);
 
-        // Границы фракций и дипломатические пакты
+        // Границы (фиолетовый для акцентов)
         let borderColor = 0x333333, borderWidth = 1, hasTruceGlow = false;
-        if (hex.owner === 'player') { borderColor = 0xbc2c2c; borderWidth = 3; }
+        if (hex.owner === 'player') { borderColor = 0x8a2be2; borderWidth = 3; }
         else if (hex.owner === 'ai') {
-            if (game.player.allianceWithAI || game.player.truceTurnsAI > 0) { borderColor = 0x4a5b9a; borderWidth = 4; hasTruceGlow = true; }
+            if (game.player.allianceWithAI || game.player.truceTurnsAI > 0) { borderColor = 0x6a0dad; borderWidth = 4; hasTruceGlow = true; }
             else { borderColor = 0xd4af37; borderWidth = 3; }
         } else if (hex.owner === 'werewolf') {
-            if (game.player.truceTurnsWolf > 0) { borderColor = 0x4a5b9a; borderWidth = 4; hasTruceGlow = true; }
+            if (game.player.truceTurnsWolf > 0) { borderColor = 0x6a0dad; borderWidth = 4; hasTruceGlow = true; }
             else { borderColor = 0x2b7a2b; borderWidth = 3; }
         }
         g.lineStyle(borderWidth, borderColor, 0.9);
         g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE));
         g.endFill();
 
-        if (hasTruceGlow) { g.lineStyle(borderWidth + 4, 0x6a8bda, 0.35); g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE)); }
+        if (hasTruceGlow) { g.lineStyle(borderWidth + 4, 0x8a2be2, 0.35); g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE)); }
         if (movableHexIds.includes(`${hex.q},${hex.r}`) && hex.owner !== 'player') {
-            g.lineStyle(2, 0x88aadd, 0.8); g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE));
+            g.lineStyle(2, 0x8a2be2, 0.8); g.drawPolygon(...getHexCorners(0, 0, HEX_SIZE));
         }
 
         g.interactive = true; g.cursor = 'pointer'; g.hexData = hex;
         g.on('mouseover', (e) => {
-            g.tint = 0x88aadd;
+            g.tint = 0x8a2be2;
             const t = document.getElementById('tooltip');
             const o = hex.owner ? (hex.owner === 'player' ? 'Дракула' : (hex.owner === 'ai' ? 'Ватикан' : 'Оборотни')) : 'Ничейная';
             const terrMap = { plains: "Равнины", mountain: "Горы ⛰️", forest: "Густой Лес 🌲", swamp: "Гнилые Болота ☣️" };
@@ -318,7 +313,7 @@ function drawHexes() {
         g.on('click', () => handleHexClick(hex));
 
         try {
-            const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xffffff, dropShadow: true, dropShadowColor: 0x000000 });
+            const nT = new PIXI.Text(hex.name, { fontFamily: 'Cinzel', fontSize: 10, fill: 0xe0e5f0, dropShadow: true, dropShadowColor: 0x000000 });
             nT.anchor.set(0.5); nT.y = -HEX_SIZE * 0.35; container.addChild(nT);
 
             let terrIcon = hex.terrain === 'mountain' ? "⛰️" : (hex.terrain === 'forest' ? "🌲" : (hex.terrain === 'swamp' ? "☣️" : ""));
@@ -374,7 +369,6 @@ function drawArmies() {
         if (game.player.lords.length > 0 && spriteLord) {
             const l = new PIXI.Sprite(spriteLord); l.anchor.set(0.5); l.scale.set(0.07); l.x = x + 25; l.y = y - 20; armyContainer.addChild(l);
         }
-        // Отображение количества гаргулий и аристократов
         if (game.player.mobileArmy.gargoyle > 0) {
             const gT = new PIXI.Text(`🪨${game.player.mobileArmy.gargoyle}`, { fontSize: 10, fill: 0x8888ff, dropShadow: true });
             gT.anchor.set(0.5); gT.x = x - 20; gT.y = y + 20; armyContainer.addChild(gT);
@@ -385,7 +379,7 @@ function drawArmies() {
         }
     }
 
-    // Армия ИИ (Ватикан)
+    // Армия ИИ
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     if (aPos) {
         let p = hexToPixel(aPos.q, aPos.r, HEX_SIZE), x = p.x + shiftX, y = p.y + shiftY;
@@ -423,14 +417,13 @@ function updateUI() {
     const isReadyToAssault = (cH && cH.siegeBy === 'player' && game.player.ap > 0 && isNightTime() && !game.gameOver);
     document.getElementById('btn-assault').disabled = !isReadyToAssault;
 
-    // Обновление кнопок технологий
     document.getElementById('recruit-gargoyle').disabled = !game.player.techs.militaryReform;
     document.getElementById('recruit-noble').disabled = !game.player.techs.necromancy;
 
     drawHexes(); drawArmies();
 }
 
-// ================= ИГРОВАЯ ЛОГИКА И МЕХАНИКА АТАКИ =================
+// ================= ЛОГИКА ИГРЫ =================
 function handleHexClick(hex) {
     if (game.gameOver || game.player.ap <= 0) return log('Нет очков действий.', 'system');
     const cH = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
@@ -447,7 +440,7 @@ function handleHexClick(hex) {
     const isNeighbor = neighbors.some(n => `${n.q},${n.r}` === clickedHexId);
 
     if (!isNeighbor) {
-        log('Слишком далеко! Чтобы атаковать или двигаться, кликайте только по соседним гексам.', 'system');
+        log('Слишком далеко! Кликайте только по соседним гексам.', 'system');
         return;
     }
 
@@ -468,7 +461,7 @@ function handleHexClick(hex) {
         game.player.ap -= 1; updateUI(); return;
     }
     if (hex.owner === 'ai' || hex.owner === 'werewolf') {
-        if (!isNightTime()) return log('День! Нельзя атаковать. Чтобы начать осаду, нужна ночь.', 'player');
+        if (!isNightTime()) return log('День! Нельзя атаковать.', 'player');
         if (getTotalTroops(game.player.mobileArmy) === 0) return log('Нет войск.', 'system');
         game.pendingActionHexId = clickedHexId;
         document.getElementById('action-desc').textContent = `Ваша армия вошла в «${hex.name}».`;
@@ -476,22 +469,19 @@ function handleHexClick(hex) {
     }
 }
 
-// ================= БОЕВЫЕ ДЕЙСТВИЯ =================
+// === БОЕВЫЕ ДЕЙСТВИЯ ===
 function executeCurse(targetHex) {
     if (game.battleActive) return; game.battleActive = true;
     let defGar = targetHex.owner === 'player' ? targetHex.playerGarrison : targetHex.aiGarrison;
     let totalDef = getTotalTroops(defGar) + targetHex.fortification * 5;
     let defLoss = 30 + Math.floor(Math.random() * 10);
     if (defLoss > totalDef) defLoss = totalDef;
-
     const types = ['infantry', 'archer', 'cavalry', 'gargoyle', 'noble'];
     types.forEach(t => {
         if (defGar[t] > 0) defGar[t] = Math.max(0, defGar[t] - Math.floor(defLoss * (defGar[t] / (totalDef + 1))));
     });
-
-    log(`Проклятие на ${targetHex.name}! Магический урон: ${defLoss}.`, 'system');
+    log(`Проклятие на ${targetHex.name}! Урон: ${defLoss}.`, 'system');
     SoundEngine.playCurse();
-
     if (getTotalTroops(defGar) <= 0) {
         log(`Провинция ${targetHex.name} захвачена магией!`, 'player');
         targetHex.owner = 'player'; targetHex.siegeBy = null; targetHex.aiGarrison = { infantry:0, archer:0, cavalry:0, gargoyle:0, noble:0 };
@@ -506,7 +496,7 @@ function executeCurse(targetHex) {
 }
 
 function executeBribe(targetHex) {
-    if (game.player.gold < 100) { log('Недостаточно золота для подкупа!', 'system'); return; }
+    if (game.player.gold < 100) { log('Недостаточно золота!', 'system'); return; }
     game.player.gold -= 100;
     log(`${targetHex.name} подкуплена!`, 'player');
     targetHex.owner = 'player'; targetHex.siegeBy = null; targetHex.aiGarrison = { infantry:0, archer:0, cavalry:0, gargoyle:0, noble:0 };
@@ -523,17 +513,14 @@ function executeBattle(targetHex) {
     let totalDef = getTotalTroops(defGar) + targetHex.fortification * 5;
     if (totalAtt === 0) { game.battleActive = false; return log('Армия пуста.', 'system'); }
 
-    // Штрафы ландшафта для атакующего (кроме гаргулий и аристократов)
     let terrainPenalty = 0;
     if (targetHex.terrain === 'mountain') terrainPenalty = 0.15;
     else if (targetHex.terrain === 'forest') terrainPenalty = 0.1;
     else if (targetHex.terrain === 'swamp') terrainPenalty = 0.05;
-    // Гаргульи и аристократы игнорируют штрафы
     let effectiveAtt = totalAtt * (1 + getLordBonus() - terrainPenalty);
-    // Учитываем, что гаргульи не получают штраф, но их количество мало
     let gargoyleCount = attArmy.gargoyle || 0;
     let nobleCount = attArmy.noble || 0;
-    effectiveAtt += gargoyleCount * 1.2 + nobleCount * 1.5; // бонус элитных юнитов
+    effectiveAtt += gargoyleCount * 1.2 + nobleCount * 1.5;
 
     let attLoss = Math.floor(Math.random() * 0.2 * effectiveAtt);
     let defLoss = Math.floor(Math.random() * 0.2 * totalDef);
@@ -549,12 +536,10 @@ function executeBattle(targetHex) {
     log(`Бой за ${targetHex.name}! Потери: Вы ${attLoss}, Враг ${defLoss}.`, 'system');
     SoundEngine.playBattle();
 
-    // Аристократы возвращают человечность после победы
     if (getTotalTroops(defGar) <= 0) {
         log(`Провинция ${targetHex.name} захвачена!`, 'player');
         targetHex.owner = 'player'; targetHex.siegeBy = null; targetHex.aiGarrison = { infantry:0, archer:0, cavalry:0, gargoyle:0, noble:0 };
         game.player.mobileArmy.hexId = `${targetHex.q},${targetHex.r}`;
-        // Бонус человечности от аристократов
         if (nobleCount > 0) {
             let gain = nobleCount * 2;
             game.humanity = Math.min(100, game.humanity + gain);
@@ -587,10 +572,9 @@ function collectIncome() {
     game.player.gold += goldBonus;
 }
 
-// Случайное событие
 function triggerRandomEvent() {
     const events = [
-        { msg: "Налет волков! Стая напала на окраины, -10 населения в случайной провинции.", effect: () => {
+        { msg: "Налет волков! -10 населения в случайной провинции.", effect: () => {
             const candidates = game.hexGrid.filter(h => h.owner === 'player' && h.population > 0);
             if (candidates.length) {
                 const h = candidates[Math.floor(Math.random() * candidates.length)];
@@ -611,7 +595,7 @@ function triggerRandomEvent() {
             game.player.gold += 30; game.player.blood += 5;
             log('Крестьяне принесли дары. +30🪙 +5🩸', 'player');
         }},
-        { msg: "Охотники на вампиров! -15 пехоты в мобильной армии.", effect: () => {
+        { msg: "Охотники на вампиров! -15 пехоты.", effect: () => {
             if (game.player.mobileArmy.infantry > 0) {
                 let loss = Math.min(15, game.player.mobileArmy.infantry);
                 game.player.mobileArmy.infantry -= loss;
@@ -619,7 +603,7 @@ function triggerRandomEvent() {
             }
         }}
     ];
-    if (Math.random() < 0.3) { // 30% шанс события за ход
+    if (Math.random() < 0.3) {
         const ev = events[Math.floor(Math.random() * events.length)];
         log(ev.msg, 'system');
         ev.effect();
@@ -627,15 +611,14 @@ function triggerRandomEvent() {
 }
 
 function aiTurn() {
-    // 1. Пополнение армии
+    // Пополнение
     if (game.ai.gold > 20 && game.ai.mobileArmy.infantry < 80) {
         game.ai.gold -= 10; game.ai.mobileArmy.infantry += 5;
     }
     if (game.ai.gold > 30 && game.ai.mobileArmy.archer < 30) {
         game.ai.gold -= 15; game.ai.mobileArmy.archer += 3;
     }
-
-    // 2. Строительство (если есть золото и провинция без построек)
+    // Строительство
     const aiHexes = game.hexGrid.filter(h => h.owner === 'ai');
     for (let h of aiHexes) {
         if (game.ai.gold > 20 && !h.buildings.some(b => b.type === 'barracks') && Math.random() < 0.2) {
@@ -647,18 +630,16 @@ function aiTurn() {
             log('Ватикан построил Замок в ' + h.name, 'ai');
         }
     }
-
-    // 3. Дипломатия: если игрок сильнее, Ватикан может предложить перемирие
+    // Дипломатия
     const playerPower = getTotalTroops(game.player.mobileArmy);
     const aiPower = getTotalTroops(game.ai.mobileArmy);
     if (playerPower > aiPower * 1.5 && game.player.truceTurnsAI === 0 && game.player.truceTurnsWolf === 0) {
         if (Math.random() < 0.3) {
-            log('Ватикан предлагает перемирие на 2 хода (автоматически).', 'ai');
+            log('Ватикан предлагает перемирие на 2 хода.', 'ai');
             game.player.truceTurnsAI = 2;
         }
     }
-
-    // 4. Осада/атака игрока
+    // Атака ИИ
     const aiHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     if (aiHex && game.player.truceTurnsAI === 0) {
         const neighbors = getNeighbors(aiHex.q, aiHex.r);
@@ -667,12 +648,10 @@ function aiTurn() {
             if (target && target.owner === 'player') {
                 if (getTotalTroops(game.ai.mobileArmy) > getTotalTroops(target.playerGarrison) + target.fortification * 3) {
                     if (isNightTime()) {
-                        // Атака
                         log(`Ватикан атакует ${target.name}!`, 'ai');
                         executeAIBattle(target);
                         break;
                     } else {
-                        // Осада
                         if (target.siegeBy !== 'ai') {
                             target.siegeBy = 'ai';
                             log(`Ватикан осаждает ${target.name}.`, 'ai');
@@ -683,8 +662,7 @@ function aiTurn() {
             }
         }
     }
-
-    // 5. Оборотни атакуют игрока (если нет перемирия)
+    // Оборотни
     if (game.player.truceTurnsWolf === 0) {
         const wolfHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
         if (wolfHex) {
@@ -709,8 +687,6 @@ function aiTurn() {
             }
         }
     }
-
-    // Обновление перемирий
     if (game.player.truceTurnsAI > 0) game.player.truceTurnsAI--;
     if (game.player.truceTurnsWolf > 0) game.player.truceTurnsWolf--;
 }
@@ -759,18 +735,15 @@ function executeWolfBattle(targetHex) {
     }
 }
 
-// ================= ЗАВЕРШЕНИЕ ХОДА ИГРОКА =================
 function endPlayerTurn() {
     if (game.gameOver || game.battleActive) return;
     collectIncome();
     game.player.ap = game.player.maxAp;
     game.turn++;
     if (game.turn % 2 === 1) game.day++;
-    // Обновление курса рынка
     game.marketRates.goldToBlood = 0.6 + Math.random() * 0.8;
     game.marketRates.bloodToGold = 0.5 + Math.random() * 0.7;
     game.marketTradedThisTurn = false;
-
     log(`ХОД ${game.turn}. ${isNightTime() ? '🌙 НОЧЬ' : '☀️ ДЕНЬ'}.`, 'system');
     triggerRandomEvent();
     aiTurn();
@@ -780,7 +753,7 @@ function endPlayerTurn() {
     updateUI();
 }
 
-// ================= ЛОР И КНОПКИ ИНТЕРФЕЙСА =================
+// ================= ЛОР-ПОДСКАЗКИ =================
 function attachLoreListeners() {
     document.querySelectorAll('[data-lore]').forEach(btn => {
         btn.addEventListener('mouseenter', (e) => {
@@ -859,8 +832,7 @@ function startGameMap() {
     resizeMap();
     updateUI();
     log('Дракула пробудился! Завоюйте Европу.', 'system');
-    // Туториал
-    log('💡 Чтобы переместить армию, кликните на соседний гекс. Для атаки выберите вражеский гекс ночью.', 'system');
+    log('💡 Кликните на соседний гекс для перемещения. Для атаки выберите вражеский гекс ночью.', 'system');
 }
 
 function initGame(isNewGame = false) {
@@ -903,6 +875,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (bgm.paused) { bgm.volume = 0.4; bgm.play().catch(()=>{}); document.getElementById('btn-music-toggle').textContent = "ЗВУК"; }
         else { bgm.pause(); document.getElementById('btn-music-toggle').textContent = "ЗВУК"; }
     });
+    document.getElementById('btn-mnu-restart').addEventListener('click', () => {
+        if(confirm('Выйти в главное меню? Прогресс будет потерян.')) {
+            document.getElementById('start-menu').style.display = 'flex';
+            document.getElementById('game-container').style.display = 'none';
+            game.gameOver = false;
+            document.getElementById('gameover-modal').style.display = 'none';
+        }
+    });
     document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
     document.getElementById('btn-toggle-log').addEventListener('click', () => { document.getElementById('log-overlay').style.display = 'flex'; });
@@ -926,30 +906,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Модалки
-    document.getElementById('btn-open-diplomacy').addEventListener('click', () => document.getElementById('diplomacy-modal').style.display = 'flex');
-    document.getElementById('btn-open-market').addEventListener('click', () => document.getElementById('market-modal').style.display = 'flex');
-    document.getElementById('btn-open-tech').addEventListener('click', () => document.getElementById('tech-modal').style.display = 'flex');
-    document.getElementById('btn-open-factions').addEventListener('click', () => document.getElementById('factions-modal').style.display = 'flex');
+    // ===== ОТКРЫТИЕ МОДАЛЬНЫХ ОКОН =====
+    const openModal = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'flex';
+        else console.warn('Modal not found:', id);
+    };
+    const closeModal = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    };
 
-    document.getElementById('btn-diplomacy-close').addEventListener('click', () => document.getElementById('diplomacy-modal').style.display = 'none');
-    document.getElementById('btn-market-close').addEventListener('click', () => document.getElementById('market-modal').style.display = 'none');
-    document.getElementById('btn-tech-close').addEventListener('click', () => document.getElementById('tech-modal').style.display = 'none');
-    document.getElementById('btn-factions-close').addEventListener('click', () => document.getElementById('factions-modal').style.display = 'none');
+    document.getElementById('btn-open-diplomacy').addEventListener('click', () => openModal('diplomacy-modal'));
+    document.getElementById('btn-diplomacy-close').addEventListener('click', () => closeModal('diplomacy-modal'));
 
-    // Действия в модалке
+    document.getElementById('btn-open-market').addEventListener('click', () => openModal('market-modal'));
+    document.getElementById('btn-market-close').addEventListener('click', () => closeModal('market-modal'));
+
+    document.getElementById('btn-open-tech').addEventListener('click', () => openModal('tech-modal'));
+    document.getElementById('btn-tech-close').addEventListener('click', () => closeModal('tech-modal'));
+
+    document.getElementById('btn-open-factions').addEventListener('click', () => openModal('factions-modal'));
+    document.getElementById('btn-factions-close').addEventListener('click', () => closeModal('factions-modal'));
+
+    // Закрытие модалок по клику на фон
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        });
+    });
+
+    // ===== ОСТАЛЬНЫЕ ОБРАБОТЧИКИ =====
     document.getElementById('btn-action-close').addEventListener('click', () => document.getElementById('action-modal').style.display = 'none');
+
     document.getElementById('btn-siege').addEventListener('click', () => {
         if (!game.pendingActionHexId || game.player.ap <= 0) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
         h.siegeBy = 'player'; game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1;
-        log(`${h.name} взята в осаду! Штурм ночью.`, 'player');
+        log(`${h.name} взята в осаду!`, 'player');
         document.getElementById('action-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('btn-assault-now').addEventListener('click', () => {
         if (!game.pendingActionHexId) return;
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.pendingActionHexId);
-        game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1; document.getElementById('action-modal').style.display = 'none'; executeBattle(h);
+        game.player.mobileArmy.hexId = `${h.q},${h.r}`; game.player.ap -= 1;
+        document.getElementById('action-modal').style.display = 'none'; executeBattle(h);
     });
     document.getElementById('btn-curse').addEventListener('click', () => {
         if (!game.pendingActionHexId || game.player.ap <= 0) return;
@@ -980,21 +981,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Дипломатия
     document.getElementById('dip-truce-ai').addEventListener('click', () => {
-        if (game.player.gold < 30) return log('Не хватает золота для перемирия.', 'system');
+        if (game.player.gold < 30) return log('Не хватает золота.', 'system');
         if (game.player.truceTurnsAI > 0) return log('Перемирие уже активно.', 'system');
         game.player.gold -= 30; game.player.truceTurnsAI = 2;
         log('Перемирие с Ватиканом на 2 хода!', 'player');
         document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('dip-truce-wolf').addEventListener('click', () => {
-        if (game.player.gold < 30) return log('Не хватает золота для перемирия.', 'system');
+        if (game.player.gold < 30) return log('Не хватает золота.', 'system');
         if (game.player.truceTurnsWolf > 0) return log('Перемирие уже активно.', 'system');
         game.player.gold -= 30; game.player.truceTurnsWolf = 2;
         log('Перемирие с Оборотнями на 2 хода!', 'player');
         document.getElementById('diplomacy-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('dip-alliance').addEventListener('click', () => {
-        if (game.player.gold < 50) return log('Не хватает золота для союза.', 'system');
+        if (game.player.gold < 50) return log('Не хватает золота.', 'system');
         if (game.player.allianceWithAI) return log('Союз уже активен.', 'system');
         game.player.gold -= 50; game.player.allianceWithAI = true;
         log('Союз с Ватиканом против Оборотней!', 'player');
@@ -1003,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Рынок
     document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
-        if (game.marketTradedThisTurn && !game.player.techs.tradeRoutes) return log('Рынок уже использован в этом ходу.', 'system');
+        if (game.marketTradedThisTurn && !game.player.techs.tradeRoutes) return log('Рынок уже использован.', 'system');
         if (game.player.gold < 10) return log('Недостаточно золота.', 'system');
         let rate = game.marketRates.goldToBlood;
         let blood = Math.floor(10 * rate);
@@ -1013,7 +1014,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('market-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('mkt-blood-to-gold').addEventListener('click', () => {
-        if (game.marketTradedThisTurn && !game.player.techs.tradeRoutes) return log('Рынок уже использован в этом ходу.', 'system');
+        if (game.marketTradedThisTurn && !game.player.techs.tradeRoutes) return log('Рынок уже использован.', 'system');
         if (game.player.blood < 10) return log('Недостаточно крови.', 'system');
         let rate = game.marketRates.bloodToGold;
         let gold = Math.floor(10 * rate);
@@ -1028,22 +1029,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Технологии
     document.getElementById('tech-reform').addEventListener('click', () => {
-        if (game.player.gold < 30) return log('Не хватает золота для Военной реформы.', 'system');
-        if (game.player.techs.militaryReform) return log('Военная реформа уже изучена.', 'system');
+        if (game.player.gold < 30) return log('Не хватает золота.', 'system');
+        if (game.player.techs.militaryReform) return log('Уже изучено.', 'system');
         game.player.gold -= 30; game.player.techs.militaryReform = true;
         log('Изучена Военная реформа! Открыты Гаргульи.', 'player');
         document.getElementById('tech-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('tech-necro').addEventListener('click', () => {
-        if (game.player.gold < 30) return log('Не хватает золота для Некромантии.', 'system');
-        if (game.player.techs.necromancy) return log('Некромантия уже изучена.', 'system');
+        if (game.player.gold < 30) return log('Не хватает золота.', 'system');
+        if (game.player.techs.necromancy) return log('Уже изучено.', 'system');
         game.player.gold -= 30; game.player.techs.necromancy = true;
         log('Изучена Некромантия! Открыты Аристократы.', 'player');
         document.getElementById('tech-modal').style.display = 'none'; updateUI();
     });
     document.getElementById('tech-trade').addEventListener('click', () => {
-        if (game.player.gold < 30) return log('Не хватает золота для Торговых путей.', 'system');
-        if (game.player.techs.tradeRoutes) return log('Торговые пути уже изучены.', 'system');
+        if (game.player.gold < 30) return log('Не хватает золота.', 'system');
+        if (game.player.techs.tradeRoutes) return log('Уже изучено.', 'system');
         game.player.gold -= 30; game.player.techs.tradeRoutes = true;
         log('Изучены Торговые пути! Рынок без ограничений.', 'player');
         document.getElementById('tech-modal').style.display = 'none'; updateUI();
@@ -1077,32 +1078,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Призыв
+    const recruitTypes = ['infantry', 'archer', 'cavalry', 'knights', 'lord', 'soul_collector', 'gargoyle', 'noble'];
     const recruitCosts = { 'infantry': 10, 'archer': 15, 'cavalry': 20, 'knights': 30, 'lord': 10, 'soul_collector': 25, 'gargoyle': 25, 'noble': 40 };
     const recruitFunc = {
-        'infantry': (h) => { if (!h.buildings.some(b=>b.type==='barracks')) return 'Нужны Казармы.'; addTroops(h, 'infantry', 5); },
-        'archer': (h) => { if (!h.buildings.some(b=>b.type==='barracks')) return 'Нужны Казармы.'; addTroops(h, 'archer', 5); },
-        'cavalry': (h) => { if (!h.buildings.some(b=>b.type==='barracks')) return 'Нужны Казармы.'; addTroops(h, 'cavalry', 3); },
-        'knights': (h) => { if (!h.buildings.some(b=>b.type==='barracks' && b.lvl===2)) return 'Нужны Казармы Lv2.'; addTroops(h, 'cavalry', 2); },
+        'infantry': (h) => { if (!h.buildings.some(b=>b.type==='barracks')) return 'Нужны Казармы.'; addTroops(h, 'infantry', 5); return 'ok'; },
+        'archer': (h) => { if (!h.buildings.some(b=>b.type==='barracks')) return 'Нужны Казармы.'; addTroops(h, 'archer', 5); return 'ok'; },
+        'cavalry': (h) => { if (!h.buildings.some(b=>b.type==='barracks')) return 'Нужны Казармы.'; addTroops(h, 'cavalry', 3); return 'ok'; },
+        'knights': (h) => { if (!h.buildings.some(b=>b.type==='barracks' && b.lvl===2)) return 'Нужны Казармы Lv2.'; addTroops(h, 'cavalry', 2); return 'ok'; },
         'lord': (h) => { if (!h.buildings.some(b=>b.type==='dark_temple')) return 'Нужен Храм Тьмы.'; if (game.player.gold<10) return 'Нужно 10 золота.'; game.player.gold-=10; game.player.lords.push({name: LORD_NAMES[game.player.lords.length % LORD_NAMES.length], battles:0}); log(`Лорд "${LORD_NAMES[game.player.lords.length-1]}" примкнул!`,'player'); return 'ok'; },
         'soul_collector': (h) => { if (!game.player.hasCitadel) return 'Постройте Цитадель.'; if (game.player.gold<25) return 'Нужно 25 золота.'; game.player.gold-=25; log('Сборщик душ нанят!','player'); return 'ok'; },
-        'gargoyle': (h) => { if (!game.player.techs.militaryReform) return 'Нужна Военная реформа.'; if (game.player.gold<25) return 'Нужно 25 золота.'; game.player.gold-=25; addTroops(h, 'gargoyle', 3); },
-        'noble': (h) => { if (!game.player.techs.necromancy) return 'Нужна Некромантия.'; if (game.player.gold<40) return 'Нужно 40 золота.'; game.player.gold-=40; addTroops(h, 'noble', 1); }
+        'gargoyle': (h) => { if (!game.player.techs.militaryReform) return 'Нужна Военная реформа.'; if (game.player.gold<25) return 'Нужно 25 золота.'; game.player.gold-=25; addTroops(h, 'gargoyle', 3); return 'ok'; },
+        'noble': (h) => { if (!game.player.techs.necromancy) return 'Нужна Некромантия.'; if (game.player.gold<40) return 'Нужно 40 золота.'; game.player.gold-=40; addTroops(h, 'noble', 1); return 'ok'; }
     };
     function addTroops(h, type, count) {
         if (game.player.mobileArmy.hexId === `${h.q},${h.r}`) game.player.mobileArmy[type] = (game.player.mobileArmy[type] || 0) + count;
         else h.playerGarrison[type] = (h.playerGarrison[type] || 0) + count;
         log(`+${count} ${type} призвано в ${h.name}.`, 'player');
     }
-    Object.keys(recruitCosts).forEach(type => {
-        document.getElementById(`recruit-${type}`).addEventListener('click', () => {
-            if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
-            if (!game.selectedHexId) return log('Выберите свой гекс на карте.', 'system');
-            const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
-            if (!h || h.owner !== 'player') return log('Не ваша территория.', 'system');
-            const result = recruitFunc[type](h);
-            if (result && result !== 'ok') return log(result, 'system');
-            game.player.ap -= 1; updateUI();
-        });
+    recruitTypes.forEach(type => {
+        const id = `recruit-${type}`;
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
+                if (!game.selectedHexId) return log('Выберите свой гекс на карте.', 'system');
+                const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.selectedHexId);
+                if (!h || h.owner !== 'player') return log('Не ваша территория.', 'system');
+                if (game.player.gold < recruitCosts[type]) return log('Не хватает золота.', 'system');
+                const result = recruitFunc[type](h);
+                if (result !== 'ok') return log(result, 'system');
+                game.player.ap -= 1; updateUI();
+            });
+        }
     });
 
     // Гарнизон
@@ -1123,17 +1130,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         game.player.ap -= 1; updateUI();
     });
 
-    // Обработка surrender
+    // Сдача провинции
     document.getElementById('btn-exterminate').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
-        if (h) { game.player.gold += 150; game.player.blood += 80; game.humanity = Math.max(0, game.humanity - 20); log('Истребление! Ресурсы добыты.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
+        if (h) { game.player.gold += 150; game.player.blood += 80; game.humanity = Math.max(0, game.humanity - 20); log('Истребление!', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
     document.getElementById('btn-enslave').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
-        if (h) { game.player.gold += 50; game.player.blood += 20; h.playerGarrison.infantry += 10; log('Порабощение! Гарнизон пополнен.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
+        if (h) { game.player.gold += 50; game.player.blood += 20; h.playerGarrison.infantry += 10; log('Порабощение!', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
     document.getElementById('btn-convert').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
-        if (h) { h.playerGarrison.infantry += 10; game.humanity = Math.min(100, game.humanity + 10); log('Обращение! Новые слуги тьмы.', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
+        if (h) { h.playerGarrison.infantry += 10; game.humanity = Math.min(100, game.humanity + 10); log('Обращение!', 'player'); document.getElementById('surrender-modal').style.display = 'none'; updateUI(); }
     });
 });
