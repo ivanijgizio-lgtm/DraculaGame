@@ -1,9 +1,9 @@
 :root {
-    --bg-dark: #0a0a0a;          /* 60% чёрный */
+    --bg-dark: #0a0a0a;
     --ui-bg: #0d0d0d;
-    --ui-border: #6a0dad;        /* фиолетовый */
+    --ui-border: #6a0dad;
     --metal-blue: #8a2be2;
-    --silver: #e0e5f0;           /* 30% белый */
+    --silver: #e0e5f0;
     --text-light: #e0e5f0;
 }
 
@@ -24,7 +24,7 @@ body {
     overflow: hidden;
 }
 
-/* ===== СТАРТОВОЕ МЕНЮ (без фона) ===== */
+/* ===== СТАРТОВОЕ МЕНЮ ===== */
 .start-overlay {
     position: fixed;
     top: 0;
@@ -352,7 +352,7 @@ body {
     gap: 6px;
 }
 
-/* ===== ЛОГ ===== */
+/* ===== ЛОГ (уменьшены кнопки) ===== */
 .log-overlay {
     display: none;
     position: absolute;
@@ -375,6 +375,10 @@ body {
     margin-bottom: 10px;
     padding: 10px;
     border-bottom: 2px solid #6a0dad;
+}
+
+.log-header h3 {
+    font-size: 16px;
 }
 
 #log-container {
@@ -400,6 +404,28 @@ body {
 .log-entry.player { color: #ff6666; }
 .log-entry.ai { color: #e2c163; }
 .log-entry.system { color: #7ab4e8; }
+
+/* кнопки в логе */
+#btn-close-log,
+#btn-clear-log {
+    font-size: 10px;
+    padding: 4px 10px;
+    width: auto;
+    min-width: 60px;
+    height: auto;
+    background: #1a1828;
+    border: 1px solid #6a0dad;
+    border-radius: 4px;
+    color: #e0e5f0;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    transition: 0.2s;
+}
+
+#btn-close-log:hover,
+#btn-clear-log:hover {
+    background: #2a1a3a;
+}
 
 /* ===== МОДАЛЬНЫЕ ОКНА ===== */
 .modal {
