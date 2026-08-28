@@ -67,7 +67,7 @@ function initPixi() {
     window.addEventListener('resize', resizeMap);
 }
 
-function loadSprites() { return Promise.resolve(); } // без ассетов
+function loadSprites() { return Promise.resolve(); }
 
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос","Леди Сильвана","Барон Ноктюрн","Принц Теней","Леди Вэйн"];
@@ -83,8 +83,14 @@ function getHexCorners(cx, cy, size) {
     }
     return corners;
 }
+// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ СОСЕДЕЙ =====
 function getNeighbors(q, r) {
-    return [[1,0],[-1,0],[0,1],[0,-1],[1,-1],[-1,1]].map(d => ({ q: Number(q) + d[0], r: Number(r) + d[1] }));
+    // Правильные направления для гексагональной сетки с плоской вершиной
+    const dirs = [
+        [1, 0], [0, 1], [-1, 1],
+        [-1, 0], [0, -1], [1, -1]
+    ];
+    return dirs.map(d => ({ q: Number(q) + d[0], r: Number(r) + d[1] }));
 }
 
 function getDefaultGame() {
@@ -329,7 +335,6 @@ function drawHexes() {
     const cols = maxQ - minQ + 1;
     const rows = maxR - minR + 1;
 
-    // Расчёт размера гекса с запасом, чтобы все поместились
     const padding = 0.9;
     const sizeFromWidth = (w * padding) / (cols * 1.8 + 0.5);
     const sizeFromHeight = (h * padding) / (rows * 1.6 + 0.5);
@@ -466,11 +471,19 @@ function drawArmies() {
     const w = app.renderer.view.width, h = app.renderer.view.height;
     let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
     game.hexGrid.forEach(hex => {
-        minQ = Math.min(minQ, hex.q); maxQ = Math.max(maxQ, hex.q);
-        minR = Math.min(minR, hex.r); maxR = Math.max(maxR, hex.r);
+        if (hex.q < minQ) minQ = hex.q;
+        if (hex.q > maxQ) maxQ = hex.q;
+        if (hex.r < minR) minR = hex.r;
+        if (hex.r > maxR) maxR = hex.r;
     });
-    let HEX_SIZE = Math.min(w / ((maxQ - minQ + 1) * 1.8), h / ((maxR - minR + 1) * 1.6), 80) * 0.85;
-    if (HEX_SIZE < 12) HEX_SIZE = 12;
+    const cols = maxQ - minQ + 1;
+    const rows = maxR - minR + 1;
+    const padding = 0.9;
+    const sizeFromWidth = (w * padding) / (cols * 1.8 + 0.5);
+    const sizeFromHeight = (h * padding) / (rows * 1.6 + 0.5);
+    let HEX_SIZE = Math.min(sizeFromWidth, sizeFromHeight, 80);
+    if (HEX_SIZE < 8) HEX_SIZE = 8;
+
     let rawPositions = game.hexGrid.map(hex => {
         const p = hexToPixel(hex.q, hex.r, HEX_SIZE);
         return { ...hex, rawX: p.x, rawY: p.y };
@@ -611,7 +624,11 @@ function handleHexClick(hex) {
     const clickedHexId = `${hex.q},${hex.r}`;
     const neighbors = getNeighbors(Number(cH.q), Number(cH.r));
     const isNeighbor = neighbors.some(n => `${n.q},${n.r}` === clickedHexId);
-    if (!isNeighbor) { log('Слишком далеко! Кликайте только по соседним гексам.', 'system'); return; }
+
+    if (!isNeighbor) {
+        log('Слишком далеко! Кликайте только по соседним гексам.', 'system');
+        return;
+    }
 
     if (hex.owner === null) {
         game.player.mobileArmy.hexId = clickedHexId;
@@ -645,6 +662,7 @@ function handleHexClick(hex) {
     }
 }
 
+// === БОЕВЫЕ ДЕЙСТВИЯ ===
 function executeCurse(targetHex) {
     if (game.battleActive) return;
     game.battleActive = true;
