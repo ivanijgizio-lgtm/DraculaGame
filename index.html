@@ -144,9 +144,109 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНЫЕ ОКНА (без изменений) -->
-    <!-- ... (они уже были в предыдущих версиях, я их не дублирую для краткости, но они есть) ... -->
+    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <!-- Действие (атака/осада) -->
+    <div id="action-modal" class="modal">
+        <div class="modal-content" style="width:480px;">
+            <h2>⚔️ Варвары у ворот!</h2>
+            <p id="action-desc" style="font-size:14px; margin-bottom:20px; color:#b0b8c8;"></p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="action-btn" id="btn-siege">🚩 ОСАДИТЬ (1 AP)</button>
+                <button class="action-btn" id="btn-assault-now">⚔️ ШТУРМ (1 AP)</button>
+                <button class="action-btn" id="btn-curse">🔮 ПРОКЛЯСТЬ (1 AP + 15🩸)</button>
+                <button class="action-btn" id="btn-bribe">💰 ПОДКУПИТЬ (1 AP + 100🪙)</button>
+            </div>
+            <button class="action-btn" id="btn-action-close" style="margin-top:15px; background:#222;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
 
+    <!-- Сдача провинции -->
+    <div id="surrender-modal" class="modal">
+        <div class="modal-content">
+            <h2>ПОВЕЛИВАТЬ ИЛИ КАЗНИТЬ?</h2>
+            <p style="font-size:13px; margin-bottom:20px; color:#b0b8c8;">Провинция пала. Какова будет воля Тьмы?</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="action-btn" id="btn-exterminate">ИСТРЕБИТЬ (+150🪙, +80🩸, -Человечность)</button>
+                <button class="action-btn" id="btn-enslave">ПОРАБОТИТЬ (+50🪙, +20🩸, +10 гарнизона)</button>
+                <button class="action-btn" id="btn-convert">ОБРАТИТЬ (+10 гарнизона, +Человечность)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дипломатия -->
+    <div id="diplomacy-modal" class="modal">
+        <div class="modal-content">
+            <h2>🔮 Тайные Пакты Европы</h2>
+            <p style="font-size:13px; margin-bottom:15px;">Заключайте соглашения, чтобы обезопасить тылы.</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="action-btn" id="dip-truce-ai">⛪ Пакт с Ватиканом (30🪙)</button>
+                <button class="action-btn" id="dip-truce-wolf">🐺 Мир со Стаей Волков (30🪙)</button>
+                <button class="action-btn" id="dip-alliance">⚔️ Военный Альянс против Стаи (50🪙)</button>
+            </div>
+            <button class="action-btn" id="btn-diplomacy-close" style="margin-top:15px; background:#222;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <!-- Рынок -->
+    <div id="market-modal" class="modal">
+        <div class="modal-content">
+            <h2>⚖️ Контрабандный Рынок</h2>
+            <p style="font-size:13px; margin-bottom:15px;">Курс меняется каждый ход. 1 сделка за ход.</p>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="action-btn" id="mkt-gold-to-blood">🪙 10 Золота -> <span id="mkt-rate-gtb">8</span> 🩸</button>
+                <button class="action-btn" id="mkt-blood-to-gold">🩸 10 Крови -> <span id="mkt-rate-btg">8</span> 🪙</button>
+            </div>
+            <button class="action-btn" id="btn-market-close" style="margin-top:15px; background:#222;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <!-- Технологии -->
+    <div id="tech-modal" class="modal">
+        <div class="modal-content">
+            <h2>📜 Оккультные Знания</h2>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="action-btn" id="tech-reform">Военная реформа (30🪙) – открывает ГАРГУЛИЙ</button>
+                <button class="action-btn" id="tech-necro">Некромантия (30🪙) – открывает АРИСТОКРАТОВ</button>
+                <button class="action-btn" id="tech-trade">Торговые пути (30🪙) – рынок без ограничений</button>
+            </div>
+            <button class="action-btn" id="btn-tech-close" style="margin-top:15px; background:#222;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <!-- Фракции -->
+    <div id="factions-modal" class="modal">
+        <div class="modal-content">
+            <h2>⚔️ Силы Европы</h2>
+            <div style="text-align:left; font-size:13px; line-height:1.8;">
+                <p>🔴 <b>Легион Тьмы:</b> Войска Дракулы. Смертоноснее Ночью.</p>
+                <p>🟡 <b>Священный Престол:</b> Инквизиция. Сильны Днём.</p>
+                <p>🟢 <b>Стая Клыка:</b> Оборотни. Партизанские набеги.</p>
+                <p>🟣 <b>Культисты Древних:</b> Фанатики на руинах.</p>
+            </div>
+            <button class="action-btn" id="btn-factions-close" style="margin-top:15px; background:#222;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <!-- Лог -->
+    <div id="log-overlay" class="log-overlay">
+        <div class="log-header">
+            <h3>📜 ХРОНИКИ ТЬМЫ</h3>
+            <button id="btn-close-log" class="action-btn" style="background:#1a1828;">✖</button>
+        </div>
+        <div id="log-container"></div>
+        <button id="btn-clear-log" class="action-btn" style="margin-top:10px;">ОЧИСТИТЬ</button>
+    </div>
+
+    <!-- Game Over -->
+    <div id="gameover-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="gameover-title">ИГРА ЗАВЕРШЕНА!</h2>
+            <p id="gameover-desc" style="margin:15px 0; font-size:16px;"></p>
+            <button class="action-btn main-action" id="btn-gameover-restart">НАЧАТЬ ЗАНОВО</button>
+        </div>
+    </div>
+
+    <!-- Тултипы -->
     <div id="tooltip"></div>
     <div id="lore-tooltip"></div>
 
