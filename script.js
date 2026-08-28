@@ -38,9 +38,6 @@ const BUILD_LORE = {
 
 // ================= PIXI ИНИЦИАЛИЗАЦИЯ =================
 let app = null, hexContainer = null, armyContainer = null;
-let spritePlayer = null, spriteAI = null, spriteWerewolf = null;
-let spriteLord = null, spriteAIGeneral = null, spriteWolfGeneral = null;
-
 const SoundEngine = {
     ctx: null,
     init(){ if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)(); },
@@ -70,27 +67,7 @@ function initPixi() {
     window.addEventListener('resize', resizeMap);
 }
 
-function loadSprites() {
-    return new Promise((resolve) => {
-        const loader = PIXI.Loader.shared;
-        loader.add('player', './assets/Vampire Army.png')
-              .add('ai', './assets/Knight Vatican.jpg')
-              .add('werewolf', './assets/Werewolf Army.webp')
-              .add('lord', './assets/Lord Vampire.jpg')
-              .add('aiGeneral', './assets/Vatican Inquisitor.png')
-              .add('wolfGeneral', './assets/Werewolf general.jpg');
-
-        loader.load((loader, resources) => {
-            spritePlayer = resources.player?.texture || null;
-            spriteAI = resources.ai?.texture || null;
-            spriteWerewolf = resources.werewolf?.texture || null;
-            spriteLord = resources.lord?.texture || null;
-            spriteAIGeneral = resources.aiGeneral?.texture || null;
-            spriteWolfGeneral = resources.wolfGeneral?.texture || null;
-            resolve();
-        });
-    });
-}
+function loadSprites() { return Promise.resolve(); } // без ассетов
 
 // ================= ДАННЫЕ ИГРЫ =================
 const LORD_NAMES = ["Граф Дракулос","Леди Сильвана","Барон Ноктюрн","Принц Теней","Леди Вэйн"];
@@ -133,8 +110,6 @@ let game = getDefaultGame();
 // ================= НОВАЯ КАРТА НА 100 ГЕКСОВ =================
 function initHexGrid() {
     const grid = [];
-    
-    // 100 регионов с лором
     const regionalMap = [
         // === ФРАКЦИЯ 1: ЛЕГИОН ТЬМЫ (ИГРОК) – 30 гексов ===
         { q: 0, r: 0, name: 'Трансильвания', terrain: 'mountain', owner: 'player', fort: 2, pop: 2500, lore: 'Древняя родина графа Дракулы, где каменные замки впиваются в облака.' },
@@ -325,12 +300,13 @@ function checkStoryConditions() {
     }
 }
 
-// ================= ОТРИСОВКА КАРТЫ =================
+// ================= ОТРИСОВКА КАРТЫ (исправленное масштабирование) =================
 function resizeMap() {
     const mapArea = document.getElementById('map-area');
     if (mapArea && app) {
         app.renderer.resize(mapArea.clientWidth, mapArea.clientHeight);
-        drawHexes(); drawArmies();
+        drawHexes();
+        drawArmies();
     }
 }
 
@@ -338,22 +314,40 @@ function drawHexes() {
     if (!app) return;
     hexContainer.removeChildren();
     if (!game.hexGrid.length) return;
-    const w = app.renderer.view.width, h = app.renderer.view.height;
+
+    const w = app.renderer.view.width;
+    const h = app.renderer.view.height;
+
     let minQ = Infinity, maxQ = -Infinity, minR = Infinity, maxR = -Infinity;
     game.hexGrid.forEach(hex => {
-        minQ = Math.min(minQ, hex.q); maxQ = Math.max(maxQ, hex.q);
-        minR = Math.min(minR, hex.r); maxR = Math.max(maxR, hex.r);
+        if (hex.q < minQ) minQ = hex.q;
+        if (hex.q > maxQ) maxQ = hex.q;
+        if (hex.r < minR) minR = hex.r;
+        if (hex.r > maxR) maxR = hex.r;
     });
-    let HEX_SIZE = Math.min(w / ((maxQ - minQ + 1) * 1.8), h / ((maxR - minR + 1) * 1.6), 80) * 0.85;
-    if (HEX_SIZE < 12) HEX_SIZE = 12;
+
+    const cols = maxQ - minQ + 1;
+    const rows = maxR - minR + 1;
+
+    // Расчёт размера гекса с запасом, чтобы все поместились
+    const padding = 0.9;
+    const sizeFromWidth = (w * padding) / (cols * 1.8 + 0.5);
+    const sizeFromHeight = (h * padding) / (rows * 1.6 + 0.5);
+    let HEX_SIZE = Math.min(sizeFromWidth, sizeFromHeight, 80);
+    if (HEX_SIZE < 8) HEX_SIZE = 8;
+
     let rawPositions = game.hexGrid.map(hex => {
         const p = hexToPixel(hex.q, hex.r, HEX_SIZE);
         return { ...hex, rawX: p.x, rawY: p.y };
     });
+
     let avgX = 0, avgY = 0;
     rawPositions.forEach(p => { avgX += p.rawX; avgY += p.rawY; });
-    avgX /= rawPositions.length; avgY /= rawPositions.length;
-    let shiftX = (w / 2) - avgX, shiftY = (h / 2) - avgY;
+    avgX /= rawPositions.length;
+    avgY /= rawPositions.length;
+
+    let shiftX = (w / 2) - avgX;
+    let shiftY = (h / 2) - avgY;
 
     const currentHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     let movableHexIds = (currentHex && game.player.ap > 0 && getTotalTroops(game.player.mobileArmy) > 0) ?
@@ -361,7 +355,8 @@ function drawHexes() {
 
     rawPositions.forEach(hex => {
         const container = new PIXI.Container();
-        container.x = hex.rawX + shiftX; container.y = hex.rawY + shiftY;
+        container.x = hex.rawX + shiftX;
+        container.y = hex.rawY + shiftY;
         const g = new PIXI.Graphics();
 
         let terrainColor = 0x1a1a1a;
@@ -485,97 +480,96 @@ function drawArmies() {
     avgX /= rawPositions.length; avgY /= rawPositions.length;
     let shiftX = (w / 2) - avgX, shiftY = (h / 2) - avgY;
 
-    function placeSprite(texture, x, y, scale = 0.12, fallbackColor, fallbackSymbol) {
-        if (texture) {
-            const s = new PIXI.Sprite(texture);
-            s.anchor.set(0.5);
-            s.scale.set(scale);
-            s.x = x; s.y = y;
-            armyContainer.addChild(s);
-        } else {
-            const c = new PIXI.Graphics();
-            c.beginFill(fallbackColor);
-            c.drawCircle(0, 0, 16);
-            c.endFill();
-            c.lineStyle(2, 0x000000, 0.5);
-            c.drawCircle(0, 0, 16);
-            const t = new PIXI.Text(fallbackSymbol, { fontFamily: 'Cinzel', fontSize: 12, fill: 0xffffff, fontWeight: 'bold' });
-            t.anchor.set(0.5);
-            c.addChild(t);
-            const countText = new PIXI.Text(`${getTotalTroops(game.player.mobileArmy)}`, { fontFamily: 'Arial', fontSize: 8, fill: 0xffffff });
-            countText.anchor.set(0.5);
-            countText.y = 14;
-            c.addChild(countText);
-            c.x = x; c.y = y;
-            armyContainer.addChild(c);
-        }
-    }
-
+    // Игрок
     const pPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.player.mobileArmy.hexId);
     if (pPos) {
         let p = hexToPixel(pPos.q, pPos.r, HEX_SIZE);
         let x = p.x + shiftX, y = p.y + shiftY;
-        placeSprite(spritePlayer, x, y, 0.12, 0x7a1111, '🦇');
-        if (game.player.lords.length > 0 && spriteLord) {
-            const l = new PIXI.Sprite(spriteLord);
+        const c = new PIXI.Graphics();
+        c.beginFill(0x7a1111);
+        c.drawCircle(0, 0, 16);
+        c.endFill();
+        c.lineStyle(2, 0x000000, 0.5);
+        c.drawCircle(0, 0, 16);
+        const t = new PIXI.Text('🦇', { fontFamily: 'Arial', fontSize: 18, fill: 0xffffff, fontWeight: 'bold' });
+        t.anchor.set(0.5);
+        c.addChild(t);
+        const countText = new PIXI.Text(`${getTotalTroops(game.player.mobileArmy)}`, { fontFamily: 'Arial', fontSize: 8, fill: 0xffffff });
+        countText.anchor.set(0.5);
+        countText.y = 14;
+        c.addChild(countText);
+        c.x = x; c.y = y;
+        armyContainer.addChild(c);
+        if (game.player.lords.length > 0) {
+            const l = new PIXI.Text('🧛', { fontSize: 16, fill: 0xff88aa });
             l.anchor.set(0.5);
-            l.scale.set(0.07);
             l.x = x + 25; l.y = y - 20;
             armyContainer.addChild(l);
         }
-        if (game.player.mobileArmy.gargoyle > 0) {
-            const gT = new PIXI.Text(`🪨${game.player.mobileArmy.gargoyle}`, { fontSize: 10, fill: 0x8888ff, dropShadow: true });
-            gT.anchor.set(0.5); gT.x = x - 20; gT.y = y + 20;
-            armyContainer.addChild(gT);
-        }
-        if (game.player.mobileArmy.noble > 0) {
-            const nT = new PIXI.Text(`🧛${game.player.mobileArmy.noble}`, { fontSize: 10, fill: 0xff88aa, dropShadow: true });
-            nT.anchor.set(0.5); nT.x = x + 20; nT.y = y + 20;
-            armyContainer.addChild(nT);
-        }
         if (game.player.mobileArmy.vampire > 0) {
-            const vT = new PIXI.Text(`🧛‍♂️${game.player.mobileArmy.vampire}`, { fontSize: 10, fill: 0xff0044, dropShadow: true });
-            vT.anchor.set(0.5); vT.x = x - 30; vT.y = y + 20;
-            armyContainer.addChild(vT);
+            const v = new PIXI.Text(`🧛‍♂️${game.player.mobileArmy.vampire}`, { fontSize: 10, fill: 0xff0044 });
+            v.anchor.set(0.5); v.x = x - 30; v.y = y + 20;
+            armyContainer.addChild(v);
+        }
+        if (game.player.mobileArmy.gargoyle > 0) {
+            const g = new PIXI.Text(`🪨${game.player.mobileArmy.gargoyle}`, { fontSize: 10, fill: 0x8888ff });
+            g.anchor.set(0.5); g.x = x - 20; g.y = y + 20;
+            armyContainer.addChild(g);
         }
         if (game.player.mobileArmy.necromancer > 0) {
-            const nT = new PIXI.Text(`💀${game.player.mobileArmy.necromancer}`, { fontSize: 10, fill: 0x44ff44, dropShadow: true });
-            nT.anchor.set(0.5); nT.x = x + 30; nT.y = y + 20;
-            armyContainer.addChild(nT);
+            const n = new PIXI.Text(`💀${game.player.mobileArmy.necromancer}`, { fontSize: 10, fill: 0x44ff44 });
+            n.anchor.set(0.5); n.x = x + 30; n.y = y + 20;
+            armyContainer.addChild(n);
         }
         if (game.player.mobileArmy.berserker > 0) {
-            const bT = new PIXI.Text(`⚔️${game.player.mobileArmy.berserker}`, { fontSize: 10, fill: 0xffaa44, dropShadow: true });
-            bT.anchor.set(0.5); bT.x = x - 10; bT.y = y + 30;
-            armyContainer.addChild(bT);
+            const b = new PIXI.Text(`⚔️${game.player.mobileArmy.berserker}`, { fontSize: 10, fill: 0xffaa44 });
+            b.anchor.set(0.5); b.x = x - 10; b.y = y + 30;
+            armyContainer.addChild(b);
         }
     }
 
+    // Ватикан
     const aPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     if (aPos) {
         let p = hexToPixel(aPos.q, aPos.r, HEX_SIZE);
         let x = p.x + shiftX, y = p.y + shiftY;
-        placeSprite(spriteAI, x, y, 0.14, 0xe0e0c0, '✝');
-        if (spriteAIGeneral) {
-            const g = new PIXI.Sprite(spriteAIGeneral);
-            g.anchor.set(0.5);
-            g.scale.set(0.07);
-            g.x = x + 25; g.y = y - 20;
-            armyContainer.addChild(g);
-        }
+        const c = new PIXI.Graphics();
+        c.beginFill(0xe0e0c0);
+        c.drawCircle(0, 0, 16);
+        c.endFill();
+        c.lineStyle(2, 0x000000, 0.5);
+        c.drawCircle(0, 0, 16);
+        const t = new PIXI.Text('✝', { fontFamily: 'Arial', fontSize: 18, fill: 0x000000, fontWeight: 'bold' });
+        t.anchor.set(0.5);
+        c.addChild(t);
+        const countText = new PIXI.Text(`${getTotalTroops(game.ai.mobileArmy)}`, { fontFamily: 'Arial', fontSize: 8, fill: 0x000000 });
+        countText.anchor.set(0.5);
+        countText.y = 14;
+        c.addChild(countText);
+        c.x = x; c.y = y;
+        armyContainer.addChild(c);
     }
 
+    // Оборотни
     const wPos = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
     if (wPos) {
         let p = hexToPixel(wPos.q, wPos.r, HEX_SIZE);
         let x = p.x + shiftX, y = p.y + shiftY;
-        placeSprite(spriteWerewolf, x, y, 0.12, 0x2d4a2d, '👹');
-        if (spriteWolfGeneral) {
-            const g = new PIXI.Sprite(spriteWolfGeneral);
-            g.anchor.set(0.5);
-            g.scale.set(0.07);
-            g.x = x + 25; g.y = y - 20;
-            armyContainer.addChild(g);
-        }
+        const c = new PIXI.Graphics();
+        c.beginFill(0x2d4a2d);
+        c.drawCircle(0, 0, 16);
+        c.endFill();
+        c.lineStyle(2, 0x000000, 0.5);
+        c.drawCircle(0, 0, 16);
+        const t = new PIXI.Text('👹', { fontFamily: 'Arial', fontSize: 18, fill: 0xffffff, fontWeight: 'bold' });
+        t.anchor.set(0.5);
+        c.addChild(t);
+        const countText = new PIXI.Text(`${getTotalTroops(game.werewolf.mobileArmy)}`, { fontFamily: 'Arial', fontSize: 8, fill: 0xffffff });
+        countText.anchor.set(0.5);
+        countText.y = 14;
+        c.addChild(countText);
+        c.x = x; c.y = y;
+        armyContainer.addChild(c);
     }
 }
 
@@ -651,7 +645,6 @@ function handleHexClick(hex) {
     }
 }
 
-// === БОЕВЫЕ ДЕЙСТВИЯ (без изменений) ===
 function executeCurse(targetHex) {
     if (game.battleActive) return;
     game.battleActive = true;
@@ -751,7 +744,7 @@ function executeBattle(targetHex) {
     game.battleActive = false; updateUI();
 }
 
-// === ЭКОНОМИКА, ИИ, СОБЫТИЯ (без изменений) ===
+// ================= ЭКОНОМИКА, ИИ, СОБЫТИЯ =================
 function collectIncome() {
     let bloodBonus = 0, goldBonus = 0;
     game.hexGrid.forEach(h => {
