@@ -70,15 +70,27 @@ function initPixi() {
     window.addEventListener('resize', resizeMap);
 }
 
-async function loadSprites() {
-    try {
-        spritePlayer = await PIXI.Assets.load('./assets/Vampire Army.png').catch(()=>null);
-        spriteAI = await PIXI.Assets.load('./assets/Knight Vatican.jpg').catch(()=>null);
-        spriteWerewolf = await PIXI.Assets.load('./assets/Werewolf Army.webp').catch(()=>null);
-        spriteLord = await PIXI.Assets.load('./assets/Lord Vampire.jpg').catch(()=>null);
-        spriteAIGeneral = await PIXI.Assets.load('./assets/Vatican Inquisitor.png').catch(()=>null);
-        spriteWolfGeneral = await PIXI.Assets.load('./assets/Werewolf general.jpg').catch(()=>null);
-    } catch(e) { console.warn('Спрайты не загружены, используются текстовые иконки.'); }
+// ===== ИСПРАВЛЕННАЯ ЗАГРУЗКА СПРАЙТОВ (для PixiJS v5) =====
+function loadSprites() {
+    return new Promise((resolve) => {
+        const loader = PIXI.Loader.shared;
+        loader.add('player', './assets/Vampire Army.png')
+              .add('ai', './assets/Knight Vatican.jpg')
+              .add('werewolf', './assets/Werewolf Army.webp')
+              .add('lord', './assets/Lord Vampire.jpg')
+              .add('aiGeneral', './assets/Vatican Inquisitor.png')
+              .add('wolfGeneral', './assets/Werewolf general.jpg');
+
+        loader.load((loader, resources) => {
+            spritePlayer = resources.player?.texture || null;
+            spriteAI = resources.ai?.texture || null;
+            spriteWerewolf = resources.werewolf?.texture || null;
+            spriteLord = resources.lord?.texture || null;
+            spriteAIGeneral = resources.aiGeneral?.texture || null;
+            spriteWolfGeneral = resources.wolfGeneral?.texture || null;
+            resolve();
+        });
+    });
 }
 
 // ================= ДАННЫЕ ИГРЫ =================
@@ -148,7 +160,7 @@ function initHexGrid() {
         { q: -3, r: 3, name: 'Crimson Peak', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 2000 },
         { q: -2, r: 3, name: 'Whispering Woods', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1200 },
         { q: -3, r: 1, name: 'Blood Marshes', terrain: 'swamp', owner: 'werewolf', fort: 0, pop: 800 },
-        // Нейтральные (можно захватывать)
+        // Нейтральные
         { q: 2, r: 1, name: 'Silver Mines', terrain: 'mountain', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
         { q: 3, r: 1, name: 'Ruins', terrain: 'plains', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
         { q: 1, r: 2, name: 'Drowning Bog', terrain: 'swamp', owner: null, res: { gold: 0, blood: 15 }, fort: 0, pop: 0 },
@@ -399,9 +411,9 @@ function drawArmies() {
     avgX /= rawPositions.length; avgY /= rawPositions.length;
     let shiftX = (w / 2) - avgX, shiftY = (h / 2) - avgY;
 
-    function placeSprite(sprite, x, y, scale = 0.12, fallbackColor, fallbackSymbol) {
-        if (sprite) {
-            const s = new PIXI.Sprite(sprite);
+    function placeSprite(texture, x, y, scale = 0.12, fallbackColor, fallbackSymbol) {
+        if (texture) {
+            const s = new PIXI.Sprite(texture);
             s.anchor.set(0.5);
             s.scale.set(scale);
             s.x = x; s.y = y;
