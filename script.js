@@ -70,7 +70,6 @@ function initPixi() {
     window.addEventListener('resize', resizeMap);
 }
 
-// ===== ИСПРАВЛЕННАЯ ЗАГРУЗКА СПРАЙТОВ (для PixiJS v5) =====
 function loadSprites() {
     return new Promise((resolve) => {
         const loader = PIXI.Loader.shared;
@@ -123,7 +122,7 @@ function getDefaultGame() {
             hasCitadel: false, allianceWithAI: false, truceTurnsAI: 0, truceTurnsWolf: 0,
             techs: { militaryReform: false, necromancy: false, tradeRoutes: false }
         },
-        ai: { gold: 100, mobileArmy: { infantry: 55, archer: 15, cavalry: 10, gargoyle: 0, noble: 0, vampire: 0, necromancer: 0, berserker: 0, hexId: '5,-3' } },
+        ai: { gold: 100, mobileArmy: { infantry: 55, archer: 15, cavalry: 10, gargoyle: 0, noble: 0, vampire: 0, necromancer: 0, berserker: 0, hexId: '6,-4' } },
         werewolf: { gold: 50, mobileArmy: { infantry: 35, archer: 5, cavalry: 10, gargoyle: 0, noble: 0, vampire: 0, necromancer: 0, berserker: 0, hexId: '-5,4' } },
         hexGrid: []
     };
@@ -131,59 +130,133 @@ function getDefaultGame() {
 
 let game = getDefaultGame();
 
+// ================= НОВАЯ КАРТА НА 100 ГЕКСОВ =================
 function initHexGrid() {
     const grid = [];
-    const mapData = [
-        // Центр (игрок)
-        { q: 0, r: 0, name: 'Transilvania', terrain: 'plains', owner: 'player', fort: 1, pop: 2000 },
-        { q: 1, r: 0, name: 'Wallachia', terrain: 'plains', owner: 'player', fort: 0, pop: 1500 },
-        { q: -1, r: 0, name: 'Moldavia', terrain: 'forest', owner: 'player', fort: 0, pop: 1500 },
-        { q: 0, r: -1, name: 'Pannonia', terrain: 'plains', owner: 'player', fort: 0, pop: 1200 },
-        { q: 2, r: -1, name: 'Tatra Peaks', terrain: 'mountain', owner: 'player', fort: 1, pop: 1000 },
-        { q: -2, r: 0, name: 'Bukovina', terrain: 'forest', owner: 'player', fort: 0, pop: 800 },
-        { q: 1, r: -1, name: 'Bessarabia', terrain: 'swamp', owner: 'player', fort: 0, pop: 800 },
-        // Ватикан (юг)
-        { q: 3, r: -2, name: 'Florentia', terrain: 'plains', owner: 'ai', fort: 1, pop: 3000 },
-        { q: 4, r: -2, name: 'Perugia', terrain: 'forest', owner: 'ai', fort: 0, pop: 2000 },
-        { q: 5, r: -3, name: 'Vaticanum', terrain: 'mountain', owner: 'ai', fort: 3, pop: 5000 },
-        { q: 6, r: -3, name: 'Roma', terrain: 'plains', owner: 'ai', fort: 2, pop: 4000 },
-        { q: 5, r: -4, name: 'Ancona', terrain: 'plains', owner: 'ai', fort: 1, pop: 2000 },
-        { q: 4, r: -3, name: 'Siena', terrain: 'plains', owner: 'ai', fort: 0, pop: 1500 },
-        { q: 7, r: -4, name: 'Parma', terrain: 'plains', owner: 'ai', fort: 1, pop: 2500 },
-        { q: 6, r: -2, name: 'Ravenna', terrain: 'swamp', owner: 'ai', fort: 0, pop: 1500 },
-        { q: 7, r: -3, name: 'Dalmatian Coast', terrain: 'plains', owner: 'ai', fort: 0, pop: 1000 },
-        // Оборотни (северо-запад)
-        { q: -3, r: 2, name: 'Moesia', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1500 },
-        { q: -4, r: 3, name: 'Dacia', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 2000 },
-        { q: -5, r: 4, name: 'Carpathia', terrain: 'mountain', owner: 'werewolf', fort: 0, pop: 2500 },
-        { q: -4, r: 4, name: 'Iron Gate', terrain: 'mountain', owner: 'werewolf', fort: 0, pop: 1500 },
-        { q: -3, r: 3, name: 'Crimson Peak', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 2000 },
-        { q: -2, r: 3, name: 'Whispering Woods', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1200 },
-        { q: -3, r: 1, name: 'Blood Marshes', terrain: 'swamp', owner: 'werewolf', fort: 0, pop: 800 },
-        // Нейтральные
-        { q: 2, r: 1, name: 'Silver Mines', terrain: 'mountain', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0 },
-        { q: 3, r: 1, name: 'Ruins', terrain: 'plains', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
-        { q: 1, r: 2, name: 'Drowning Bog', terrain: 'swamp', owner: null, res: { gold: 0, blood: 15 }, fort: 0, pop: 0 },
-        { q: -1, r: 2, name: 'Cursed Forge', terrain: 'mountain', owner: null, res: { gold: 5, blood: 10 }, fort: 0, pop: 0 },
-        { q: 0, r: 2, name: 'Eternal Glen', terrain: 'forest', owner: null, res: { gold: 10, blood: 5 }, fort: 0, pop: 0 },
-        { q: 2, r: -2, name: 'Thornwood', terrain: 'forest', owner: null, res: { gold: 5, blood: 0 }, fort: 0, pop: 0 },
-        { q: -2, r: -1, name: 'Starfall Fields', terrain: 'plains', owner: null, res: { gold: 15, blood: 5 }, fort: 0, pop: 0 },
-        { q: -1, r: -2, name: 'Bleak Expanse', terrain: 'plains', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
-        { q: 3, r: 0, name: 'Moravian Corridor', terrain: 'plains', owner: null, res: { gold: 10, blood: 0 }, fort: 0, pop: 0 },
-        { q: 4, r: 0, name: 'Empty Lands', terrain: 'plains', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
-        { q: -4, r: 2, name: 'Silent Depths', terrain: 'plains', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 },
-        { q: -5, r: 3, name: 'Misty Valley', terrain: 'forest', owner: null, res: { gold: 0, blood: 0 }, fort: 0, pop: 0 }
+    
+    // 100 регионов с лором
+    const regionalMap = [
+        // === ФРАКЦИЯ 1: ЛЕГИОН ТЬМЫ (ИГРОК) – 30 гексов ===
+        { q: 0, r: 0, name: 'Трансильвания', terrain: 'mountain', owner: 'player', fort: 2, pop: 2500, lore: 'Древняя родина графа Дракулы, где каменные замки впиваются в облака.' },
+        { q: 1, r: 0, name: 'Валахия', terrain: 'plains', owner: 'player', fort: 1, pop: 1800, lore: 'Бескрайние степи, где пасутся табуны диких лошадей.' },
+        { q: -1, r: 0, name: 'Молдавия', terrain: 'forest', owner: 'player', fort: 0, pop: 1500, lore: 'Дремучие леса, полные волков и древних тайн.' },
+        { q: 0, r: -1, name: 'Паннония', terrain: 'plains', owner: 'player', fort: 0, pop: 1200, lore: 'Золотые поля, дающие обильный урожай.' },
+        { q: -1, r: 1, name: 'Банат', terrain: 'plains', owner: 'player', fort: 0, pop: 1100, lore: 'Перекрёсток торговых путей, всегда шумный и пёстрый.' },
+        { q: 1, r: -1, name: 'Бессарабия', terrain: 'swamp', owner: 'player', fort: 0, pop: 900, lore: 'Топкие болота, где блуждают огни и гибнут путники.' },
+        { q: -2, r: 1, name: 'Буковина', terrain: 'forest', owner: 'player', fort: 1, pop: 1000, lore: 'Буковые леса, хранящие память о древних кельтских племенах.' },
+        { q: 0, r: 1, name: 'Олтения', terrain: 'plains', owner: 'player', fort: 0, pop: 1300, lore: 'Богатые пастбища, где разводят лучших коней.' },
+        { q: 2, r: -2, name: 'Высокие Татры', terrain: 'mountain', owner: 'player', fort: 1, pop: 800, lore: 'Острые пики, уходящие в небо, — обитель орлов и драконов.' },
+        { q: -2, r: 2, name: 'Марамуреш', terrain: 'forest', owner: 'player', fort: 0, pop: 950, lore: 'Деревянные церкви и древние обряды, нетронутые временем.' },
+        { q: -1, r: -1, name: 'Добруджа', terrain: 'swamp', owner: 'player', fort: 0, pop: 700, lore: 'Тростниковые заросли у Чёрного моря, приют контрабандистов.' },
+        { q: 1, r: -2, name: 'Мунтения', terrain: 'plains', owner: 'player', fort: 0, pop: 1400, lore: 'Центр торговли и ремёсел, житница Валахии.' },
+        { q: -2, r: 0, name: 'Кришана', terrain: 'plains', owner: 'player', fort: 0, pop: 1250, lore: 'Речные долины, где каждый камень дышит историей.' },
+        { q: 2, r: -1, name: 'Буджак', terrain: 'swamp', owner: 'player', fort: 0, pop: 600, lore: 'Низинные луга, часто заливаемые водами Дуная.' },
+        { q: 0, r: -2, name: 'Карпатский Рубеж', terrain: 'mountain', owner: 'player', fort: 2, pop: 1100, lore: 'Неприступная стена, за которой скрываются самые тёмные тайны.' },
+        { q: -3, r: 2, name: 'Ужгород', terrain: 'forest', owner: 'player', fort: 0, pop: 850, lore: 'Город на реке Уж, где переплелись славянские и венгерские легенды.' },
+        { q: 2, r: 1, name: 'Брашов', terrain: 'mountain', owner: 'player', fort: 1, pop: 1300, lore: 'Средневековый город, окружённый зубчатыми стенами.' },
+        { q: -3, r: 1, name: 'Сибиу', terrain: 'plains', owner: 'player', fort: 0, pop: 1100, lore: 'Город семи башен, где время течёт иначе.' },
+        { q: 3, r: -2, name: 'Плоешти', terrain: 'plains', owner: 'player', fort: 0, pop: 1400, lore: 'Жемчужина нефтяных полей, стратегическая цель.' },
+        { q: -1, r: 2, name: 'Клуж-Напока', terrain: 'plains', owner: 'player', fort: 0, pop: 1200, lore: 'Университетский город, где магия встречается с наукой.' },
+        { q: 3, r: -1, name: 'Бухарест', terrain: 'plains', owner: 'player', fort: 1, pop: 2000, lore: 'Столица, шумный и гордый город, сердце Валахии.' },
+        { q: -3, r: 0, name: 'Тимишоара', terrain: 'plains', owner: 'player', fort: 0, pop: 1300, lore: 'Город на каналах, где барокко соседствует с модерном.' },
+        { q: 4, r: -3, name: 'Констанца', terrain: 'swamp', owner: 'player', fort: 0, pop: 950, lore: 'Портовый город на Чёрном море, ворота на Восток.' },
+        { q: -4, r: 2, name: 'Орадя', terrain: 'plains', owner: 'player', fort: 0, pop: 1000, lore: 'Город с крепостью, пережившей множество осад.' },
+        { q: 2, r: -3, name: 'Галац', terrain: 'swamp', owner: 'player', fort: 0, pop: 800, lore: 'Крупный речной порт на Дунае.' },
+        { q: -2, r: -1, name: 'Яссы', terrain: 'plains', owner: 'player', fort: 0, pop: 1100, lore: 'Культурная столица Молдавии, родина поэтов.' },
+        { q: 5, r: -4, name: 'Кишинёв', terrain: 'forest', owner: 'player', fort: 0, pop: 900, lore: 'Город на холмах, где зелёные улицы полны жизни.' },
+        { q: -1, r: -2, name: 'Измаил', terrain: 'swamp', owner: 'player', fort: 0, pop: 600, lore: 'Крепость на берегу озера, ключ к нижнему Дунаю.' },
+        { q: 1, r: 2, name: 'Сигишоара', terrain: 'mountain', owner: 'player', fort: 1, pop: 900, lore: 'Средневековая цитадель, где родился Влад Цепеш.' },
+        { q: -3, r: -1, name: 'Черновцы', terrain: 'forest', owner: 'player', fort: 0, pop: 950, lore: 'Город на границе, впитавший влияния многих империй.' },
+        { q: 4, r: -2, name: 'Брэила', terrain: 'swamp', owner: 'player', fort: 0, pop: 700, lore: 'Порт на Дунае, известный своими рыбными рынками.' },
+
+        // === ФРАКЦИЯ 2: СВЯЩЕННЫЙ ПРЕСТОЛ (AI) – 30 гексов ===
+        { q: 6, r: -4, name: 'Ватикан', terrain: 'mountain', owner: 'ai', fort: 3, pop: 5000, lore: 'Сердце христианского мира, где власть Папы незыблема.' },
+        { q: 5, r: -3, name: 'Рим', terrain: 'plains', owner: 'ai', fort: 2, pop: 4500, lore: 'Вечный город, где древность встречается с величием.' },
+        { q: 6, r: -3, name: 'Флоренция', terrain: 'plains', owner: 'ai', fort: 1, pop: 3000, lore: 'Колыбель Ренессанса, город искусств и интриг.' },
+        { q: 7, r: -4, name: 'Перуджа', terrain: 'forest', owner: 'ai', fort: 0, pop: 2100, lore: 'Этрусский город на холме, хранящий древние тайны.' },
+        { q: 5, r: -4, name: 'Сиена', terrain: 'plains', owner: 'ai', fort: 0, pop: 1600, lore: 'Соперник Флоренции, славящийся своей площадью.' },
+        { q: 7, r: -5, name: 'Анкона', terrain: 'plains', owner: 'ai', fort: 1, pop: 2200, lore: 'Портовый город, ворота на Адриатику.' },
+        { q: 4, r: -3, name: 'Пиза', terrain: 'plains', owner: 'ai', fort: 0, pop: 1900, lore: 'Город с падающей башней, символом гордыни.' },
+        { q: 6, r: -5, name: 'Равенна', terrain: 'swamp', owner: 'ai', fort: 0, pop: 1400, lore: 'Византийская мозаика и древние мавзолеи.' },
+        { q: 8, r: -5, name: 'Неаполь', terrain: 'plains', owner: 'ai', fort: 1, pop: 3500, lore: 'Шумный город у подножия вулкана, где жизнь кипит.' },
+        { q: 5, r: -2, name: 'Болонья', terrain: 'plains', owner: 'ai', fort: 0, pop: 2400, lore: 'Город науки и башен, старейший университет.' },
+        { q: 7, r: -3, name: 'Венеция', terrain: 'swamp', owner: 'ai', fort: 1, pop: 4000, lore: 'Город на воде, где гондолы скользят по каналам.' },
+        { q: 4, r: -4, name: 'Генуя', terrain: 'mountain', owner: 'ai', fort: 2, pop: 3200, lore: 'Морская республика, соперница Венеции.' },
+        { q: 6, r: -2, name: 'Милан', terrain: 'plains', owner: 'ai', fort: 1, pop: 3800, lore: 'Столица моды и промышленности, сердце Ломбардии.' },
+        { q: 8, r: -4, name: 'Калабрия', terrain: 'forest', owner: 'ai', fort: 0, pop: 1300, lore: 'Южный край, где горы встречаются с морем.' },
+        { q: 3, r: -3, name: 'Ломбардия', terrain: 'plains', owner: 'ai', fort: 0, pop: 2800, lore: 'Богатые равнины, орошаемые реками.' },
+        { q: 5, r: -5, name: 'Сан-Марино', terrain: 'mountain', owner: 'ai', fort: 1, pop: 800, lore: 'Республика-легенда, сохранившая свободу.' },
+        { q: 4, r: -5, name: 'Турин', terrain: 'plains', owner: 'ai', fort: 0, pop: 2200, lore: 'Город у подножия Альп, ворота во Францию.' },
+        { q: 7, r: -2, name: 'Триест', terrain: 'plains', owner: 'ai', fort: 0, pop: 1800, lore: 'Порт на границе славянского мира.' },
+        { q: 6, r: -1, name: 'Падуя', terrain: 'plains', owner: 'ai', fort: 0, pop: 2000, lore: 'Город святого Антония, благочестивый и учёный.' },
+        { q: 5, r: -1, name: 'Верона', terrain: 'plains', owner: 'ai', fort: 0, pop: 2100, lore: 'Город Ромео и Джульетты, вечная любовь.' },
+        { q: 3, r: -4, name: 'Модена', terrain: 'plains', owner: 'ai', fort: 0, pop: 1700, lore: 'Известна бальзамическим уксусом и герцогскими дворцами.' },
+        { q: 8, r: -3, name: 'Римини', terrain: 'plains', owner: 'ai', fort: 0, pop: 1500, lore: 'Курортный город на Адриатике, место отдыха.' },
+        { q: 2, r: -4, name: 'Парма', terrain: 'plains', owner: 'ai', fort: 0, pop: 1900, lore: 'Город музыки и сыра, изысканный вкус.' },
+        { q: 7, r: -6, name: 'Бари', terrain: 'swamp', owner: 'ai', fort: 0, pop: 1000, lore: 'Портовый город в Апулии, ворота на Балканы.' },
+        { q: 8, r: -2, name: 'Феррара', terrain: 'plains', owner: 'ai', fort: 0, pop: 1400, lore: 'Город герцогов, покровителей искусств.' },
+        { q: 9, r: -4, name: 'Лечче', terrain: 'plains', owner: 'ai', fort: 0, pop: 1100, lore: 'Барочная жемчужина Юга.' },
+        { q: 4, r: -1, name: 'Кремона', terrain: 'plains', owner: 'ai', fort: 0, pop: 1200, lore: 'Город скрипичных мастеров, где рождается музыка.' },
+        { q: 9, r: -5, name: 'Таранто', terrain: 'swamp', owner: 'ai', fort: 0, pop: 900, lore: 'Военная гавань, защищающая южное побережье.' },
+        { q: 2, r: -5, name: 'Савона', terrain: 'mountain', owner: 'ai', fort: 0, pop: 1200, lore: 'Лигурийский порт с богатой морской историей.' },
+        { q: 5, r: -6, name: 'Пескара', terrain: 'plains', owner: 'ai', fort: 0, pop: 1400, lore: 'Город на берегу Адриатики, центр региона Абруццо.' },
+
+        // === ФРАКЦИЯ 3: СТАЯ КЛЫКА (WEREWOLF) – 25 гексов ===
+        { q: -4, r: 4, name: 'Карпатия', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 2000, lore: 'Дикие горы, где волки воют на луну.' },
+        { q: -3, r: 3, name: 'Мёзия', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1600, lore: 'Леса, населённые тенями и древними духами.' },
+        { q: -4, r: 3, name: 'Дакия', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1800, lore: 'Земля предков, где кровь смешалась с землёй.' },
+        { q: -5, r: 4, name: 'Железные Ворота', terrain: 'mountain', owner: 'werewolf', fort: 2, pop: 1200, lore: 'Ущелье, где река пробивает горы, — непреодолимый барьер.' },
+        { q: -3, r: 4, name: 'Багряный Пик', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 1400, lore: 'Скала, залитая кровью, место кровавых ритуалов.' },
+        { q: -2, r: 3, name: 'Шепчущий Лес', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1100, lore: 'Листва шепчет имена погибших, здесь небезопасно.' },
+        { q: -4, r: 5, name: 'Кровавые Топи', terrain: 'swamp', owner: 'werewolf', fort: 0, pop: 850, lore: 'Болота, в которых тонут враги и друзья.' },
+        { q: -5, r: 5, name: 'Воющий Водораздел', terrain: 'mountain', owner: 'werewolf', fort: 0, pop: 900, lore: 'Гребень гор, где ветер приносит вой стаи.' },
+        { q: -3, r: 2, name: 'Иллирия', terrain: 'plains', owner: 'werewolf', fort: 0, pop: 1500, lore: 'Древняя земля, где кочуют дикие племена.' },
+        { q: -4, r: 2, name: 'Древняя Фракия', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1300, lore: 'Таинственный лес, где обитают призраки прошлого.' },
+        { q: -5, r: 3, name: 'Туманная Долина', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1050, lore: 'Долина, вечно окутанная туманом, где легко заблудиться.' },
+        { q: -2, r: 4, name: 'Дикое Поле', terrain: 'plains', owner: 'werewolf', fort: 0, pop: 1200, lore: 'Бескрайние степи, где стаи охотятся на одиночек.' },
+        { q: -6, r: 4, name: 'Трансильванские Альпы', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 1100, lore: 'Южный хребет Карпат, где прячутся драконы.' },
+        { q: -5, r: 2, name: 'Нижняя Далмация', terrain: 'plains', owner: 'werewolf', fort: 0, pop: 1400, lore: 'Прибрежные равнины, где ветер солёный и острый.' },
+        { q: -6, r: 3, name: 'Верхняя Мёзия', terrain: 'mountain', owner: 'werewolf', fort: 0, pop: 900, lore: 'Горные рудники, где добывают железо и серебро.' },
+        { q: -7, r: 4, name: 'Боснийские горы', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 1300, lore: 'Непроходимые чащи, приют мятежников и зверей.' },
+        { q: -6, r: 5, name: 'Сербское Поморье', terrain: 'swamp', owner: 'werewolf', fort: 0, pop: 800, lore: 'Болотистые берега, где реки впадают в море.' },
+        { q: -7, r: 3, name: 'Черногорские скалы', terrain: 'mountain', owner: 'werewolf', fort: 1, pop: 1200, lore: 'Чёрные горы, о которые разбиваются волны.' },
+        { q: -5, r: 6, name: 'Дунайские плавни', terrain: 'swamp', owner: 'werewolf', fort: 0, pop: 700, lore: 'Заросли камыша, где скрываются враги.' },
+        { q: -6, r: 2, name: 'Истрия', terrain: 'plains', owner: 'werewolf', fort: 0, pop: 1300, lore: 'Полуостров, где переплелись культуры.' },
+        { q: -7, r: 5, name: 'Банатские холмы', terrain: 'plains', owner: 'werewolf', fort: 0, pop: 1100, lore: 'Холмистые равнины, где зреют виноградники.' },
+        { q: -8, r: 4, name: 'Срем', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 1000, lore: 'Лесная область между реками, место засад.' },
+        { q: -7, r: 2, name: 'Лика', terrain: 'forest', owner: 'werewolf', fort: 0, pop: 950, lore: 'Карстовые поля, где вода исчезает под землёй.' },
+        { q: -8, r: 5, name: 'Бачка', terrain: 'plains', owner: 'werewolf', fort: 0, pop: 1200, lore: 'Плодородные равнины, спорная территория.' },
+        { q: -6, r: 6, name: 'Добруджа Северная', terrain: 'swamp', owner: 'werewolf', fort: 0, pop: 800, lore: 'Северная часть болот, богатая рыбой и птицей.' },
+
+        // === НЕЙТРАЛЬНЫЕ ЗЕМЛИ И БОГАТСТВА – 15 гексов ===
+        { q: 2, r: 0, name: 'Серебряные Шахты', terrain: 'mountain', owner: null, res: { gold: 30, blood: 0 }, fort: 0, pop: 0, lore: 'Древние выработки, где добывали серебро для короны.' },
+        { q: 3, r: -1, name: 'Проклятая Кузница', terrain: 'mountain', owner: null, res: { gold: 10, blood: 15 }, fort: 0, pop: 0, lore: 'Место, где ковали оружие для тёмных ритуалов.' },
+        { q: 1, r: 1, name: 'Чумной Стык', terrain: 'swamp', owner: null, res: { gold: 0, blood: 25 }, fort: 0, pop: 0, lore: 'Болото, где болезнь и смерть — частые гости.' },
+        { q: -1, r: 2, name: 'Священные Руины', terrain: 'plains', owner: null, res: { gold: 20, blood: 5 }, fort: 0, pop: 0, lore: 'Останки храма, где молились древним богам.' },
+        { q: 0, r: 2, name: 'Вековая Роща', terrain: 'forest', owner: null, res: { gold: 15, blood: 15 }, fort: 0, pop: 0, lore: 'Дубы, помнящие времена язычества.' },
+        { q: 2, r: -3, name: 'Моравский Коридор', terrain: 'plains', owner: null, res: { gold: 15, blood: 0 }, fort: 0, pop: 0, lore: 'Путь между Востоком и Западом, всегда наводнённый путниками.' },
+        { q: -3, r: 1, name: 'Опустошенные Земли', terrain: 'plains', owner: null, res: { gold: 5, blood: 5 }, fort: 0, pop: 0, lore: 'Сожжённая войнами пустошь, где ничего не растёт.' },
+        { q: 1, r: 2, name: 'Гиблое Захолустье', terrain: 'swamp', owner: null, res: { gold: 5, blood: 20 }, fort: 0, pop: 0, lore: 'Место, где люди исчезают без следа.' },
+        { q: 3, r: 0, name: 'Забытый Базар', terrain: 'plains', owner: null, res: { gold: 25, blood: 0 }, fort: 0, pop: 0, lore: 'Некогда шумный рынок, ныне пустынный и тихий.' },
+        { q: -2, r: -2, name: 'Стеклянные Горы', terrain: 'mountain', owner: null, res: { gold: 20, blood: 10 }, fort: 0, pop: 0, lore: 'Скалы, сверкающие кварцем, как лёд.' },
+        { q: 4, r: 0, name: 'Ущелье Ветров', terrain: 'mountain', owner: null, res: { gold: 10, blood: 10 }, fort: 0, pop: 0, lore: 'Теснина, где ветер воет подобно волку.' },
+        { q: -4, r: 0, name: 'Хрустальный Овраг', terrain: 'mountain', owner: null, res: { gold: 25, blood: 0 }, fort: 0, pop: 0, lore: 'Овраг, усеянный кристаллами горного хрусталя.' },
+        { q: 0, r: 3, name: 'Термальные Источники', terrain: 'forest', owner: null, res: { gold: 0, blood: 30 }, fort: 0, pop: 0, lore: 'Горячие источники, обладающие целебной силой.' },
+        { q: 5, r: 0, name: 'Мёртвое Озеро', terrain: 'swamp', owner: null, res: { gold: 5, blood: 25 }, fort: 0, pop: 0, lore: 'Озеро, где вода чёрная и смертоносная.' },
+        { q: -5, r: 1, name: 'Пепельная Пустошь', terrain: 'plains', owner: null, res: { gold: 10, blood: 10 }, fort: 0, pop: 0, lore: 'Земля, покрытая вулканическим пеплом, бесплодная.' },
     ];
 
-    mapData.forEach(d => {
-        let support = { player: 20, ai: 70, werewolf: 10 };
+    regionalMap.forEach(d => {
+        let support = { player: 15, ai: 15, werewolf: 15 };
         if (d.owner === 'player') support = { player: 80, ai: 10, werewolf: 10 };
-        else if (d.owner === 'ai') support = { player: 10, ai: 85, werewolf: 5 };
-        else if (d.owner === 'werewolf') support = { player: 5, ai: 15, werewolf: 80 };
+        else if (d.owner === 'ai') support = { player: 5, ai: 85, werewolf: 10 };
+        else if (d.owner === 'werewolf') support = { player: 10, ai: 5, werewolf: 85 };
+
         grid.push({
-            q: d.q, r: d.r, name: d.name, owner: d.owner, terrain: d.terrain || 'plains',
+            q: d.q, r: d.r, name: d.name, owner: d.owner, terrain: d.terrain,
             resources: d.res || { gold: 0, blood: 0 },
             fortification: d.fort || 0, population: d.pop || 0, support: support,
+            lore: d.lore || 'Неисследованная земля.',
             playerGarrison: { infantry: d.owner === 'player' ? 20 : 0, archer: 0, cavalry: 0, gargoyle: 0, noble: 0, vampire: 0, necromancer: 0, berserker: 0 },
             aiGarrison: { infantry: d.owner === 'ai' ? 20 : 0, archer: 0, cavalry: 0, gargoyle: 0, noble: 0, vampire: 0, necromancer: 0, berserker: 0 },
             buildings: [], siegeBy: null
@@ -331,7 +404,8 @@ function drawHexes() {
                 supportText = `<br>🧛 Тьма: ${hex.support.player}% | ⛪ Ватикан: ${hex.support.ai}% | 🐺 Оборотни: ${hex.support.werewolf}%`;
             }
             let garrison = (hex.owner === 'player') ? hex.playerGarrison : (hex.owner === 'ai' ? hex.aiGarrison : {});
-            t.innerHTML = `<b>${hex.name}</b> (${terrMap[hex.terrain]})<br>Владелец: ${o}<br>🛡️ Защита: ${getTotalTroops(garrison)}<br>🏰 Укрепы: ${hex.fortification}${supportText}`;
+            let loreText = hex.lore ? `<br><i style="font-size:11px; color:#a0b0d0;">${hex.lore}</i>` : '';
+            t.innerHTML = `<b>${hex.name}</b> (${terrMap[hex.terrain]})<br>Владелец: ${o}<br>🛡️ Защита: ${getTotalTroops(garrison)}<br>🏰 Укрепы: ${hex.fortification}${supportText}${loreText}`;
             t.style.display = 'block';
             t.style.left = (e.data.originalEvent.clientX + 15) + 'px';
             t.style.top = (e.data.originalEvent.clientY + 15) + 'px';
@@ -577,7 +651,7 @@ function handleHexClick(hex) {
     }
 }
 
-// === БОЕВЫЕ ДЕЙСТВИЯ ===
+// === БОЕВЫЕ ДЕЙСТВИЯ (без изменений) ===
 function executeCurse(targetHex) {
     if (game.battleActive) return;
     game.battleActive = true;
@@ -677,7 +751,7 @@ function executeBattle(targetHex) {
     game.battleActive = false; updateUI();
 }
 
-// === ЭКОНОМИКА, ИИ, СОБЫТИЯ ===
+// === ЭКОНОМИКА, ИИ, СОБЫТИЯ (без изменений) ===
 function collectIncome() {
     let bloodBonus = 0, goldBonus = 0;
     game.hexGrid.forEach(h => {
@@ -735,14 +809,12 @@ function triggerRandomEvent() {
 }
 
 function aiTurn() {
-    // Пополнение
     if (game.ai.gold > 20 && game.ai.mobileArmy.infantry < 80) {
         game.ai.gold -= 10; game.ai.mobileArmy.infantry += 5;
     }
     if (game.ai.gold > 30 && game.ai.mobileArmy.archer < 30) {
         game.ai.gold -= 15; game.ai.mobileArmy.archer += 3;
     }
-    // Строительство
     const aiHexes = game.hexGrid.filter(h => h.owner === 'ai');
     for (let h of aiHexes) {
         if (game.ai.gold > 20 && !h.buildings.some(b => b.type === 'barracks') && Math.random() < 0.2) {
@@ -759,7 +831,6 @@ function aiTurn() {
             log('Ватикан построил Алтарь в ' + h.name, 'ai');
         }
     }
-    // Дипломатия
     const playerPower = getTotalTroops(game.player.mobileArmy);
     const aiPower = getTotalTroops(game.ai.mobileArmy);
     if (playerPower > aiPower * 1.5 && game.player.truceTurnsAI === 0 && game.player.truceTurnsWolf === 0) {
@@ -768,7 +839,6 @@ function aiTurn() {
             game.player.truceTurnsAI = 2;
         }
     }
-    // Атака ИИ
     const aiHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.ai.mobileArmy.hexId);
     if (aiHex && game.player.truceTurnsAI === 0) {
         const neighbors = getNeighbors(aiHex.q, aiHex.r);
@@ -791,7 +861,6 @@ function aiTurn() {
             }
         }
     }
-    // Оборотни
     if (game.player.truceTurnsWolf === 0) {
         const wolfHex = game.hexGrid.find(h => `${h.q},${h.r}` === game.werewolf.mobileArmy.hexId);
         if (wolfHex) {
@@ -984,13 +1053,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSprites();
     initPixi();
 
-    // Показать меню
     document.getElementById('start-menu').style.display = 'flex';
     document.getElementById('game-container').style.display = 'none';
     document.getElementById('loading-modal').style.display = 'none';
     document.getElementById('prologue-modal').style.display = 'none';
 
-    // Кнопки старта
     document.getElementById('btn-prologue-start').addEventListener('click', startGameMap);
     document.getElementById('btn-new-game').addEventListener('click', () => {
         localStorage.removeItem('DraculaHexFinal');
@@ -1005,7 +1072,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         initGame(true);
     });
 
-    // Музыка
     document.getElementById('btn-music-toggle').addEventListener('click', () => {
         const bgm = document.getElementById('bgm');
         if (bgm.paused) {
@@ -1018,7 +1084,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Меню (restart)
     document.getElementById('btn-mnu-restart').addEventListener('click', () => {
         if (confirm('Выйти в главное меню? Прогресс будет потерян.')) {
             document.getElementById('start-menu').style.display = 'flex';
@@ -1028,10 +1093,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Конец хода
     document.getElementById('btn-end-turn').addEventListener('click', endPlayerTurn);
 
-    // Лог
     document.getElementById('btn-toggle-log').addEventListener('click', () => {
         document.getElementById('log-overlay').style.display = 'flex';
     });
@@ -1042,7 +1105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('log-container').innerHTML = '';
     });
 
-    // Выпадающие меню
     document.querySelectorAll('.dropdown-toggle').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1059,7 +1121,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Открытие модальных окон
     const openModal = (id) => {
         const el = document.getElementById(id);
         if (el) el.style.display = 'flex';
@@ -1078,14 +1139,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-open-factions').addEventListener('click', () => openModal('factions-modal'));
     document.getElementById('btn-factions-close').addEventListener('click', () => closeModal('factions-modal'));
 
-    // Закрытие модалок по клику на фон
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.style.display = 'none';
         });
     });
 
-    // Боевые действия
     document.getElementById('btn-action-close').addEventListener('click', () => {
         document.getElementById('action-modal').style.display = 'none';
     });
@@ -1150,7 +1209,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Дипломатия
     document.getElementById('dip-truce-ai').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота.', 'system');
         if (game.player.truceTurnsAI > 0) return log('Перемирие уже активно.', 'system');
@@ -1181,7 +1239,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUI();
     });
 
-    // Рынок
     document.getElementById('mkt-gold-to-blood').addEventListener('click', () => {
         if (game.marketTradedThisTurn && !game.player.techs.tradeRoutes) {
             return log('Рынок уже использован в этом ходу.', 'system');
@@ -1212,11 +1269,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUI();
     });
 
-    // Обновление курса в модалке
     document.getElementById('mkt-rate-gtb').textContent = Math.floor(game.marketRates.goldToBlood * 10) / 10;
     document.getElementById('mkt-rate-btg').textContent = Math.floor(game.marketRates.bloodToGold * 10) / 10;
 
-    // Технологии
     document.getElementById('tech-reform').addEventListener('click', () => {
         if (game.player.gold < 30) return log('Не хватает золота.', 'system');
         if (game.player.techs.militaryReform) return log('Уже изучено.', 'system');
@@ -1247,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUI();
     });
 
-    // Постройки (старые)
+    // ===== ПОСТРОЙКИ (старые) =====
     const builds = {
         'build-cemetery': 'cemetery',
         'build-barracks': 'barracks',
@@ -1288,7 +1343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Новые постройки
+    // ===== НОВЫЕ ПОСТРОЙКИ =====
     const newBuilds = {
         'build-altar': 'altar',
         'build-tower': 'tower',
@@ -1315,7 +1370,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Призыв (старые)
+    // ===== ПРИЗЫВ (старые) =====
     const recruitTypes = ['infantry', 'archer', 'cavalry', 'knights', 'lord', 'soul_collector', 'gargoyle', 'noble'];
     const recruitCosts = {
         'infantry': 10, 'archer': 15, 'cavalry': 20, 'knights': 30,
@@ -1384,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Новые юниты
+    // ===== НОВЫЕ ЮНИТЫ =====
     const newRecruitTypes = ['vampire', 'necromancer', 'berserker'];
     const newRecruitCosts = { 'vampire': 35, 'necromancer': 25, 'berserker': 15 };
     const newRecruitFunc = {
@@ -1426,7 +1481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Гарнизон
+    // ===== ГАРНИЗОН =====
     document.getElementById('btn-garrison-add').addEventListener('click', () => {
         if (game.player.ap <= 0) return log('Нет очков действий.', 'system');
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
@@ -1449,7 +1504,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateUI();
     });
 
-    // Сдача провинции (влияние на доверие)
+    // ===== СДАЧА ПРОВИНЦИИ =====
     document.getElementById('btn-exterminate').addEventListener('click', () => {
         const h = game.hexGrid.find(x => `${x.q},${x.r}` === game.player.mobileArmy.hexId);
         if (h) {
@@ -1487,6 +1542,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Лор-подсказки
     attachLoreListeners();
 });
